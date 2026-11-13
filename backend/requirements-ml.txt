@@ -1,0 +1,29 @@
+# ML / OpenCV venv (backend/.venv-ml) — the heavy CV + retrieval stack.
+# Install into the dedicated venv that backend/run_tests.sh drives:
+#     python3 -m venv backend/.venv-ml
+#     backend/.venv-ml/bin/pip install -r backend/requirements-ml.txt
+#
+# Pinned to the versions the M2 stacking suite + Stage-2 tracking were built and
+# verified against (cv2 4.13.0). Do NOT install bare opencv-python here: the CSRT/
+# KCF trackers wifi_tracking.py probes for live in cv2.legacy.* ship ONLY in the
+# opencv-contrib build. opencv-contrib-python supersedes opencv-python (same cv2
+# module, plus contrib), so list only the contrib build to avoid a clobber.
+
+# OpenCV WITH contrib (CSRT/KCF for wifi_tracking.py; Mertens/MTB/ECC/ORB for stacking.py).
+opencv-contrib-python==5.0.0.93
+
+# Numerics for the bounded JPEG/OpenCV stacking path. RAW remains disabled.
+numpy==2.5.4
+
+# Pillow — liveview JPEG + thumbnail decode (PIL.Image) across the WiFi modules.
+pillow==13.0.0
+
+# CLIP taste-retrieval layer (embed_index.py). torch is CPU-or-CUDA; on the PC the
+# CUDA build is installed by setup_venv.sh instead — keep these unpinned-major so
+# the GPU box can resolve its own CUDA wheel.
+torch>=2.14.1
+torchvision>=0.29.1
+open_clip_torch
+
+# MCP server API used by server.py; keep the ML lane on the same major as the main lock.
+mcp[cli]==2.3.0

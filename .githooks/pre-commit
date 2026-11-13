@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Repo pre-commit: eval-gate the intent brain's roster/config surface.
+# Enabled via: git config core.hooksPath .githooks
+exec "$(dirname "$0")/../scripts/eval_gate.sh" --staged

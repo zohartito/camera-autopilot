@@ -1,0 +1,89 @@
+backend/.venv/
+backend/.venv
+backend/.venv-ml/
+backend/shots/
+backend/feedback.jsonl
+# Learned eval cases — regenerated from feedback.jsonl by backend/feedback_to_eval.py, not source.
+tests/eval_set.learned.json
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.recording-safety/
+node_modules/
+.venv/
+captures/
+.env
+.env.*
+!.env.example
+
+# Camera, network, and proof artifacts may contain private imagery, EXIF, device
+# identifiers, credentials, or host details. They are local evidence only.
+/artifacts/
+mobile/artifacts/*/*
+!mobile/artifacts/ios-simulator/PROOF.md
+/.playwright-cli/
+output/
+docs/progress/
+
+# Photos, RAW files, video and other captures never belong in this repository.
+# (App icons and splash screens under mobile/ are the only tracked images.)
+*.jpg
+*.jpeg
+*.JPG
+*.JPEG
+*.arw
+*.ARW
+*.dng
+*.DNG
+*.cr2
+*.CR2
+*.cr3
+*.CR3
+*.nef
+*.NEF
+*.raf
+*.RAF
+*.heic
+*.HEIC
+*.heif
+*.tif
+*.tiff
+*.TIF
+*.TIFF
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.avi
+*.mts
+*.MTS
+*.webp
+*.pdf
+*.png
+!mobile/ios/App/App/Assets.xcassets/**/*.png
+!mobile/android/app/src/main/res/**/*.png
+
+# Large binaries and archives
+*.pkg
+*.dmg
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.stl
+*.3mf
+
+# Taste index and model weights: large, regenerable, never committed
+data/taste_index.npz
+data/taste_index*.bak.npz
+data/.taste_index.npz.tmp
+data/taste_index.compact/
+data/.taste-compact-*/
+data/model-cache/
+data/wikimedia_qi*.csv
+data/own_settings*.csv
+
+# Agent session state
+.claude/
+.handoff/

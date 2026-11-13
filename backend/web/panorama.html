@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d">
+<title>Panorama · Camera Autopilot</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0b0d;--surface:#15151a;--ink:#f3f3f5;--muted:#aaaab5;--line:#30303a;--accent:#e8b84b;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:calc(var(--safe-top) + 20px) 18px calc(var(--safe-bottom) + 32px)}[hidden]{display:none!important}main,header{max-width:1000px;margin:auto}header{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:24px}h1{font-size:26px;margin:0}h2{font-size:19px;margin:0 0 12px}p{margin:8px 0}a{color:var(--accent)}section{margin:18px 0;padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:16px}.help{color:var(--muted);font-size:14px}.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:end}.controls label{display:flex;flex-direction:column;gap:5px;flex:1;min-width:135px}button,input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid #50505b;border-radius:8px;padding:9px}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}input[type=checkbox]{accent-color:var(--accent);width:20px;height:20px}.primary{background:var(--accent);color:#16110b;border:0;font-weight:650;padding:12px 20px}#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin:16px 0}.photo{border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;min-width:0}.photo:has(input:checked){border:2px solid var(--accent)}.photo img{width:100%;aspect-ratio:3/2;object-fit:cover;background:#080809;display:block}.photo span{display:flex;gap:7px;padding:8px;font-size:12px;overflow-wrap:anywhere}.photo input{flex:none}.selected li{padding:5px 0;overflow-wrap:anywhere}.selected button{font-size:12px;padding:3px 7px;margin-left:6px}.status{white-space:pre-wrap;color:var(--accent);min-height:24px}#result-image{display:block;max-width:100%;max-height:65vh;object-fit:contain;margin:16px auto}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:360px;overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;border-bottom:1px solid var(--line);padding:7px}fieldset{padding:0;border:0;min-width:0}.check{display:flex;align-items:center;gap:9px;margin:16px 0}@media(max-width:480px){body{padding-left:12px;padding-right:12px}section{padding:13px}header{align-items:start}h1{font-size:23px}.controls label{min-width:120px}#gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header><h1>Panorama</h1><nav><a href="/review">Review</a> · <a href="/">Camera</a></nav></header>
+<main>
+<p>Combine overlapping saved photographs into a new panorama. Your originals stay in Review.</p>
+<p class="help">Planar stitching with a virtual projection. Processing uses up to 1.5 MP per source and an 8 MP result. It is not a full-resolution or calibrated 360° panorama.</p>
+<section>
+<details><summary>Plan a multi-row sweep</summary>
+<p class="help">Move the tripod head yourself, keeping at least 30% textured overlap between frames and rows. Lock exposure, white balance and focus. Optics targets use pinhole geometry from focal length and sensor size. No camera motion or captures happen here.</p>
+<form id="plan-form">
+<div class="controls"><label>Focal length mm<input name="focal_length_mm" type="number" min="8" max="400" value="24" step="0.1"></label><label>Sensor width mm<input name="sensor_width_mm" type="number" min="1" max="50" value="35.8" step="0.1"></label><label>Sensor height mm<input name="sensor_height_mm" type="number" min="1" max="50" value="23.9" step="0.1"></label></div>
+<div class="controls"><label>Yaw span °<input name="yaw_span_deg" type="number" min="1" max="360" value="120"></label><label>Pitch span °<input name="pitch_span_deg" type="number" min="1" max="180" value="50"></label><label>Overlap %<input name="overlap" type="number" min="30" max="80" value="35" required></label></div>
+<details><summary>Or enter rows and columns yourself</summary>
+<div class="controls"><label>Rows<input name="rows" type="number" min="1" max="6" value="2"></label><label>Columns<input name="columns" type="number" min="1" max="12" value="3"></label><label>Photo horizontal view °<input name="hfov_deg" type="number" min="10" max="100" value="60"></label><label>Photo vertical view °<input name="vfov_deg" type="number" min="10" max="100" value="40"></label></div>
+<p class="help">Leave focal length empty to use this explicit grid instead of the optics plan.</p>
+</details>
+<div class="controls"><button type="submit">Show capture order</button></div>
+</form><p id="plan-status" class="status" role="status"></p><div id="plan-result"></div>
+<div id="guide" hidden><h3>Follow the sweep</h3><p id="guide-target" class="status"></p><p id="guide-progress" class="help"></p>
+<p class="help">Move and capture using your camera controls or the Camera page, then refresh saved photos here. Assign the actual saved photo to its target. Assignments record your report; they do not verify camera angle, overlap, focus or physical movement. You can build a new copy after each group of 2–12 selected photos.</p>
+<div class="controls"><label>Saved photo for this target<select id="guide-photo"><option value="">Choose a saved photo</option></select></label><button id="guide-assign" type="button">Assign saved photo</button></div>
+<div class="controls"><button id="guide-previous" type="button">Previous target</button><button id="guide-next" type="button">Next target</button><button id="guide-clear" type="button">Clear guide assignments</button></div>
+<p id="guide-status" class="status" role="status"></p></div>
+</details>
+</section>
+<section>
+<h2>1. Choose 2–12 overlapping photos</h2>
+<p class="help">Choose in capture order, including the return sweep for the next row. Blue sky, blank walls, changing focus and nearby objects can prevent alignment. A failed stitch saves an explanation instead of an incomplete panorama.</p>
+<button id="refresh" type="button">Refresh saved photos</button><p id="gallery-status" class="status" role="status"></p>
+<div id="gallery"></div>
+<details id="order"><summary id="selected-count">0 photos selected</summary><ol id="selected" class="selected"></ol></details>
+</section>
+<section>
+<h2>2. Build a new copy</h2>
+<form id="build-form"><fieldset id="build-fields">
+<div class="controls"><label>Projection<select name="projection"><option value="spherical">Spherical / equirectangular</option><option value="cylindrical">Cylindrical</option><option value="mercator">Mercator</option><option value="transverse_mercator">Transverse Mercator</option><option value="compressed_rectilinear_1">Compressed Rectilinear 1</option><option value="compressed_rectilinear_2">Compressed Rectilinear 2</option><option value="panini_1">Panini 1</option><option value="panini_2">Panini 2</option><option value="rectilinear">Rectilinear</option></select></label><label>Virtual horizontal view °<input name="horizontal_fov_deg" type="number" min="20" max="140" value="90" required></label><label>Horizon rotation °<input name="rotation_deg" type="number" min="-45" max="45" step="0.5" value="0" required></label></div>
+<p class="help">Virtual field of view changes the projection. Horizon leveling estimates a 2D rotation from long edges, then this rotation is added. Compressed and Panini variants use our documented parameters. Originals are never modified.</p>
+<label class="check"><input name="level_horizon" type="checkbox" checked> Level horizon from long edges</label>
+<label class="check"><input name="autocrop" type="checkbox" checked> Auto-crop to the largest fully covered rectangle</label>
+<label>Manual crop inset % of that rectangle<input name="crop_inset" type="number" min="0" max="40" value="0"></label>
+<button id="build" class="primary" type="submit" disabled>Build panorama</button>
+</fieldset></form>
+<p id="build-status" class="status" role="status" aria-live="polite"></p>
+<div id="uncertain" hidden><p class="help">The previous request has no confirmed result in this page. Check <a href="/review" target="_blank" rel="noopener">Review</a> for a saved panorama before making another request.</p><button id="acknowledge" type="button">I checked Review; enable another build</button></div>
+</section>
+<section id="result" hidden><h2>Panorama saved</h2><p id="result-reference"></p><img id="result-image" alt="Saved panorama"><p id="result-media-status" class="help"></p>
+<div class="controls"><label>Preview horizon rotation °<input id="result-rotation" type="range" min="-45" max="45" step="0.5" value="0"></label><output id="result-rotation-value">0°</output><button id="result-rebuild" type="button">Save a new copy with these settings</button></div>
+<p class="help">The rotation preview changes only this display. Saving reruns the projection, rotation and crop on your selected originals. Every successful build produces a separate saved result.</p><div class="controls"><a id="review-result" href="/review">Inspect and give feedback in Review</a><button id="download" type="button">Download</button></div><details><summary>Processing evidence</summary><pre id="evidence"></pre></details></section>
+</main>
+<script src="/client.js?v=20260923"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const tokenKey='camera-autopilot-token', pendingKey='camera-autopilot-panorama-pending';
+let token=Autopilot.deviceStore.read(tokenKey), selected=[], busy=false, uncertain=!!sessionStorage.getItem(pendingKey), resultImage='', galleryNames=[], guide=null, savedRotation=0;
+try{const stored=JSON.parse(sessionStorage.getItem('camera-autopilot-panorama-guide'));if(Array.isArray(stored?.frames)&&stored.frames.length>0&&stored.frames.length<=72)guide=stored;}catch(_){}
+const objectUrls=new Set();
+async function apiFetch(url,options={},retry=true){
+  const response=await fetch(url,{...options,headers:{...options.headers,'X-Camera-Autopilot-Token':token}});
+  if(response.status===401&&retry){const answer=window.prompt('Camera token');if(answer){token=answer.trim();Autopilot.deviceStore.write(tokenKey,token);return apiFetch(url,options,false);}}
+  return response;
+}
+async function request(url,method='GET',body){
+  const response=await apiFetch(url,{method,headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){const detail=data.detail;const message=typeof detail==='string'?detail:detail?.message||detail?.error||`Request failed (${response.status}).`;const error=new Error(message);error.definitive=response.status<500;error.jobId=detail?.job_id||data.job_id;throw error;}
+  return data;
+}
+async function loadImage(image,path){
+  const response=await apiFetch(path);if(!response.ok)throw new Error('Could not load saved image.');
+  const blob=await response.blob();if(blob.size>32*1024*1024)throw new Error('Image exceeds preview size limit.');
+  const url=URL.createObjectURL(blob);objectUrls.add(url);image.src=url;
+}
+window.addEventListener('pagehide',()=>objectUrls.forEach(url=>URL.revokeObjectURL(url)));
+const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){observer.unobserve(entry.target);loadImage(entry.target,entry.target.dataset.path).catch(()=>{entry.target.alt='Saved photo — thumbnail unavailable';});}}),{rootMargin:'150px'});
+function renderSelection(){
+  $('selected-count').textContent=`${selected.length} photos selected`;
+  $('selected').replaceChildren();selected.forEach((name,index)=>{const li=document.createElement('li');li.append(document.createTextNode(name));['Earlier','Later'].forEach((label,direction)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.setAttribute('aria-label',`${label}: ${name}`);button.disabled=busy||(direction===0?index===0:index===selected.length-1);button.onclick=()=>{const next=index+(direction===0?-1:1);[selected[index],selected[next]]=[selected[next],selected[index]];renderSelection();};li.append(button);});$('selected').append(li);});
+  document.querySelectorAll('#gallery input').forEach(input=>{input.checked=selected.includes(input.value);input.disabled=busy||(!input.checked&&selected.length>=12);});
+  $('build').disabled=busy||uncertain||selected.length<2;$('build-fields').disabled=busy;$('refresh').disabled=busy;$('uncertain').hidden=!uncertain;
+}
+async function loadGallery(){
+  $('gallery-status').textContent='Loading saved photos…';$('refresh').disabled=true;
+  try{const shots=await request('/gallery');if(!Array.isArray(shots))throw new Error('Gallery response was invalid.');observer.disconnect();$('gallery').replaceChildren();galleryNames=[];
+    const seen=new Set();shots.forEach(shot=>{const name=String(shot.image||'').split('/').pop();if(!/^[A-Za-z0-9_.-]+\.(jpg|jpeg)$/i.test(name)||seen.has(name))return;seen.add(name);galleryNames.push(name);
+      const label=document.createElement('label');label.className='photo';const img=document.createElement('img');img.alt=shot.summary||'Saved photograph';img.loading='lazy';img.dataset.path='/thumbnails/'+encodeURIComponent(name);const span=document.createElement('span');const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=name;checkbox.setAttribute('aria-label','Select '+name);checkbox.onchange=()=>{if(checkbox.checked&&selected.length<12)selected.push(name);else selected=selected.filter(item=>item!==name);renderSelection();};span.append(checkbox,document.createTextNode(name));label.append(img,span);$('gallery').append(label);observer.observe(img);});
+    selected=selected.filter(name=>seen.has(name));renderGuide();
+    $('gallery-status').textContent=seen.size?`${seen.size} saved JPEGs available.`:'No saved JPEGs yet. Capture your overlapping frames, then refresh.';
+  }catch(error){$('gallery-status').textContent=error.message;}finally{renderSelection();}
+}
+$('refresh').onclick=loadGallery;
+$('acknowledge').onclick=()=>{uncertain=false;sessionStorage.removeItem(pendingKey);$('build-status').textContent='Another build is enabled.';renderSelection();};
+$('plan-form').onsubmit=async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector('button[type=submit]');button.disabled=true;$('plan-status').textContent='';$('plan-result').replaceChildren();try{
+  const overlap=Number(form.elements.overlap.value)/100;
+  const optics=['focal_length_mm','sensor_width_mm','sensor_height_mm','yaw_span_deg','pitch_span_deg'];
+  const opticsValues=optics.map(name=>form.elements[name].value===''?null:Number(form.elements[name].value));
+  let payload;
+  if(opticsValues.every(value=>value!==null&&Number.isFinite(value))){
+    payload=Object.fromEntries(optics.map((name,index)=>[name,opticsValues[index]]));payload.overlap=overlap;
+  }else if(opticsValues.some(value=>value!==null)){
+    throw new Error('Optics plan needs focal length, sensor width, sensor height, yaw span and pitch span.');
+  }else{
+    payload=Object.fromEntries(['rows','columns','hfov_deg','vfov_deg'].map(name=>[name,Number(form.elements[name].value)]));payload.overlap=overlap;
+  }
+  const data=await request('/panoramas/plan','POST',payload);const table=document.createElement('table');const head=document.createElement('tr');['Frame','Row / column','Yaw','Pitch'].forEach(text=>{const th=document.createElement('th');th.textContent=text;head.append(th);});table.append(head);data.frames.forEach(frame=>{const row=document.createElement('tr');[frame.index+1,`${frame.row+1} / ${frame.column+1}`,`${Number(frame.yaw_deg).toFixed(1)}°`,`${Number(frame.pitch_deg).toFixed(1)}°`].forEach(text=>{const td=document.createElement('td');td.textContent=text;row.append(td);});table.append(row);});$('plan-result').append(table);
+  const pitch=data.pitch_step_deg==null?'':` Pitch between rows ${Number(data.pitch_step_deg).toFixed(1)}°.`;
+  $('plan-status').textContent=`${data.frames.length} manual targets (${data.rows}×${data.columns}). No camera commands were sent.${pitch}`;guide={frames:data.frames,index:0,assigned:{},layout:data.session&&data.session.layout};renderGuide();
+}catch(error){$('plan-status').textContent=error.message;}finally{button.disabled=false;}};
+$('build-form').onsubmit=async event=>{
+  event.preventDefault();if(busy||uncertain||selected.length<2||selected.length>12)return;
+  const form=event.currentTarget,payload={images:[...selected],projection:form.elements.projection.value,horizontal_fov_deg:Number(form.elements.horizontal_fov_deg.value),rotation_deg:Number(form.elements.rotation_deg.value),autocrop:form.elements.autocrop.checked,level_horizon:form.elements.level_horizon.checked};
+  const inset=Number(form.elements.crop_inset.value)/100;
+  if(inset>0)payload.crop=[inset,inset,1-inset,1-inset];
+  if(guide&&guide.layout)payload.layout=guide.layout;
+  busy=true;sessionStorage.setItem(pendingKey,JSON.stringify({started:new Date().toISOString(),images:payload.images}));renderSelection();$('build-status').textContent='Aligning and rendering saved photos… Keep this page open for the result.';$('result').hidden=true;
+  try{
+    const shot=await request('/panoramas','POST',payload);const name=String(shot.image||'').split('/').pop();if(!/^[A-Za-z0-9_.-]+\.(jpg|jpeg)$/i.test(name))throw new Error('Build returned no valid saved image reference. Check Review.');
+    sessionStorage.removeItem(pendingKey);uncertain=false;resultImage=name;savedRotation=payload.rotation_deg;$('result-rotation').value=savedRotation;$('result-rotation-value').textContent=savedRotation+'°';$('result-image').style.transform='';$('result-image').removeAttribute('src');$('result').hidden=false;$('result-reference').textContent=`Saved ${name}`;$('review-result').href='/review#'+encodeURIComponent(name);$('evidence').textContent=JSON.stringify(shot.evidence||{},null,2);$('build-status').textContent='Panorama saved. Originals preserved.';$('result-media-status').textContent='';
+    loadImage($('result-image'),'/shots/'+encodeURIComponent(name)).catch(error=>{$('result-media-status').textContent=error.message+' The saved result is available in Review.';});
+  }catch(error){if(error.definitive){sessionStorage.removeItem(pendingKey);uncertain=false;$('build-status').textContent='Panorama was not completed: '+error.message+(error.jobId?' Job '+error.jobId:'');}else{uncertain=true;$('build-status').textContent='The request ended without a confirmed result. '+error.message;}}
+  finally{busy=false;renderSelection();}
+};
+function renderGuide(){
+  $('guide').hidden=!guide;if(!guide)return;
+  guide.index=Math.max(0,Math.min(guide.frames.length-1,Number(guide.index)||0));guide.assigned=guide.assigned||{};
+  const frame=guide.frames[guide.index];
+  $('guide-target').textContent=`Target ${guide.index+1}/${guide.frames.length} · row ${Number(frame.row)+1}, column ${Number(frame.column)+1} · yaw ${Number(frame.yaw_deg).toFixed(1)}° · pitch ${Number(frame.pitch_deg).toFixed(1)}°`;
+  const assigned=Object.values(guide.assigned).filter(Boolean).length;
+  $('guide-progress').textContent=assigned+' targets have an assigned saved photo. '+(guide.frames.length>12?'This plan exceeds the 12-source build limit; build separate selected groups.':'Build at any time once at least 2 saved photos are selected.');
+  $('guide-photo').replaceChildren(new Option('Choose a saved photo',''));galleryNames.forEach(name=>$('guide-photo').append(new Option(name,name)));
+  $('guide-photo').value=guide.assigned[guide.index]||'';
+  $('guide-previous').disabled=guide.index===0;$('guide-next').disabled=guide.index===guide.frames.length-1;
+  sessionStorage.setItem('camera-autopilot-panorama-guide',JSON.stringify(guide));
+}
+$('guide-previous').onclick=()=>{if(guide){guide.index--;renderGuide();}};
+$('guide-next').onclick=()=>{if(guide){guide.index++;renderGuide();}};
+$('guide-assign').onclick=()=>{
+  if(!guide)return;const name=$('guide-photo').value;
+  if(!name||!galleryNames.includes(name)){$('guide-status').textContent='Choose an existing saved photo first.';return;}
+  if(Object.entries(guide.assigned).some(([index,value])=>Number(index)!==guide.index&&value===name)){$('guide-status').textContent='That photo is already assigned to another target. Each target needs its own saved frame.';return;}
+  guide.assigned[guide.index]=name;if(!selected.includes(name)&&selected.length<12)selected.push(name);
+  $('guide-status').textContent='Assigned '+name+'. Target placement remains your report; no capture or movement was requested.';
+  renderGuide();renderSelection();
+};
+$('guide-clear').onclick=()=>{if(!confirm('Clear the local guide assignments? Saved photos and panoramas remain.'))return;guide=null;sessionStorage.removeItem('camera-autopilot-panorama-guide');renderGuide();};
+$('result-rotation').oninput=()=>{
+  const rotation=Number($('result-rotation').value);$('result-rotation-value').textContent=rotation+'°';
+  $('result-image').style.transform='rotate('+(rotation-savedRotation)+'deg)';$('build-form').elements.rotation_deg.value=rotation;
+};
+$('result-rebuild').onclick=()=>{if(busy||uncertain||selected.length<2){$('result-media-status').textContent='Select 2–12 originals and resolve any pending build first.';return;}$('build-form').requestSubmit();};
+renderGuide();
+$('download').onclick=async()=>{if(!resultImage)return;$('download').disabled=true;try{await Autopilot.exportImage(apiFetch,resultImage,'Panorama',true);}catch(error){$('result-media-status').textContent=error.message;}finally{$('download').disabled=false;}};
+if(uncertain)$('build-status').textContent='A previous panorama request has no confirmed result in this page.';
+renderSelection();loadGallery();
+</script>
+</body>
+</html>

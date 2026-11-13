@@ -1,0 +1,59 @@
+name: CI
+
+# Camera-free regression gate. Runs scripts/test_safe.sh (pytest, physics self-checks,
+# MCP contract, launcher/USB-bridge security scripts, deterministic intent eval) and a
+# gitleaks scan. Never uploads captures, tokens or artifacts/; no camera is present.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test-safe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CAMERA_ENGINE: mock
+      OLLAMA_HOST: http://127.0.0.1:1
+      VISION_HOST: http://127.0.0.1:1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: System libraries for the pinned gphoto2 and OpenCV wheels
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgphoto2-dev libgl1 libglib2.0-0 ffmpeg exiftool
+      - name: Create the test virtualenv (direct list; the lock is pinned for macOS arm64)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r requirements-test.txt
+      - name: Launcher venv (run.sh expects backend/.venv; the root lock already provides it)
+        run: |
+          if [ ! -e backend/.venv ]; then ln -s ../.venv backend/.venv; fi
+          backend/.venv/bin/python -c "import fastapi, uvicorn; print('launcher venv ok')"
+      - name: Camera-free gate
+        run: bash scripts/test_safe.sh
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read # gitleaks lists PR commits before scanning
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+          GITLEAKS_ENABLE_SUMMARY: "false"

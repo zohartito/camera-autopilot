@@ -1,0 +1,25 @@
+[Unit]
+Description=Camera Autopilot local camera service
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=@BACKEND@
+EnvironmentFile=@ENVIRONMENT@
+ExecStart=@LAUNCHER@
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=45
+TimeoutStopSec=35
+TasksMax=256
+LimitNOFILE=4096
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+# USB must remain visible; do not add PrivateDevices=yes.
+
+[Install]
+WantedBy=default.target

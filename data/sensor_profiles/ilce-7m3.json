@@ -1,0 +1,138 @@
+{
+  "base_iso": 100,
+  "body": "ILCE-7M3",
+  "ceiling_threshold_ratio": 2.5,
+  "lens": "FE 24-105mm F4 G OSS",
+  "max_usable_iso": 3200,
+  "noise_table": [
+    {
+      "iso": 100,
+      "sigma_chroma_8bit": 0.2822,
+      "sigma_luma_8bit": 0.5771
+    },
+    {
+      "iso": 200,
+      "sigma_chroma_8bit": 0.3225,
+      "sigma_luma_8bit": 0.6648
+    },
+    {
+      "iso": 400,
+      "sigma_chroma_8bit": 0.3418,
+      "sigma_luma_8bit": 0.8455
+    },
+    {
+      "iso": 800,
+      "sigma_chroma_8bit": 0.3504,
+      "sigma_luma_8bit": 0.9864
+    },
+    {
+      "iso": 1600,
+      "sigma_chroma_8bit": 0.3534,
+      "sigma_luma_8bit": 1.1523
+    },
+    {
+      "iso": 3200,
+      "sigma_chroma_8bit": 0.3796,
+      "sigma_luma_8bit": 1.3283
+    },
+    {
+      "iso": 6400,
+      "sigma_chroma_8bit": 0.3505,
+      "sigma_luma_8bit": 1.9233
+    },
+    {
+      "iso": 12800,
+      "sigma_chroma_8bit": 0.3642,
+      "sigma_luma_8bit": 2.4752
+    },
+    {
+      "iso": 25600,
+      "sigma_chroma_8bit": 0.3298,
+      "sigma_luma_8bit": 3.2821
+    }
+  ],
+  "provenance": {
+    "cell_size_px": 64,
+    "cells": 24,
+    "date": "2026-09-07",
+    "exposure_tolerance_stops": 0.15,
+    "frames": [
+      {
+        "f_number": 5.6,
+        "file": "20260907-140800_capt_DSC00002.JPG",
+        "iso": 100,
+        "sha256": "2b32a39eca4bcdde7f513b6854b45dd9e6b08e1742165b71515cc6cde6532ffd",
+        "shutter_s": 0.07692308
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140809_capt_DSC00003.JPG",
+        "iso": 200,
+        "sha256": "855b19be1bb5338c7384e896c672b151883e25f8c915c33575124d8b83aaa3c2",
+        "shutter_s": 0.04
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140818_capt_DSC00004.JPG",
+        "iso": 400,
+        "sha256": "6e3b7ff1c55e14ee1b8c87ec9a0969903c6c2bf06da15e7e42e4d7777b703d43",
+        "shutter_s": 0.02
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140828_capt_DSC00005.JPG",
+        "iso": 800,
+        "sha256": "5ddab811047e64f8b89eea498b094438f1a9f9cae15441a1b84901e27d1024a2",
+        "shutter_s": 0.01
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140837_capt_DSC00006.JPG",
+        "iso": 1600,
+        "sha256": "9571ee488c0651f01d97c0ef2adf7a496600e84574a524499997eaf0ebae84e8",
+        "shutter_s": 0.005
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140847_capt_DSC00007.JPG",
+        "iso": 3200,
+        "sha256": "00b0f33073c9a92d8a48f64269140bcd029fd35a3cd3144b4065ceade36a1880",
+        "shutter_s": 0.0025
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140857_capt_DSC00008.JPG",
+        "iso": 6400,
+        "sha256": "c85db36a0010216b11f9683aa5e2e9fc742505c62bc4fdcddfa53413e7f822cf",
+        "shutter_s": 0.00125
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140907_capt_DSC00009.JPG",
+        "iso": 12800,
+        "sha256": "21aa10f210024beb2f5facb31a4a41b1bbd5d8644af4e0e7177ceba42a301f06",
+        "shutter_s": 0.000625
+      },
+      {
+        "f_number": 5.6,
+        "file": "20260907-140917_capt_DSC00010.JPG",
+        "iso": 25600,
+        "sha256": "79c5d884e585480223f6b52c29db7edc04dcf2c11f8b24030737aaf38a8d49fe",
+        "shutter_s": 0.0003125
+      }
+    ],
+    "lens": "FE 24-105mm F4 G OSS",
+    "limitations": "JPEG tone-curve and in-camera noise-reduction dependent; not RAW read noise, dynamic range, or lens MTF. Comparable only within this body and JPEG setting.",
+    "method": "jpeg_flat_patch_residual",
+    "midtone_window_8bit": [
+      60,
+      190
+    ]
+  },
+  "sensor": {
+    "height_mm": 23.8,
+    "height_px": 4000,
+    "width_mm": 35.6,
+    "width_px": 6000
+  }
+}

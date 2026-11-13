@@ -1,0 +1,176 @@
+{
+  "_about": "Golden eval set for the intent brain (backend/intent_brain.py). Two independent suites.",
+  "_suites": {
+    "deterministic": "Cases that MUST hold for ANY model output. They exercise the DETERMINISTIC layer only — _coerce (validate + fill), _fallback (keyword map), and the 60..180 brightness clamp — by feeding _coerce a synthetic 'model reply' and asserting the guaranteed post-conditions. No Ollama, no network: these run anywhere and gate the deterministic contract the rest of the system relies on.",
+    "model_graded": "Outcome-graded cases for the LIVE model. They call interpret() for real and assert the result falls within an ACCEPTABLE RANGE / bucket (never an exact value), because two good models can disagree on the precise number. Requires a reachable Ollama (OLLAMA_HOST / OLLAMA_MODEL); skipped automatically when the brain falls back to the keyword map, so we NEVER score fabricated or fallback outputs as if they were the model."
+  },
+
+  "clamp_bounds": {"low": 60.0, "high": 180.0},
+
+  "deterministic": [
+    {
+      "id": "clamp_over_max",
+      "why": "Any model that returns an absurdly high brightness must be clamped to the ceiling.",
+      "model_reply": {"target_brightness": 9999, "feel": "blew it out", "why": "test", "white_balance": null},
+      "intent": "bright airy",
+      "expect": {"target_brightness": 180.0}
+    },
+    {
+      "id": "clamp_under_min",
+      "why": "A negative / too-dark brightness must be clamped to the floor.",
+      "model_reply": {"target_brightness": -50, "feel": "too dark", "why": "test", "white_balance": null},
+      "intent": "moody noir",
+      "expect": {"target_brightness": 60.0}
+    },
+    {
+      "id": "clamp_in_range_passthrough",
+      "why": "A valid in-range brightness must pass through unchanged.",
+      "model_reply": {"target_brightness": 123, "feel": "neutral", "why": "test", "white_balance": null},
+      "intent": "natural snapshot",
+      "expect": {"target_brightness": 123.0}
+    },
+    {
+      "id": "clamp_string_number",
+      "why": "Models often return numbers as strings; '140' must coerce to 140.0, still in range.",
+      "model_reply": {"target_brightness": "140", "feel": "x", "why": "y", "white_balance": null},
+      "intent": "bright",
+      "expect": {"target_brightness": 140.0}
+    },
+    {
+      "id": "bad_brightness_falls_back_moody",
+      "why": "Non-numeric brightness must fall back to the keyword-map target for the intent (moody -> 90).",
+      "model_reply": {"target_brightness": "very dark", "feel": "x", "why": "y", "white_balance": null},
+      "intent": "moody noir film still",
+      "expect": {"target_brightness": 90.0}
+    },
+    {
+      "id": "bad_brightness_falls_back_bright",
+      "why": "Non-numeric brightness with a 'bright' intent falls back to the bright target (140).",
+      "model_reply": {"target_brightness": null, "feel": "x", "why": "y", "white_balance": null},
+      "intent": "bright and airy for instagram",
+      "expect": {"target_brightness": 140.0}
+    },
+    {
+      "id": "missing_brightness_falls_back_neutral",
+      "why": "A reply missing target_brightness entirely falls back to the neutral target (112).",
+      "model_reply": {"feel": "x", "why": "y", "white_balance": null},
+      "intent": "just a normal photo",
+      "expect": {"target_brightness": 112.0}
+    },
+    {
+      "id": "bad_brightness_falls_back_cool_blue",
+      "why": "Cool/blue describes color temperature, not necessarily darkness, so fallback stays mid.",
+      "model_reply": {"target_brightness": "blue", "feel": "x", "why": "y", "white_balance": null},
+      "intent": "cool blue winter morning",
+      "expect": {"target_brightness": 108.0}
+    },
+    {
+      "id": "wb_warm_kept",
+      "why": "A valid white_balance ('warm') must be preserved.",
+      "model_reply": {"target_brightness": 100, "feel": "x", "why": "y", "white_balance": "warm"},
+      "intent": "golden hour",
+      "expect": {"white_balance": "warm"}
+    },
+    {
+      "id": "wb_cool_kept",
+      "why": "A valid white_balance ('cool') must be preserved.",
+      "model_reply": {"target_brightness": 100, "feel": "x", "why": "y", "white_balance": "cool"},
+      "intent": "cool blue morning",
+      "expect": {"white_balance": "cool"}
+    },
+    {
+      "id": "wb_garbage_nulled",
+      "why": "Any white_balance outside {warm, cool} must be dropped to null (never passed to the camera).",
+      "model_reply": {"target_brightness": 100, "feel": "x", "why": "y", "white_balance": "ultraviolet"},
+      "intent": "weird",
+      "expect": {"white_balance": null}
+    },
+    {
+      "id": "feel_blank_falls_back",
+      "why": "A blank 'feel' must be replaced by the keyword-map phrase, never left empty.",
+      "model_reply": {"target_brightness": 100, "feel": "   ", "why": "y", "white_balance": null},
+      "intent": "moody noir",
+      "expect": {"feel": "kept it moody"}
+    },
+    {
+      "id": "feel_stripped",
+      "why": "A surrounding-whitespace 'feel' must be stripped, not discarded.",
+      "model_reply": {"target_brightness": 100, "feel": "  kept it cinematic  ", "why": "y", "white_balance": null},
+      "intent": "cinematic",
+      "expect": {"feel": "kept it cinematic"}
+    }
+  ],
+
+  "model_graded": [
+    {
+      "id": "moody_noir",
+      "vibe": "moody noir film still",
+      "why": "Moody/noir should pull the exposure darker than neutral.",
+      "brightness_range": [60, 105],
+      "wb_allowed": ["warm", null]
+    },
+    {
+      "id": "dark_dramatic",
+      "vibe": "dark and dramatic portrait",
+      "why": "Dark + dramatic -> low-key exposure.",
+      "brightness_range": [60, 105],
+      "wb_allowed": ["warm", "cool", null]
+    },
+    {
+      "id": "bright_airy",
+      "vibe": "bright and airy for instagram",
+      "why": "Bright/airy -> brighter than neutral.",
+      "brightness_range": [128, 180],
+      "wb_allowed": ["cool", null]
+    },
+    {
+      "id": "clean_product",
+      "vibe": "clean bright product shot on white",
+      "why": "Clean product-on-white -> bright, high-key. WB unconstrained (white backgrounds are shot warm OR cool depending on the light), so only the brightness DIRECTION is graded.",
+      "brightness_range": [125, 180],
+      "wb_allowed": ["warm", "cool", null]
+    },
+    {
+      "id": "golden_hour",
+      "vibe": "golden hour warm glow",
+      "why": "Golden hour reads warm; brightness mid-ish or lower.",
+      "brightness_range": [80, 140],
+      "wb_allowed": ["warm"]
+    },
+    {
+      "id": "cool_winter",
+      "vibe": "cool blue winter morning",
+      "why": "Cool blue morning -> cool white balance. Brightness is graded loosely (a winter morning can read dim-and-moody or bright-and-crisp); the load-bearing assertion is the COOL white balance.",
+      "brightness_range": [80, 180],
+      "wb_allowed": ["cool"]
+    },
+    {
+      "id": "freeze_action",
+      "vibe": "freeze my kid running around",
+      "why": "Action freeze -> needs light; neutral-to-bright, WB unconstrained.",
+      "brightness_range": [100, 180],
+      "wb_allowed": ["warm", "cool", null]
+    },
+    {
+      "id": "neutral_snapshot",
+      "vibe": "just take a normal photo",
+      "why": "A plain snapshot should sit near neutral, not pushed either way.",
+      "brightness_range": [100, 135],
+      "wb_allowed": ["warm", "cool", null]
+    },
+    {
+      "id": "high_key_editorial",
+      "vibe": "high-key fashion editorial, very bright",
+      "why": "Explicitly very bright -> high end of the range.",
+      "brightness_range": [135, 180],
+      "wb_allowed": ["warm", "cool", null]
+    },
+    {
+      "id": "low_key_still_life",
+      "vibe": "low-key shadowy still life",
+      "why": "Low-key shadowy -> dark end of the range.",
+      "brightness_range": [60, 100],
+      "wb_allowed": ["warm", "cool", null]
+    }
+  ]
+}

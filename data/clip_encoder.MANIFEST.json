@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "model": "CLIP ViT-B-32",
+  "pretrained": "laion2b_s34b_b79k",
+  "repository": "laion/CLIP-ViT-B-32-laion2B-s34B-b79K",
+  "revision": "1a25a446712ba5ee05982a381eed697ef9b435cf",
+  "filename": "open_clip_pytorch_model.bin",
+  "bytes": 605219813,
+  "sha256": "1bd3c7172de5b207ceac554f5ab5266166f3b9baccc9af5989bc801016d080ad",
+  "provision": "backend/.venv-ml/bin/python tools/prepare_taste_runtime.py",
+  "verification": "Downloaded pinned publisher artifact and matched publisher LFS SHA-256 on 2026-09-05. Runtime verifies the same digest before model loading.",
+  "distribution": "Local development artifact only; not published by this project. Release terms remain a separate review."
+}

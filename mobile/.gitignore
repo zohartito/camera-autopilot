@@ -1,0 +1,10 @@
+# Capacitor / native build artifacts
+node_modules/
+# Per-machine backend target written by `npm run backend:set -- <url>`.
+.backend-url
+# ios/ and android/ are committed; generated native files are excluded by
+# ios/.gitignore and android/.gitignore. Never re-run `cap add` for either.
+.DS_Store
+artifacts/ios-simulator/*.log
+artifacts/ios-simulator/*.png
+artifacts/ios-simulator/*.json

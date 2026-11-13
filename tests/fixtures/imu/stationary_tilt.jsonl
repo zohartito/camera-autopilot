@@ -1,0 +1,4 @@
+{"monotonic_ns":0,"gyro_rad_s":[0,0,0],"accel_m_s2":[9.81,0,0]}
+{"monotonic_ns":10000000,"gyro_rad_s":[0,0,0],"accel_m_s2":[9.81,0,0]}
+{"monotonic_ns":20000000,"gyro_rad_s":[0,0,0],"accel_m_s2":[9.81,0,0]}
+{"monotonic_ns":30000000,"gyro_rad_s":[0,0,0],"accel_m_s2":[9.81,0,0]}

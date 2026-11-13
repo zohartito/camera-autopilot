@@ -1,0 +1,14 @@
+# Camera-control role (docs/RUNTIME_SPLIT_2026-09-28.md): API, gphoto2, metering, focus evidence.
+# No mcp or astral: only server.py (the MCP server) uses them; it opens the camera itself
+# and does not run on the puck.
+# No torch/open_clip here: the control process refuses them (backend/runtime_roles.py).
+fastapi
+uvicorn[standard]
+defusedxml
+gphoto2
+pillow
+numpy
+# Headless build: the board has no display; the cv2 API used here is identical.
+opencv-python-headless
+# RAW develop runs in control as a bounded child (isolated_raw.py spawns this venv's python).
+rawpy

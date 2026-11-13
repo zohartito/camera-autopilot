@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "artifact": "data/taste_index.npz",
+  "status": "COMPLETE — full Wikimedia Quality Images corpus",
+  "photos_embedded": 233785,
+  "rows_harvested": 233788,
+  "bytes": 697615942,
+  "sha256": "949d4bf79d42345df73a5c4eee886a4b4a6383a06e26b9abd20bb0d7a9531128",
+  "build_finished": "2026-07-01",
+  "embedding_model": "CLIP ViT-B-32 (open_clip)",
+  "built_on": "a desktop PC (RTX 4070 Ti SUPER), self-restarting embed_index.py build loop",
+  "builder": "backend/embed_index.py build  (resumable; checkpoints every 200 photos)",
+  "consumed_by": "backend/brain.py -> embed_index.recommend(image_path) — k-NN taste retrieval fused with the authoritative physics layer",
+  "arrays": {
+    "embeddings": {
+      "shape": [
+        233785,
+        512
+      ],
+      "dtype": "float32"
+    },
+    "iso": {
+      "shape": [
+        233785
+      ],
+      "dtype": "int64"
+    },
+    "f_number": {
+      "shape": [
+        233785
+      ],
+      "dtype": "float64"
+    },
+    "shutter_s": {
+      "shape": [
+        233785
+      ],
+      "dtype": "float64"
+    },
+    "focal_mm": {
+      "shape": [
+        233785
+      ],
+      "dtype": "float64"
+    },
+    "titles": {
+      "shape": [
+        233785
+      ],
+      "dtype": "<U226"
+    }
+  },
+  "sources": {
+    "wikimedia_quality_images": "233,788 harvested rows — the complete flat 'Quality images' category (its ceiling)",
+    "flickr": "harvester built (backend/harvest_flickr.py, largest-real-size URLs) but not yet run — optional path toward ~450k; needs FLICKR_API_KEY"
+  },
+  "known_quality_notes": [
+    {
+      "code": "focal_mm_unknown",
+      "count": 1,
+      "title": "File:Detail facade Engel Apotheke - Vienna.jpg",
+      "meaning": "The source EXIF reports focal_mm=0 (unknown). The validator warns but does not classify this single legacy metadata row as archive corruption."
+    }
+  ],
+  "why_not_in_git": "697 MB regenerable data blob; GitHub rejects files >100 MB. Gitignored (see .gitignore). The verified blob is mirrored on the build PC and the Mac that runs the brain.",
+  "distribution": {
+    "status": "not_published",
+    "intended_release_tag": "taste-index-v1",
+    "note": "No GitHub Release with this tag existed when rechecked on 2026-07-27. Do not claim remote distribution until an owner explicitly publishes and verifies the 697 MB asset."
+  },
+  "verify": "python3 backend/check_taste_index.py /path/to/taste_index.npz --manifest data/taste_index.MANIFEST.json --benchmark",
+  "ip_note": "Embeddings + numeric EXIF settings + titles/URLs only (uncopyrightable facts / metadata). No photo pixels are stored or redistributed. Commercial-OK licenses only at harvest time.",
+  "context": "Arsenal 2 trained on ~200k images; this corpus exceeds that at 233,785."
+}

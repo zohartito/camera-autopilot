@@ -1,0 +1,4 @@
+# Use gitleaks' built-in rules. Without this block a config file replaces them and the scan
+# checks nothing.
+[extend]
+useDefault = true

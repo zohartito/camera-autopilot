@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App-local theme colors referenced by values/styles.xml. Match the web client. -->
+    <color name="colorPrimary">#0B0B0D</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#E8B84B</color>
+</resources>

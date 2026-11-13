@@ -1,0 +1,17 @@
+# Camera Autopilot — monorepo dependencies.
+# The intent brain (backend/intent_brain.py) talks to a LOCAL Ollama model via stdlib urllib —
+# no API billing; configure with OLLAMA_HOST / OLLAMA_MODEL.
+
+# App + API
+fastapi
+uvicorn[standard]
+defusedxml
+
+# Camera engine (sonyremote/) + MCP server (server.py)
+gphoto2
+pillow
+astral
+mcp[cli]==2.3.0  # server.py migrated to the MCP 2 MCPServer API (FastMCP renamed/removed)
+
+# Optional — only for tests/probe_raw_control.py (raw-PTP diagnostics)
+# pyusb

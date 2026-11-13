@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0b0d" />
+<title>Review</title>
+<style>
+  [hidden] { display: none !important; }
+  :root {
+    --bg: #0b0b0d;
+    --surface: #15151a;
+    --ink: #f3f3f5;
+    --muted: #8a8a93;
+    --accent: #e8b84b;       /* warm shutter gold */
+    --line: #26262e;
+    --ok: #5fd0a8;
+    --warn: #e88b6b;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink); overscroll-behavior-y: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: calc(var(--safe-top) + 18px) 18px calc(var(--safe-bottom) + 28px);
+  }
+  header { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 20px; }
+  header a.back { color: var(--muted); text-decoration: none; font-size: 13px; border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; display: inline-flex; align-items: center; min-height: 44px; }
+  header a.back:active { color: var(--ink); border-color: #3a3a46; }
+  header .title { margin-left: auto; }
+
+  .gallery { display: flex; flex-direction: column; gap: 18px; max-width: 520px; margin: 0 auto; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .card img { width: 100%; display: block; background: #000; object-fit: cover; aspect-ratio: 3 / 2; height: auto; }
+  .card .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .summary-row { display: flex; align-items: center; gap: 9px; }
+  .summary { font-size: 16px; font-weight: 600; line-height: 1.35; flex: 1; }
+
+  .badge { font-size: 13px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .badge.up { color: var(--ok); border-color: rgba(95,208,168,.4); background: rgba(95,208,168,.12); }
+  .badge.down { color: var(--warn); border-color: rgba(232,139,107,.4); background: rgba(232,139,107,.12); }
+
+  .intent { color: var(--muted); font-size: 13px; font-style: italic; }
+  .help.delivery-warning { color: var(--warn); }
+
+  .why { color: var(--muted); font-size: 14px; line-height: 1.55; display: none; border-top: 1px solid var(--line); padding-top: 10px; }
+  .why.show { display: block; }
+  .badge.demo { color: var(--muted); border: 1px solid var(--muted); border-radius: 6px; padding: 1px 6px; font-size: 12px; }
+  .why .settings { margin-top: 8px; color: var(--ink); font-size: 13px; opacity: .8; }
+  .why .settings code { color: var(--accent); }
+
+  .row { display: flex; gap: 10px; align-items: center; }
+  .link { background: none; border: none; color: var(--muted); font-size: 14px; text-decoration: underline; cursor: pointer; padding: 0; }
+  .share { margin-left: auto; background: transparent; border: 1px solid #3a3a46; color: var(--ink); border-radius: 11px; padding: 8px 15px; font-size: 14px; cursor: pointer; }
+  .share:active { transform: scale(.96); }
+  /* Share and Save lead the card; Delete sits on the secondary row, pushed to its far end and
+     away from Save (a phone tap near Save must never land on Delete). */
+  .actions-primary button { flex: 1; min-height: 44px; font-weight: 600; }
+  .actions-primary .share { margin-left: 0; }
+  .row-danger { justify-content: flex-end; }
+  .row .delete { border-color: rgba(232,139,107,.5); }
+  .card .row button { min-height: 44px; }
+
+  .empty, .error { color: var(--muted); text-align: center; font-size: 15px; line-height: 1.6; padding: 60px 20px; max-width: 360px; margin: 0 auto; }
+  .empty a, .error a { color: var(--accent); }
+  button, input, select, textarea {font:inherit;color:var(--ink);background:var(--surface);border:1px solid #3a3a46;border-radius:9px;padding:8px}
+  button {cursor:pointer;min-height:44px;min-width:44px} button:disabled {opacity:.5;cursor:wait}
+  input, select {min-height:44px}
+  .empty a, .error a {display:inline-block;min-height:44px;line-height:44px}
+  /* 44 px disclosure rows; line-height keeps the native marker (display:flex would drop it). */
+  summary {min-height:44px;line-height:44px;cursor:pointer}
+  .row {flex-wrap:wrap} .tools {max-width:520px;margin:0 auto 20px;display:grid;gap:12px}
+  .tools p, .help {font-size:13px;color:var(--muted);line-height:1.5}
+  #card-history-files {list-style:none;display:grid;gap:8px;margin:8px 0 0}
+  #card-history-files button {width:100%;text-align:left;overflow-wrap:anywhere}
+  .constraint-card {padding:10px;border:1px solid var(--line);border-radius:9px;margin-top:8px;font-size:13px}
+  .constraint-card small {display:block;color:var(--accent);margin:4px 0}
+  .constraint-card p {margin:4px 0}
+  .constraint-card small {display:inline-block;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:12px}
+  .constraint-card[data-status="ok"] small {color:var(--ok)}
+  .constraint-card[data-status="warning"] small, .constraint-card[data-status="limited"] small {color:var(--warn)}
+  .constraint-card details p {color:var(--muted)}
+  .constraint-card details summary {color:var(--muted)}
+  .editor {display:grid;gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px}
+  .editor canvas {width:100%;max-height:320px;object-fit:contain;background:#000}.editor[hidden] {display:none}.editor label {display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .editor input[type=number] {width:90px}.editor input[type=range] {width:60%}
+  .notice {min-height:20px;font-size:14px;color:var(--ok);white-space:pre-wrap}
+  textarea {width:100%;min-height:64px}.danger {color:var(--warn)}
+  dialog {margin:auto;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:12px;color:var(--ink);max-width:96vw;max-height:96dvh}
+  dialog img {display:block;max-width:90vw;max-height:80dvh;object-fit:contain} dialog::backdrop {background:#000c}
+</style>
+</head>
+<body>
+  <header>
+    <span class="title">Review</span>
+    <a class="back" href="/panorama">Panorama</a>
+    <a class="back" href="/">← Camera</a>
+  </header>
+
+  <section class="tools">
+    <details><summary>Privacy &amp; storage</summary>
+      <p>Photos, edits, thumbnails and feedback stay on this backend. Photo deletion removes managed shot files; feedback and evidence logs have separate retention. Sharing and Save to Photos create copies outside Autopilot; deleting here cannot remove those copies.</p>
+      <label for="retention">Keep local photos</label>
+      <select id="retention"><option value="7">7 days</option><option value="30">30 days</option><option value="90">90 days</option><option value="">Until I delete them</option></select>
+      <button id="save-retention">Save policy</button>
+      <p>Retention applies to local managed captures. Original camera-card files are unaffected.</p>
+      <button id="delete-all" class="danger">Delete all managed local photos</button>
+    </details>
+    <details id="card-history"><summary>Camera card (read-only)</summary>
+      <p>Browse files on the selected camera card, including photos taken without this app. Listing and import are read-only — this page never deletes from the card. Full-resolution zoom opens a local JPEG copy; RAW/ARW can be imported but is not shown as a photograph here.</p>
+      <p id="card-history-camera" class="help">Choose the exact camera on the Camera page first.</p>
+      <button id="card-history-list" type="button">List card</button>
+      <p id="card-history-status" class="notice" role="status" aria-live="polite"></p>
+      <ul id="card-history-files"></ul>
+    </details>
+    <p id="page-notice" class="notice" role="status" aria-live="polite"></p>
+  </section>
+  <main id="gallery" class="gallery"></main>
+  <dialog id="viewer"><button id="close-viewer">Close full image</button><img alt="Full saved photograph" /></dialog>
+
+<script src="/client.js?v=20260929a"></script>
+<script src="/workflows.js?v=20261003c"></script>
+<script>
+  const galleryEl = document.getElementById('gallery');
+  const TOKEN_KEY = 'camera-autopilot-token';
+  let apiToken = Autopilot.deviceStore.read(TOKEN_KEY);
+  const objectUrls = new Set();
+  const pageNotice = document.getElementById('page-notice');
+  function esc(value) {
+    return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  async function apiFetch(url, options={}, retry=true) {
+    const headers = {...options.headers, 'X-Camera-Autopilot-Token':apiToken};
+    const res = await fetch(url, {...options, headers});
+    if (res.status === 401 && retry) {
+      const token = window.prompt('Camera token');
+      if (token) {
+        apiToken = token.trim(); Autopilot.deviceStore.write(TOKEN_KEY,apiToken);
+        return apiFetch(url,options,false);
+      }
+    }
+    return res;
+  }
+  async function request(url, method='GET', body) {
+    const res = await apiFetch(url,{method,headers:{'Content-Type':'application/json'},body:body === undefined ? undefined : JSON.stringify(body)});
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok) throw new Error(typeof data.detail === 'string' ? data.detail : data.detail?.message || data.detail?.error || `Request failed (${res.status}).`);
+    return data;
+  }
+  async function imageUrl(path) {
+    const response = await apiFetch(path);
+    if (!response.ok) throw new Error('Could not load image.');
+    const url = URL.createObjectURL(await response.blob()); objectUrls.add(url); return url;
+  }
+  function revokeAll() {objectUrls.forEach(url=>URL.revokeObjectURL(url)); objectUrls.clear();}
+  window.addEventListener('pagehide',revokeAll);
+  const observer = new IntersectionObserver(entries => entries.forEach(async entry => {
+    if (!entry.isIntersecting) return;
+    observer.unobserve(entry.target);
+    try {entry.target.src = await imageUrl(entry.target.dataset.image);}
+    catch (_) {entry.target.alt = 'Thumbnail unavailable — tap to retry full image';}
+  }), {rootMargin:'250px'});
+  function makeCard(shot) {
+    const image = shot.image.split('/').pop();
+    const encoded = encodeURIComponent(image);
+    const card = document.createElement('article');card.className='card';card.id=image;
+    card.innerHTML=`<img alt="${esc(Autopilot.summaryWithoutDeliveryWarning(shot) || 'Shot')}" loading="lazy" data-image="/thumbnails/${encoded}" tabindex="0" role="button" aria-label="Open full saved photograph" />
+      <div class="body"><div class="summary-row"><strong class="summary">${esc(Autopilot.summaryWithoutDeliveryWarning(shot) || 'Shot')}</strong>${shot.engine === 'mock' ? '<span class="badge demo">Demo — mock engine, not a photograph</span>' : ''}<span class="badge">${shot.verdict === 'up' ? 'Liked' : shot.verdict === 'down' ? 'Needs work' : ''}</span></div>
+      ${shot.intent ? `<p class="intent">“${esc(shot.intent)}”</p>` : ''}
+      ${Autopilot.deliveryWarning(shot) ? `<p class="help delivery-warning" role="note">${esc(Autopilot.deliveryWarning(shot))}</p>` : ''}
+      ${shot.mood ? `<p>Requested recipe: ${esc(shot.mood.name || 'Custom recipe')}. Recipe outcome has not been verified from the photo.</p><p>${esc(Autopilot.whiteBalanceEvidence(shot))}</p>` : ''}
+      <div class="row actions-primary"><button class="share">Share</button><button class="save">${Autopilot.nativeMedia() ? 'Save to Photos' : 'Download'}</button></div>
+      <div class="row"><button class="why-toggle">Why?</button><button class="edit-toggle">Edit copy</button><button class="develop-toggle">Develop copy</button></div>
+      <div class="row row-danger"><button class="delete danger">Delete</button></div>
+      <div class="why"><p>${esc(shot.why || 'No extra notes.')}</p><p class="settings">${esc(Object.entries(shot.settings || {}).map(([k,v])=>`${k}: ${v}`).join(' · '))}</p><div class="cards"></div><small>Shot reference: ${esc(image)}</small></div>
+      <form class="editor" hidden><strong>Save a new JPEG copy</strong><canvas aria-label="Exposure and crop preview"></canvas><p class="help">Preview at thumbnail resolution; the saved copy uses the full image.</p><label>Exposure <input name="exposure" type="range" min="-3" max="3" step="0.1" value="0" /><output>0 EV</output></label>
+      <p class="help">Crop boundaries as percentages of the image. JPEG edits cannot restore clipped highlights. The original is preserved.</p>
+      <label>Left % <input name="left" type="number" min="0" max="99" value="0" /></label><label>Top % <input name="top" type="number" min="0" max="99" value="0" /></label><label>Right % <input name="right" type="number" min="1" max="100" value="100" /></label><label>Bottom % <input name="bottom" type="number" min="1" max="100" value="100" /></label><button type="submit">Save edited copy</button></form>
+      <form class="developer editor" hidden><strong>Develop a new JPEG copy</strong>
+      <p class="help">Local tone development from the saved JPEG. Adjust exposure and compress highlights; this cannot reconstruct clipped detail or develop RAW. The original is preserved.</p>
+      <label>Exposure (EV) <input name="exposure_ev" type="number" min="-3" max="3" step="0.1" value="0" /></label>
+      <label>Highlight compression <input name="highlights" type="number" min="0" max="1" step="0.05" value="0.5" /></label>
+      <label>Strength <input name="strength" type="number" min="0" max="1" step="0.05" value="0.5" /></label>
+      <label><input name="include_dng" type="checkbox" /> Also save a linear DNG copy from this JPEG</label>
+      <p class="help">The optional 16-bit DNG preserves developed JPEG samples in a linear container. It is not sensor RAW, neural processing or newly recovered precision. Downloads appear only for saved, verified outputs.</p>
+      <button type="submit">Save developed copy</button></form>
+      ${shot.development || shot.evidence?.outputs ? `<details><summary>Development evidence</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px">${esc(JSON.stringify(shot.development || shot.evidence,null,2))}</pre></details>` : ''}
+      ${shot.evidence?.stack_policy?.session_id ? `<p class="help">Stack ${esc(shot.evidence.stack_policy.status || 'receipt')}: ${esc(shot.evidence.stack_policy.decision?.reason || '')}</p><a href="/?session=${esc(shot.evidence.stack_policy.session_id)}">Inspect stack session and source frames</a>` : ''}
+      <div class="row development-downloads" hidden><button class="download-tiff" hidden>Download linear TIFF</button><button class="download-dng" hidden>Download verified linear DNG</button></div>
+      <div class="row"><span>Feedback on this photo</span><button class="up" aria-label="Good photo">👍</button><button class="down" aria-label="Photo needs work">👎</button></div>
+      <textarea class="comment" maxlength="2000" placeholder="What worked or should change?" aria-label="Photo feedback comment"></textarea><button class="send-comment">Save comment</button>
+      <p class="notice" role="status" aria-live="polite"></p></div>`;
+    const notice=card.querySelector('.notice');
+    async function action(button, operation) {
+      button.disabled=true;notice.textContent='Working…';
+      try {notice.textContent=await operation() || 'Done';}
+      catch(e) {notice.textContent=e.name==='AbortError' ? 'Cancelled' : e.message;}
+      finally {button.disabled=false;}
+    }
+    const img=card.querySelector('img');observer.observe(img);
+    async function openFull() {
+      try {const dialog=document.getElementById('viewer');dialog.querySelector('img').src=await imageUrl('/shots/'+encoded);dialog.showModal();}
+      catch(e) {notice.textContent=e.message;}
+    }
+    img.onclick=openFull;img.onkeydown=e=>{if(e.key==='Enter')openFull();};
+    card.querySelector('.why-toggle').onclick=async()=>{
+      const why=card.querySelector('.why');why.classList.toggle('show');
+      if(why.classList.contains('show')) {
+        try {const data=shot.cards || await request('/shots/'+encoded+'/cards');Autopilot.renderCards(card.querySelector('.cards'),data.cards || data);}
+        catch(e) {notice.textContent='Decision cards unavailable: '+e.message;}
+      }
+    };
+    const editor=card.querySelector('.editor');
+    function previewEdit() {
+      if (!img.complete || !img.naturalWidth) return;
+      const values=['left','top','right','bottom'].map(key=>Number(editor.elements[key].value)/100);
+      const [left,top,right,bottom]=values;
+      if (!(left>=0 && top>=0 && right<=1 && bottom<=1 && left<right && top<bottom)) return;
+      const canvas=editor.querySelector('canvas');
+      canvas.width=Math.max(1,Math.round(img.naturalWidth*(right-left)));
+      canvas.height=Math.max(1,Math.round(img.naturalHeight*(bottom-top)));
+      const context=canvas.getContext('2d',{willReadFrequently:true});
+      context.drawImage(img,left*img.naturalWidth,top*img.naturalHeight,canvas.width,canvas.height,0,0,canvas.width,canvas.height);
+      const exposure=Number(editor.elements.exposure.value);
+      editor.querySelector('output').textContent=exposure+' EV';
+      if (!exposure) return;
+      const lut=Array.from({length:256},(_,value)=>{
+        const encoded=value/255;
+        const linear=Math.min(1,(encoded<=.04045?encoded/12.92:((encoded+.055)/1.055)**2.4)*2**exposure);
+        return Math.round(255*(linear<=.0031308?linear*12.92:1.055*linear**(1/2.4)-.055));
+      });
+      const pixels=context.getImageData(0,0,canvas.width,canvas.height);
+      for(let i=0;i<pixels.data.length;i+=4){pixels.data[i]=lut[pixels.data[i]];pixels.data[i+1]=lut[pixels.data[i+1]];pixels.data[i+2]=lut[pixels.data[i+2]];}
+      context.putImageData(pixels,0,0);
+    }
+    card.querySelector('.edit-toggle').onclick=()=>{editor.hidden=!editor.hidden;previewEdit();};
+    editor.addEventListener('input',previewEdit);
+    img.addEventListener('load',()=>{if(!editor.hidden)previewEdit();});
+    editor.onsubmit=e=>{e.preventDefault();action(editor.querySelector('button'),async()=>{
+      const data=await request('/edit','POST',{image,exposure_ev:Number(editor.elements.exposure.value),crop:['left','top','right','bottom'].map(key=>Number(editor.elements[key].value)/100)});
+      location.hash=data.image;await loadGallery();return 'Edited copy saved; original preserved.';
+    });};
+    const tiffPath=shot.linear_tiff_url || shot.evidence?.linear_tiff_url;
+    const dngPath=shot.linear_dng_url || shot.evidence?.linear_dng_url;
+    const dngVerified=shot.evidence?.linear_dng?.verification?.status==='verified' && shot.evidence?.linear_dng?.sensor_raw===false;
+    [['download-tiff',tiffPath],['download-dng',dngVerified?dngPath:null]].forEach(([className,path])=>{
+      if(!path)return;const button=card.querySelector('.'+className);button.hidden=false;card.querySelector('.development-downloads').hidden=false;
+      button.onclick=()=>action(button,async()=>{await AutopilotWorkflows.downloadDevelopment(apiFetch,path);return 'Download requested. This is developed JPEG data, not sensor RAW.';});
+    });
+    const developer=card.querySelector('.developer');
+    card.querySelector('.develop-toggle').onclick=()=>{developer.hidden=!developer.hidden;};
+    developer.onsubmit=e=>{e.preventDefault();action(developer.querySelector('button'),async()=>{
+      const data=await request('/develop','POST',{image,exposure_ev:Number(developer.elements.exposure_ev.value),strength:Number(developer.elements.strength.value),highlights:Number(developer.elements.highlights.value),include_dng:developer.elements.include_dng.checked});
+      location.hash=data.image;await loadGallery();
+      pageNotice.textContent='Developed copy saved; original preserved. '+(data.evidence ? 'Processing evidence recorded.' : '');
+      return 'Developed copy saved; original preserved.';
+    });};
+    ['share','save'].forEach(kind=>{const button=card.querySelector('.'+kind);button.onclick=()=>action(button,async()=>{
+      const outcome=await Autopilot.exportImage(apiFetch,image,shot.summary,kind==='save');
+      if(kind==='save') {
+        if(outcome.downloaded) return 'Download requested';
+        return Autopilot.photosSaveConfirmed(outcome) ? 'Saved to Photos' : Autopilot.photosSaveStatusText(outcome);
+      }
+      return outcome.cancelled ? 'Cancelled' : outcome.downloaded ? 'Download requested' : outcome.shared ? 'Share completed' : 'Share sheet dismissed';
+    });});
+    card.querySelector('.delete').onclick=e=>{
+      if(!confirm('Delete this local image and its managed local metadata? Camera-card and exported copies remain.'))return;
+      action(e.target,async()=>{await request('/photos/'+encoded,'DELETE');await loadGallery();return 'Deleted';});
+    };
+    async function vote(button,verdict) {return action(button,async()=>{
+      await request('/feedback','POST',{image,intent:shot.intent || null,verdict,comment:card.querySelector('.comment').value || null});
+      card.querySelector('.badge').textContent=verdict==='up'?'Liked':verdict==='down'?'Needs work':'Comment saved';return 'Feedback saved';
+    });}
+    card.querySelector('.up').onclick=e=>vote(e.target,'up');
+    card.querySelector('.down').onclick=e=>vote(e.target,'down');
+    card.querySelector('.send-comment').onclick=e=>{
+      if(!card.querySelector('.comment').value.trim()){notice.textContent='Write a comment first.';return;}
+      vote(e.target,'comment');
+    };
+    return card;
+  }
+  async function loadGallery() {
+    observer.disconnect();revokeAll();galleryEl.replaceChildren();
+    try {
+      const shots=await request('/gallery');
+      if(!shots.length){galleryEl.innerHTML='<p class="empty">No shots yet.<br><a href="/">Go take one →</a></p>';return;}
+      shots.forEach(shot=>galleryEl.append(makeCard(shot)));
+      if(location.hash){const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));target?.scrollIntoView();}
+    } catch(e) {galleryEl.innerHTML='<p class="error">Could not load photos. Reload to retry.</p>';pageNotice.textContent=e.message;}
+  }
+  document.getElementById('close-viewer').onclick=()=>document.getElementById('viewer').close();
+  document.getElementById('save-retention').onclick=async()=>{
+    try{await request('/retention','PUT',{days:document.getElementById('retention').value==='' ? null : Number(document.getElementById('retention').value)});pageNotice.textContent='Retention policy saved.';await loadGallery();}
+    catch(e){pageNotice.textContent=e.message;}
+  };
+  document.getElementById('delete-all').onclick=async()=>{
+    if(!confirm('Permanently delete ALL managed photos, edits, thumbnails and shot metadata? Exported and camera-card copies remain.'))return;
+    try{await request('/photos','DELETE',{confirm:'delete-all-local-photos'});await loadGallery();pageNotice.textContent='All local managed photos deleted.';}
+    catch(e){pageNotice.textContent=e.message;}
+  };
+  request('/retention').then(data=>{document.getElementById('retention').value=data.days ?? '';}).catch(e=>{pageNotice.textContent=e.message;});
+  function storedCamera() {
+    try {return JSON.parse(Autopilot.deviceStore.read(Autopilot.deviceStore.CAMERA_KEY) || 'null');}
+    catch(_) {return null;}
+  }
+  function renderCardCamera() {
+    const camera=storedCamera();
+    const label=document.getElementById('card-history-camera');
+    label.textContent=camera && camera.model && camera.port
+      ? Autopilot.friendlyCameraName(camera.model)+' · '+camera.port
+      : 'Choose the exact camera on the Camera page first. Listing does not run until you ask.';
+  }
+  async function cardHistoryAction(button, operation) {
+    const status=document.getElementById('card-history-status');
+    button.disabled=true;status.textContent='Working…';
+    try {status.textContent=await operation() || 'Done';}
+    catch(e) {status.textContent=e.message;}
+    finally {button.disabled=false;}
+  }
+  async function openCardFile(file) {
+    const camera=storedCamera();
+    if(!camera || !camera.model || !camera.port) throw new Error('Choose the exact camera on the Camera page first.');
+    if(!camera.serial) throw new Error('This camera reports no USB serial, so its identity cannot be proven. Choose it again on the Camera page.');
+    if(file.card_deleted) throw new Error('Refusing a card file that reports deletion.');
+    const data=await request('/api/camera/card/import','POST',{
+      camera_model:camera.model,camera_port:camera.port,camera_serial:camera.serial,folder:file.folder,name:file.name});
+    if(data.card_deleted) throw new Error('Card import reported a deletion; refusing to display.');
+    if(!data.viewable || !data.url || !AutopilotWorkflows.cardFileViewable(data.image || file.name)) {
+      return 'Imported a local copy ('+(data.bytes || 0)+' bytes). Not a JPEG preview. The card file was not deleted.';
+    }
+    const dialog=document.getElementById('viewer');
+    const picture=dialog.querySelector('img');
+    picture.alt='Local copy of a camera-card JPEG. The card file was not deleted.';
+    picture.src=await imageUrl(data.url);
+    dialog.showModal();
+    return 'Opened a local JPEG copy at full resolution. The card file was not deleted.';
+  }
+  document.getElementById('card-history-list').onclick=e=>cardHistoryAction(e.target, async()=>{
+    const camera=storedCamera();
+    if(!camera || !camera.model || !camera.port) throw new Error('Choose the exact camera on the Camera page first.');
+    if(!camera.serial) throw new Error('This camera reports no USB serial, so its identity cannot be proven. Choose it again on the Camera page.');
+    const listing=await request('/api/camera/card/list','POST',{camera_model:camera.model,camera_port:camera.port,camera_serial:camera.serial});
+    const files=document.getElementById('card-history-files');
+    files.replaceChildren();
+    (listing.files || []).forEach(file=>{
+      const item=document.createElement('li');
+      const button=document.createElement('button');
+      button.type='button';
+      const folder=file.folder === '/' ? '' : (file.folder || '');
+      button.textContent=(folder ? folder+'/' : '/')+file.name+(file.downloadable ? '' : ' (not downloadable)');
+      button.disabled=!file.downloadable;
+      button.onclick=()=>cardHistoryAction(button,()=>openCardFile(file));
+      item.append(button);files.append(item);
+    });
+    return (listing.file_count || 0)+' file'+(listing.file_count===1?'':'s')+' on the card. Read-only — nothing was deleted.';
+  });
+  renderCardCamera();
+  loadGallery();
+</script>
+</body></html>

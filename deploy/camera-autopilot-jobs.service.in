@@ -1,0 +1,39 @@
+[Unit]
+Description=Camera Autopilot heavy jobs (merges and timelapse encodes from preserved originals)
+After=network.target
+# No start limit: poison jobs are bounded by heavy_jobs.MAX_ATTEMPTS, and a stranded queue
+# is worse than a restart every 10 s. A missing memory cap (exit 78) stops for good.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=@BACKEND@
+EnvironmentFile=@ENVIRONMENT@
+# Marks the process as started by this unit: the worker then refuses to run without an enforced
+# memory.max (an INVOCATION_ID alone is inherited by every descendant of any systemd service).
+Environment=CAMERA_AUTOPILOT_ENFORCE_MEMORY_CAP=1
+ExecStart=@PYTHON@ @ENTRY@
+Restart=on-failure
+RestartSec=10
+RestartPreventExitStatus=78
+# SIGTERM reaches only the worker, which finishes the current job and exits between jobs;
+# ffmpeg and the panorama child are not signalled (KillMode=mixed). A job still running at
+# the timeout is SIGKILLed with its children and recomputed on the next start.
+TimeoutStopSec=120
+# Budget: merge working set 0.36-0.39 GB measured on the Mac; the panorama child and
+# ffmpeg share this cgroup. MemoryMax needs the memory cgroup enabled and delegated;
+# role_jobs.py exits 78 at start when it is not enforced.
+MemoryHigh=1536M
+MemoryMax=2G
+# Under whole-system pressure the kernel kills this before camera control.
+OOMScoreAdjust=500
+Nice=10
+TasksMax=128
+LimitNOFILE=1024
+KillMode=mixed
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=default.target

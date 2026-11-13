@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#101114" />
+<title>Session feedback</title>
+<style>
+  :root {
+    --bg: #101114;
+    --surface: #181a1f;
+    --ink: #f4f5f7;
+    --muted: #a3a7b0;
+    --line: #30343c;
+    --accent: #e8b84b;
+    --ok: #5fd0a8;
+    --warn: #e88b6b;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: calc(var(--safe-top) + 18px) 18px calc(var(--safe-bottom) + 28px);
+  }
+  main { width: min(100%, 560px); margin: 0 auto; }
+  header { display: flex; align-items: center; margin-bottom: 22px; }
+  h1 { margin: 0; font-size: 24px; letter-spacing: 0; }
+  .back { margin-left: auto; color: var(--muted); text-decoration: none; }
+  form { display: grid; gap: 22px; }
+  fieldset {
+    margin: 0;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  legend { padding: 0 7px; font-size: 15px; font-weight: 700; }
+  .choices { display: grid; gap: 10px; }
+  .rating { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  label.choice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    color: var(--ink);
+  }
+  .rating .choice { justify-content: center; }
+  input[type="radio"], input[type="checkbox"] { accent-color: var(--accent); width: 20px; height: 20px; }
+  select, textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #111217;
+    color: var(--ink);
+    font: inherit;
+    padding: 12px;
+  }
+  textarea { min-height: 92px; resize: vertical; }
+  .privacy, .hint, .error, .saved { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .privacy { border-left: 3px solid var(--accent); padding-left: 12px; }
+  .error { color: var(--warn); }
+  .saved { color: var(--ok); }
+  button {
+    min-height: 48px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--ink);
+    color: #111217;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  button[disabled] { opacity: .55; cursor: wait; }
+  button.delete {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-weight: 600;
+  }
+  #done { display: none; gap: 16px; }
+  #done.show { display: grid; }
+  #study-form.hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Session feedback</h1>
+    <a class="back" href="/">Camera</a>
+  </header>
+
+  <form id="study-form">
+    <fieldset>
+      <legend>Consent</legend>
+      <label class="choice">
+        <input id="consent" type="checkbox" required />
+        Save my anonymous answers and the photo filename for this study.
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>What did you experience?</legend>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="mode" value="live_capture" checked /> A photo was taken</label>
+        <label class="choice"><input type="radio" name="mode" value="plan_only" /> I only saw the plan</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>How magic did that feel?</legend>
+      <div class="choices rating">
+        <label class="choice"><input type="radio" name="magic" value="1" required /> 1</label>
+        <label class="choice"><input type="radio" name="magic" value="2" /> 2</label>
+        <label class="choice"><input type="radio" name="magic" value="3" /> 3</label>
+        <label class="choice"><input type="radio" name="magic" value="4" /> 4</label>
+        <label class="choice"><input type="radio" name="magic" value="5" /> 5</label>
+      </div>
+      <p class="hint">1 = meh, 5 = actual magic</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Would you use this?</legend>
+      <div class="choices">
+        <label class="choice"><input type="radio" name="would-use" value="yes" required /> Yes</label>
+        <label class="choice"><input type="radio" name="would-use" value="maybe" /> Maybe</label>
+        <label class="choice"><input type="radio" name="would-use" value="no" /> No</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>What got in the way?</legend>
+      <select id="confusion">
+        <option value="none">Nothing</option>
+        <option value="setup">Setup</option>
+        <option value="prompt">Knowing what to ask for</option>
+        <option value="waiting">Waiting</option>
+        <option value="result">The result</option>
+        <option value="controls">Controls</option>
+        <option value="review_share">Review or sharing</option>
+        <option value="other">Something else</option>
+      </select>
+      <p class="hint">Optional detail. Do not enter names, email addresses, or phone numbers.</p>
+      <textarea id="note" maxlength="500" placeholder="In your own words"></textarea>
+    </fieldset>
+
+    <p class="privacy">
+      Saved: anonymous session ID, answers, capture outcome, and photo filename.
+      Not saved: name, IP address, user agent, device ID, or raw vibe.
+    </p>
+    <p id="error" class="error" role="alert"></p>
+    <button id="submit" type="submit">Save feedback</button>
+  </form>
+
+  <section id="done" aria-live="polite">
+    <p class="saved">Your response was saved.</p>
+    <p class="hint">Session ID: <code id="session-id"></code></p>
+    <p class="hint">Keep this ID if you want the operator to remove your response.</p>
+    <button id="delete" class="delete" type="button">Delete my response</button>
+    <a class="back" href="/">Return to camera</a>
+  </section>
+</main>
+
+<script src="/client.js?v=20260923"></script>
+<script>
+  const form = document.getElementById("study-form");
+  const done = document.getElementById("done");
+  const error = document.getElementById("error");
+  const submit = document.getElementById("submit");
+  const deleteButton = document.getElementById("delete");
+  const params = new URLSearchParams(location.search);
+  const startedAt = performance.now();
+  const TOKEN_KEY = "camera-autopilot-token";
+  let apiToken = Autopilot.deviceStore.read(TOKEN_KEY);
+  let savedSessionId = null;
+
+  function headers() {
+    const value = { "Content-Type": "application/json" };
+    if (apiToken) value["X-Camera-Autopilot-Token"] = apiToken;
+    return value;
+  }
+
+  async function apiFetch(url, options, retry = true) {
+    const response = await fetch(url, { ...options, headers: { ...headers(), ...(options.headers || {}) } });
+    if ((response.status === 401 || response.status === 503) && retry) {
+      const token = window.prompt("Camera token");
+      if (token) {
+        apiToken = token.trim();
+        Autopilot.deviceStore.write(TOKEN_KEY, apiToken);
+        return apiFetch(url, options, false);
+      }
+    }
+    return response;
+  }
+
+  async function responseError(response) {
+    let detail = "";
+    try {
+      const payload = await response.clone().json();
+      detail = payload.detail || payload.error || "";
+    } catch (_) {}
+    const reason = new Error(detail || `Request failed: ${response.status}`);
+    reason.status = response.status;
+    return reason;
+  }
+
+  function saveFailureMessage(reason) {
+    if (reason && reason.status === 403) {
+      return "Secure access is required. Ask the operator to use HTTPS or the trusted-lab launcher.";
+    }
+    return "Could not save the response. Check the camera token and try again.";
+  }
+
+  const requestedMode = params.get("mode");
+  if (requestedMode === "plan_only" || requestedMode === "live_capture") {
+    const option = form.querySelector(`input[name="mode"][value="${requestedMode}"]`);
+    if (option) option.checked = true;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    error.textContent = "";
+    if (!document.getElementById("consent").checked) {
+      error.textContent = "Consent is required. Nothing is saved without it.";
+      return;
+    }
+    const magic = form.querySelector('input[name="magic"]:checked');
+    const wouldUse = form.querySelector('input[name="would-use"]:checked');
+    if (!magic || !wouldUse) {
+      error.textContent = "Please answer the rating and use questions.";
+      return;
+    }
+    const mode = form.querySelector('input[name="mode"]:checked').value;
+    const payload = {
+      consent_given: true,
+      magic_rating: Number(magic.value),
+      would_use: wouldUse.value,
+      confusion_area: document.getElementById("confusion").value,
+      confusion_note: document.getElementById("note").value,
+      interface: "web",
+      experience_mode: mode,
+      capture_succeeded: mode === "live_capture",
+      intent_provided: params.get("intent") === "1",
+      duration_seconds: (performance.now() - startedAt) / 1000,
+      photo_reference: params.get("image"),
+      completion_status: "completed",
+      study_id: params.get("study") || "magic-v0"
+    };
+    submit.disabled = true;
+    try {
+      const response = await apiFetch("/api/ux-validation/sessions", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw await responseError(response);
+      const result = await response.json();
+      savedSessionId = result.session_id;
+      document.getElementById("session-id").textContent = savedSessionId;
+      form.classList.add("hidden");
+      done.classList.add("show");
+    } catch (reason) {
+      error.textContent = saveFailureMessage(reason);
+      submit.disabled = false;
+    }
+  });
+
+  deleteButton.addEventListener("click", async () => {
+    if (!savedSessionId) return;
+    deleteButton.disabled = true;
+    try {
+      const response = await apiFetch(
+        "/api/ux-validation/sessions/" + encodeURIComponent(savedSessionId),
+        { method: "DELETE" }
+      );
+      if (!response.ok) throw await responseError(response);
+      done.innerHTML = '<p class="saved">Your response was deleted.</p><a class="back" href="/">Return to camera</a>';
+    } catch (reason) {
+      deleteButton.disabled = false;
+      const paragraph = document.createElement("p");
+      paragraph.className = "error";
+      paragraph.textContent = "Could not delete the response. Ask the operator to use your session ID.";
+      done.appendChild(paragraph);
+    }
+  });
+</script>
+</body>
+</html>

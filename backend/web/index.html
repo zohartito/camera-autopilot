@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0b0d" />
+<title>Autopilot</title>
+<style>
+  [hidden] { display: none !important; }
+  :root {
+    --bg: #0b0b0d;
+    --surface: #15151a;
+    --ink: #f3f3f5;
+    --muted: #8a8a93;
+    --accent: #e8b84b;       /* warm shutter gold */
+    --line: #26262e;
+    --ok: #5fd0a8;
+    --warn: #e88b6b;         /* soft coral for errors — calm, not alarming */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink); overscroll-behavior: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; min-height: 100dvh;
+    padding: calc(var(--safe-top) + 18px) 22px calc(var(--safe-bottom) + 22px);
+  }
+  header { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; }
+  #sessions-panel > label, #sessions-panel > button, #session-review {display:block;width:100%;margin-top:12px}
+  #session-review {text-align:center;text-decoration:none}
+  #sessions-panel > p, #preview-panel > p {margin:12px 0;line-height:1.45}
+  #sessions-panel fieldset label, #stack-settings label {display:block;margin-top:10px}
+  #preview-aids > label {display:inline-block;margin:6px 8px 8px 0;font-size:14px}
+  header .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
+  /* A long camera name stays on one line instead of wrapping the header into two. */
+  header #status { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  header .review-link { margin-left: auto; flex: none; display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); font-size: 13px; letter-spacing: .08em; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 0 16px; }
+  header .review-link:active { color: var(--ink); border-color: #3a3a46; }
+
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+
+  .intent-panel { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 12px; }
+  /* Camera picker: the select and its refresh button share one row. */
+  .camera-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; align-items: center; }
+  .camera-row > label { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+  .camera-row .ghost { padding: 0 14px; font-size: 14px; }
+  .intent-row { display: grid; grid-template-columns: 1fr 56px; gap: 10px; align-items: center; }
+  .prompt {
+    width: 100%; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; color: var(--ink); font-size: 16px; padding: 16px 18px; text-align: center;
+    transition: border-color .2s ease;
+  }
+  .prompt::placeholder { color: var(--muted); }
+  .prompt:focus { outline: none; border-color: #3a3a46; }
+  .voice-button {
+    width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); display: grid; place-items: center;
+    cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .12s ease;
+  }
+  .voice-button svg { width: 22px; height: 22px; stroke-width: 2; }
+  .voice-button:active { transform: scale(.94); }
+  .voice-button.listening { border-color: var(--accent); background: rgba(232,184,75,.12); color: var(--accent); }
+  .voice-button[hidden] { display: none; }
+  .intent-row.no-voice { grid-template-columns: 1fr; }
+  .voice-status { color: var(--muted); font-size: 13px; text-align: center; min-height: 18px; }
+  .mode-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 100%;
+    border: 1px solid var(--line); border-radius: 12px; padding: 4px; background: rgba(21,21,26,.76);
+  }
+  .mode-button {
+    min-height: 38px; border: 0; border-radius: 8px; background: transparent; color: var(--muted);
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .mode-button.active { background: var(--accent); color: #1a1407; }
+
+  .mood-card {
+    width: 100%; border: 1px solid var(--line); border-radius: 14px; background: rgba(21,21,26,.86);
+    padding: 14px 15px; box-shadow: 0 14px 34px rgba(0,0,0,.24);
+  }
+  .mood-card[hidden] { display: none; }
+  .mood-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+  .mood-label { color: var(--muted); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .mood-name { color: var(--ink); font-size: 17px; font-weight: 700; text-align: right; }
+  .mood-heard { color: var(--accent); font-size: 14px; line-height: 1.35; margin-bottom: 10px; }
+  .mood-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .mood-item { min-width: 0; }
+  .mood-item dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+  .mood-item dd { color: var(--ink); font-size: 13px; line-height: 1.32; }
+
+  .shutter {
+    width: 132px; height: 132px; border-radius: 50%; border: none; cursor: pointer;
+    background: radial-gradient(circle at 50% 45%, #fff, #f0f0f2 60%, #cfcfd6);
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 5px #2c2c34, 0 18px 50px rgba(0,0,0,.55);
+    transition: transform .12s ease, box-shadow .2s ease; position: relative;
+  }
+  .shutter:active { transform: scale(.94); }
+  .shutter[disabled] { cursor: default; opacity: .55; }
+  /* The shutter stays reachable while the recipe card or the keyboard takes the screen. It
+     sticks to the bottom only while the capture controls are on screen. */
+  .shutter-bar {
+    display: flex; flex-direction: column; align-items: center; width: 100%;
+    position: sticky; bottom: 0; z-index: 5; gap: 8px;
+    padding: 18px 0 calc(var(--safe-bottom) + 10px);
+    margin-bottom: calc(-1 * (var(--safe-bottom) + 22px));
+    background: linear-gradient(to top, var(--bg) 72%, rgba(11,11,13,0));
+  }
+  @media (max-width: 560px) {
+    .shutter-bar { gap: 6px; }
+    .shutter-bar .shutter { width: 92px; height: 92px; }
+    /* No focus-dependent layout here: a card that grows when the field blurs would move the
+       shutter between touch-down and touch-up, and the tap would miss. */
+  }
+  .caption { color: var(--muted); font-size: 15px; text-align: center; min-height: 20px; }
+  .caption.pulse { animation: pulse 1.1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: .45 } 50% { opacity: 1 } }
+
+  /* first-run hint — a single calm whisper, dismissed on first tap */
+  .hint {
+    color: var(--muted); font-size: 13px; text-align: center; max-width: 300px;
+    opacity: 0; transition: opacity .5s ease; pointer-events: none;
+  }
+  .hint.show { opacity: 1; }
+
+  /* error toast — soft, self-dismissing, never blocks the one button */
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%) translateY(14px);
+    bottom: calc(var(--safe-bottom) + 26px); z-index: 20;
+    background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--warn);
+    color: var(--ink); font-size: 14px; line-height: 1.4; padding: 13px 18px; border-radius: 12px;
+    max-width: min(420px, calc(100% - 44px)); box-shadow: 0 12px 36px rgba(0,0,0,.5);
+    opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* result: one scrolling sheet. The photo has its own box sized to the photo; the caption,
+     aids and cards sit below it, never on top of it. */
+  .result {
+    position: fixed; inset: 0; z-index: 10; background: var(--bg); display: none; flex-direction: column;
+    overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  }
+  .result.show { display: flex; }
+  .result-bar {
+    position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 12px; flex: none;
+    padding: calc(var(--safe-top) + 6px) 16px 6px; background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  .result-bar .again { display: inline-flex; align-items: center; gap: 6px; padding: 0 18px; }
+  .result-head { width: 100%; max-width: 680px; margin: 0 auto; padding: 14px 22px 12px; flex: none; }
+  .result-photo {
+    position: relative; width: 100%; aspect-ratio: 3 / 2; max-height: 62dvh; flex: none; background: #000;
+  }
+  .result-photo:has(> #shot[hidden]):has(> #last-frame-canvas[hidden]) { display: none; }
+  .result-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .result #last-frame-canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
+    display: block; background: #000;
+  }
+  #last-frame-aids { display: flex; flex-direction: column; gap: 8px; }
+  #last-frame-aids > label, #preview-aids > label {display:inline-block;margin:6px 8px 8px 0;font-size:14px}
+  .aid-toggles > label {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: 0 8px 0 0;
+    padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; align-self: flex-start;
+  }
+  .aid-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  #last-frame-status { text-align: left; font-size: 13px; line-height: 1.45; }
+  #forget-device { display: block; width: 100%; }
+  #pair-code { display: block; margin-top: 10px; min-height: 44px; letter-spacing: .3em; }
+  /* Destructive and rare: visually distinct from the everyday toggles above it. */
+  #forget-device { margin-top: 8px; color: var(--warn); border-color: rgba(232,139,107,.5); }
+  #auto-save-photos-label {
+    display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 12px; min-height: 44px;
+    color: var(--ink); font-size: 14px; line-height: 1.4;
+  }
+  #auto-save-photos-label input { flex: 0 0 auto; margin: 0; }
+  #last-frame-histogram, #preview-histogram {width:100%;height:80px;display:block;background:#15151a}
+  .result .overlay {
+    width: 100%; max-width: 680px; margin: 0 auto; padding: 16px 22px calc(var(--safe-bottom) + 28px);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .verdict { display: flex; align-items: flex-start; gap: 9px; font-size: 19px; font-weight: 600; line-height: 1.3; }
+  .verdict .check { color: var(--ok); }
+  .why { color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 60ch; display: none; }
+  .why.show { display: block; }
+  .result-mood { max-width: 520px; }
+  .result-details { border-top: 1px solid var(--line); padding-top: 4px; }
+  .result-details:not(:has(> :not(summary):not([hidden]))) { display: none; }
+  .result-details > summary { color: var(--muted); font-size: 14px; cursor: pointer; }
+  .row { display: flex; gap: 12px; align-items: center; }
+  .ghost { background: transparent; border: 1px solid #3a3a46; color: var(--ink); border-radius: 12px; padding: 11px 18px; font-size: 15px; cursor: pointer; }
+  a.ghost { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+  .link { background: none; border: none; color: var(--muted); font-size: 14px; text-decoration: underline; cursor: pointer; padding: 0 6px; min-height: 44px; }
+  .again { background: var(--accent); border: none; color: #1a1407; font-weight: 700; border-radius: 12px; padding: 12px 22px; font-size: 15px; cursor: pointer; }
+  .variant-panel { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 10px; }
+  .variant-panel[hidden] { display: none; }
+  .variant-strip { display: grid; grid-template-columns: repeat(4, minmax(92px, 1fr)); gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+  .variant-tile {
+    border: 1px solid rgba(255,255,255,.14); border-radius: 12px; background: rgba(16,16,20,.76);
+    color: var(--ink); min-width: 92px; overflow: hidden; text-align: left; cursor: pointer;
+  }
+  .variant-tile.selected { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(232,184,75,.28); }
+  .variant-tile img { width: 100%; height: 74px; object-fit: cover; display: block; background: #09090b; }
+  .variant-copy { padding: 7px 8px 8px; display: grid; gap: 2px; }
+  .variant-name { font-size: 12px; font-weight: 800; }
+  .variant-recipe { color: var(--muted); font-size: 12px; line-height: 1.3; }
+  .apply-variant {
+    align-self: flex-start; background: var(--ink); border: none; color: #111; font-weight: 800;
+    border-radius: 12px; padding: 11px 15px; font-size: 14px; cursor: pointer; min-height: 44px;
+  }
+  .apply-variant[hidden] { display: none; }
+  @media (max-width: 560px) {
+    .variant-strip { grid-template-columns: repeat(4, 116px); }
+  }
+
+  /* one-tap "was this good?" — quiet until the shot has landed */
+  .feedback { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
+  .feedback .label { margin-right: 2px; }
+  .vote {
+    background: transparent; border: 1px solid #3a3a46; border-radius: 11px;
+    padding: 7px 13px; font-size: 17px; line-height: 1; cursor: pointer;
+    transition: transform .12s ease, border-color .2s ease, background .2s ease;
+  }
+  .vote:active { transform: scale(.9); }
+  .vote.picked { border-color: var(--accent); background: rgba(232,184,75,.14); }
+  .feedback.thanks .label { color: var(--ok); }
+  .feedback.thanks .vote { display: none; }
+  .constraint-cards {display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;max-width:640px}
+  .constraint-card {background:var(--surface);padding:12px;border:1px solid var(--line);border-radius:10px;font-size:14px;line-height:1.4}
+  .constraint-card small {display:inline-block;color:var(--muted);margin:6px 0 2px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+  .constraint-card[data-status="ok"] small {color:var(--ok);border-color:rgba(95,208,168,.4)}
+  .constraint-card[data-status="warning"] small, .constraint-card[data-status="limited"] small {color:var(--warn);border-color:rgba(232,139,107,.45)}
+  .constraint-card p {margin:4px 0;color:var(--muted)}
+  .constraint-card > p {color:var(--ink)}
+  .constraint-card details {margin-top:4px;font-size:13px}
+  .constraint-card details summary {color:var(--muted);cursor:pointer}
+  .row {flex-wrap:wrap}
+  .camera-select {width:100%;padding:12px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px}
+  .critique-trail {display:none;flex-direction:column;gap:6px;max-width:520px;margin-top:4px}
+  .critique-trail:not([hidden]) {display:flex}
+  .critique-row {background:rgba(20,20,24,.9);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.4;color:var(--muted)}
+  .critique-row strong {color:var(--ink);font-weight:700}
+  .critique-row .adjust {color:var(--accent)}
+  .critique-row.disabled {border-left-color:var(--line)}
+  #panorama-preview-img {width:100%;display:block;border:1px solid var(--line);border-radius:10px;margin-top:8px;background:#09090b}
+  #crowd-preview-img {width:100%;display:block;border:1px solid var(--line);border-radius:10px;margin-top:8px;background:#09090b}
+  .handheld-frame {display:flex;gap:10px;align-items:flex-start;background:rgba(20,20,24,.9);border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px}
+  .handheld-frame img {width:88px;height:66px;object-fit:cover;border-radius:6px;background:#09090b;flex:none}
+  .handheld-frame .meta {min-width:0;font-size:12px;line-height:1.4;color:var(--muted)}
+  .handheld-frame .meta .exif {color:var(--ink);font-weight:700}
+  .handheld-frame .meta .next {color:var(--accent)}
+
+  /* One-handed mobile: no sideways page scroll, visible focus, >=44px targets, safe-area sticky actions */
+  html, body { max-width: 100%; overflow-x: hidden; }
+  .ghost, .again, .camera-select, .mode-button, .vote { min-height: 44px; }
+  summary { min-height: 44px; display: flex; align-items: center; gap: 8px; }
+  .prompt:focus-visible, .camera-select:focus-visible, .ghost:focus-visible, .again:focus-visible,
+  .mode-button:focus-visible, .voice-button:focus-visible, .shutter:focus-visible, .vote:focus-visible,
+  summary:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  /* Shutter + session/handheld start stay >=44px touch targets */
+  .shutter, #session-start, #handheld-start, #night-assist-run { min-height: 44px; }
+  #session-start, #handheld-start {
+    position: sticky; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); z-index: 6; width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  /* Frame lists scroll sideways instead of pushing the page wide */
+  .frames-strip { display: flex; gap: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px; scroll-snap-type: x proximity; }
+  .frames-strip .handheld-frame { flex: 0 0 82%; max-width: 320px; margin-top: 0; scroll-snap-align: start; }
+  #timelapse-deflicker-options { margin: 8px 0; }
+  /* Settings forms: every label starts its own line; buttons are full-width rows; receipts wrap. */
+  #device-panel label:not(#auto-save-photos-label), #preview-panel > label, #manual-settings-panel label, #radio-panel label { display: block; margin-top: 12px; }
+  #device-panel > button, #manual-settings-panel > button, #radio-panel > button, #preview-panel > button { display: block; width: 100%; margin-top: 10px; }
+  #device-panel pre { max-height: 40dvh; overflow: auto; }
+  .voice-status { overflow-wrap: anywhere; }
+  /* Page sections: capture first, then more ways to shoot, then device settings. */
+  .section-heading {
+    width: 100%; max-width: 460px; margin: 36px auto 0; color: var(--muted);
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  }
+  /* Top-level panels read as tappable rows: a border and a chevron (display:flex on summary
+     removes the native disclosure marker). */
+  #stack-options, #preview-panel, #sessions-panel, #handheld-panel, #device-panel {
+    border: 1px solid var(--line); border-radius: 14px; padding: 0 14px; background: var(--surface);
+  }
+  #stack-options[open], #preview-panel[open], #sessions-panel[open], #handheld-panel[open], #device-panel[open] { padding-bottom: 14px; }
+  summary { list-style: none; cursor: pointer; font-size: 15px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: ""; margin-left: auto; flex: none; width: 8px; height: 8px;
+    border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+    transform: rotate(45deg) translateY(-2px); transition: transform .2s ease;
+  }
+  details[open] > summary::after { transform: rotate(-135deg) translateY(-2px); }
+  .help { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 15px; }
+  #device-panel .voice-status, #preview-panel .voice-status, #sessions-panel .voice-status,
+  #handheld-panel .voice-status { text-align: left; }
+  @media (max-width: 480px) {
+    body { padding-left: 16px; padding-right: 16px; }
+    main { gap: 22px; }
+    .intent-panel, .stack-options, #stack-options, #device-panel, #preview-panel,
+    #sessions-panel, #handheld-panel { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <header><span class="dot" id="dot"></span><span id="status">autopilot</span><a class="review-link" href="/review">Review</a></header>
+
+  <main id="home">
+    <div class="intent-panel">
+      <div class="camera-row"><label for="camera-select">Camera</label><select id="camera-select" class="camera-select"><option value="">Automatic selection</option></select><button id="refresh-cameras" class="ghost" type="button" aria-label="Refresh cameras">Refresh</button></div>
+      <div id="intent-row" class="intent-row">
+        <input id="intent" class="prompt" type="text" placeholder="say a mood or type it" autocomplete="off" />
+        <button id="voice-button" class="voice-button" type="button" aria-label="Speak a mood">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 11a7 7 0 0 1-14 0"></path>
+            <path d="M12 18v3"></path>
+            <path d="M8 21h8"></path>
+          </svg>
+        </button>
+      </div>
+      <p id="voice-status" class="voice-status" aria-live="polite"></p>
+      <div id="mood-card" class="mood-card" hidden></div>
+      <div class="mode-toggle" role="tablist" aria-label="Capture mode">
+        <button id="mode-photo" class="mode-button active" type="button" role="tab" aria-selected="true">Photo</button>
+        <button id="mode-video" class="mode-button" type="button" role="tab" aria-selected="false">Video</button>
+      </div>
+    </div>
+    <details id="stack-options" style="max-width:460px;width:100%">
+      <summary>Photo stacking: HDR, night, long exposure, crowd removal</summary>
+      <label>Stack policy <select id="stack-policy" class="camera-select"><option value="off">Off — ordinary photo</option><option value="auto">Auto — only with verified low motion</option><option value="fixed">Fixed — use this frame count</option></select></label>
+      <div id="stack-settings" hidden>
+        <label>Blend <select id="stack-mode" class="camera-select"><option value="night">Noise averaging</option><option value="hdr">HDR bracket</option><option value="long_exposure">Long-exposure blend</option><option value="crowd_remove">Crowd removal</option></select></label>
+        <label>Frames <input id="stack-frames" class="prompt" type="number" min="2" max="9" value="3" /></label>
+        <label id="stack-baseline-row">Fixed baseline <select id="stack-baseline-source" class="camera-select"><option value="metered">Meter first — one meter photo sets the exposure</option><option value="current">Keep the camera's current exposure</option></select></label>
+        <p class="voice-status">Fixed meters first: one meter photo sets the exposure the frames bracket around, unless you keep the camera's current exposure. Keep the camera still and focus first. Auto keeps a single photo when motion cannot be verified. Stacking and refinement cannot be combined.</p>
+        <p id="stack-baseline" class="voice-status" role="status"></p>
+      </div>
+    </details>
+    <label class="help"><input id="refine" type="checkbox" /> Refine (up to 4 exposures)</label>
+  <p id="refine-note" class="voice-status"></p>
+    <p id="capture-count" class="voice-status">One capture can take up to 2 photos: a meter frame and the final photo.</p>
+    <p id="hint" class="hint">You don't touch a setting — it takes over the camera and hands you the shot.</p>
+    <div class="shutter-bar">
+      <button id="shutter" class="shutter" aria-label="Get the shot" disabled></button>
+      <p id="caption" class="caption">Tap to get the shot</p>
+    </div>
+  </main>
+  <h2 class="section-heading">More ways to shoot</h2>
+  <details id="preview-panel" style="max-width:460px;width:100%;margin:12px auto">
+    <summary>Live framing aids</summary>
+    <p class="voice-status">Request one fresh preview from the selected camera. This never takes a still photo. The displayed frame stays frozen until you request another; camera support must be verified.</p>
+    <button id="preview-request" class="ghost" disabled>Get fresh preview frame</button>
+    <button id="preview-clear" class="ghost" hidden>Clear preview</button>
+    <p id="preview-status" class="voice-status" role="status" aria-live="polite"></p>
+    <div id="preview-aids" hidden>
+      <label><input id="preview-grid" type="checkbox" checked /> Thirds grid</label>
+      <label><input id="preview-zebra" type="checkbox" checked /> Highlight warning</label>
+      <label><input id="preview-peaking" type="checkbox" /> Edge peaking</label>
+      <canvas id="preview-canvas" aria-label="Fresh camera preview with framing aids" style="width:100%;display:block"></canvas>
+      <canvas id="preview-histogram" aria-label="Preview luminance histogram" style="width:100%;height:80px"></canvas>
+      <p class="voice-status">Tap the preview for a 1:1 pixel loupe. Peaking marks strong image edges; it does not verify focus or move the lens. Highlight warnings describe this JPEG preview, not RAW headroom.</p>
+      <canvas id="preview-loupe" aria-label="Preview focus loupe" style="max-width:100%"></canvas>
+    </div>
+  </details>
+  <details id="sessions-panel" style="max-width:460px;width:100%;margin:12px auto" hidden>
+    <summary>Computational sessions</summary>
+    <p class="voice-status">Keep the camera still and focus first. A session takes multiple photos and restores its starting settings. Leaving this page does not cancel; use Cancel.</p>
+    <p id="session-baseline" class="voice-status" role="status"></p>
+    <label id="session-baseline-row">Starting exposure <select id="session-baseline-source" class="camera-select"><option value="metered">Meter first — one meter photo sets the starting exposure</option><option value="current">Keep the camera's current exposure</option></select></label>
+    <p id="session-budget" class="voice-status" role="status"></p>
+    <button id="night-assist-run" class="ghost" type="button">Night assist: plan a night stack from your last shot</button>
+    <p id="night-assist-result" class="voice-status" role="status" aria-live="polite"></p>
+    <label>Mode <select id="session-mode" class="camera-select"><option value="hdr">HDR bracket</option><option value="long_exposure">Long-exposure blend</option><option value="crowd_remove">Crowd removal</option><option value="night">Night stack</option><option value="timelapse">Timelapse frames</option><option value="panorama">Panorama (guided sweep)</option></select></label>
+    <div id="panorama-options" hidden>
+      <label>Projection <select id="panorama-projection" class="camera-select">
+        <option value="spherical">Spherical</option>
+        <option value="cylindrical" selected>Cylindrical</option>
+        <option value="mercator">Mercator</option>
+        <option value="transverse_mercator">Transverse Mercator</option>
+        <option value="compressed_rectilinear_1">Compressed rectilinear 1</option>
+        <option value="compressed_rectilinear_2">Compressed rectilinear 2</option>
+        <option value="panini_1">Panini 1</option>
+        <option value="panini_2">Panini 2</option>
+        <option value="rectilinear">Rectilinear</option>
+      </select></label>
+      <label>Horizontal field of view (degrees) <input id="panorama-hfov" class="prompt" type="number" min="10" max="360" step="1" value="120" /></label>
+      <label>Horizon rotation (degrees) <input id="panorama-rotation" class="prompt" type="number" min="-45" max="45" step="0.5" value="0" /></label>
+      <label><input id="panorama-autocrop" type="checkbox" checked /> Auto-crop to the rectangular region</label>
+      <label>Show a stitched preview every <select id="panorama-preview-every" class="camera-select"><option value="1" selected>saved frame (from frame 2)</option><option value="2">2 saved frames</option><option value="3">3 saved frames</option><option value="4">4 saved frames</option><option value="6">6 saved frames</option></select></label>
+      <p class="voice-status">The stitched preview appears below while the sweep runs, so you can see the overlap as you go.</p>
+      <p id="panorama-budget" class="voice-status"></p>
+      <p class="voice-status">A guided sweep takes 2–12 frames. Move the tripod head manually and keep textured overlap. Exposure, white balance and focus stay locked to the current settings; this is a planar homography stitch, not calibrated 360° reconstruction.</p>
+      <div id="panorama-preview-wrap" hidden>
+        <p id="panorama-preview-status" class="voice-status" role="status"></p>
+        <img id="panorama-preview-img" alt="Incremental panorama preview" hidden />
+      </div>
+    </div>
+    <div id="crowd-options" hidden>
+      <label>Stop automatically when this much is clear <select id="crowd-stop-at" class="camera-select"><option value="" selected>Off (shoot every frame)</option><option value="0.9">90% clear</option><option value="0.95">95% clear</option><option value="0.98">98% clear</option></select></label>
+      <p class="voice-status">After each saved frame a small preview shows the clean plate so far; tinted regions are not cleared yet. A spot is clear once its background shows in at least 25% of the frames. The automatic stop also waits until every spot someone crossed has been seen clear again in the two newest frames, and a spot where someone sat or stood for two or more frames keeps it waiting; it never ends before frame 5 and needs a budget of 6 to 8 frames; Stop when clean works from 2 frames. Anyone who never moves stays in the photo.</p>
+    </div>
+    <div id="crowd-preview-wrap" hidden>
+      <p id="crowd-preview-status" class="voice-status" role="status" aria-live="polite"></p>
+      <img id="crowd-preview-img" alt="Live crowd removal preview; tinted regions are not cleared yet" hidden />
+    </div>
+    <button id="crowd-stop" class="ghost" type="button" hidden>Stop when clean: merge the frames saved so far</button>
+    <label><span id="session-frames-label">Frames</span> <input id="session-frames" class="prompt" type="number" min="1" max="100" value="3" /></label>
+    <label>HDR bracket step (EV) <input id="session-ev" class="prompt" type="number" min="0" max="3" step="0.5" value="2" /></label>
+    <div id="long-exposure-options" hidden>
+      <label>Averaging window in seconds (optional) <input id="long-exposure-duration" class="prompt" type="number" min="1" max="3600" step="1" placeholder="Use frame count only" /></label>
+      <p class="voice-status">This combines separate exposures with gaps between them; it is not continuous Bulb exposure or an ND filter. The target runs from the first trigger to the last exposure ending. Camera timing may overrun it. Duration mode uses a 2–16 frame budget and no added interval. Windows shorter than 8 seconds or incompatible current settings may be rejected before capture.</p>
+    </div>
+    <label>Seconds between frames <input id="session-interval" class="prompt" type="number" min="0" max="3600" value="0" /></label>
+    <fieldset id="timelapse-options" hidden style="border:1px solid #3a3a46;padding:12px">
+      <legend>Timelapse</legend>
+      <label>Exposure policy <select id="timelapse-policy" class="camera-select"><option value="fixed">Fixed exposure</option><option value="auto_custom">Auto / custom bounds</option><option value="holy_grail">Holy Grail gradual exposure</option></select></label>
+      <label><input id="smartlapse-enabled" type="checkbox" /> Plan by real duration and movie length (Smartlapse)</label>
+      <div id="smartlapse-settings" hidden>
+        <label>Real duration (seconds) <input id="smartlapse-duration" class="prompt" type="number" min="1" max="3600" value="300" /></label>
+        <label>Movie length (seconds) <input id="smartlapse-output" class="prompt" type="number" min="0.1" max="100" step="0.1" value="2" /></label>
+        <p id="smartlapse-plan" class="voice-status"></p>
+      </div>
+      <p class="voice-status">Auto modes meter from accepted frames. Holy Grail limits exposure changes per frame. Camera throughput can make the actual interval longer than requested.</p>
+      <details><summary>Exposure bounds</summary>
+        <label>Exposure priority <select id="timelapse-priority" class="camera-select"><option value="shutter_then_iso">Change shutter, then ISO</option><option value="iso_then_shutter">Change ISO, then shutter</option><option value="shutter_then_iso_then_aperture">Shutter → ISO → Aperture</option><option value="shutter_then_aperture_then_iso">Shutter → Aperture → ISO</option><option value="iso_then_shutter_then_aperture">ISO → Shutter → Aperture</option><option value="iso_then_aperture_then_shutter">ISO → Aperture → Shutter</option><option value="aperture_then_shutter_then_iso">Aperture → Shutter → ISO</option><option value="aperture_then_iso_then_shutter">Aperture → ISO → Shutter</option></select></label>
+        <label><input id="timelapse-aperture-lock" type="checkbox" checked /> Keep aperture fixed</label>
+        <div id="timelapse-aperture-bounds" hidden><label>Minimum f-number <input id="timelapse-min-aperture" class="prompt" type="number" min="0.5" max="128" step="0.1" value="0.5" /></label><label>Maximum f-number <input id="timelapse-max-aperture" class="prompt" type="number" min="0.5" max="128" step="0.1" value="128" /></label></div>
+        <p class="voice-status">Aperture stays fixed until you unlock it. The first frame keeps the starting aperture; later changes require lens evidence from an accepted JPEG and current camera readback. Requested bounds do not establish lens capability.</p>
+        <label>Minimum ISO <input id="timelapse-min-iso" class="prompt" type="number" min="50" max="102400" value="100" /></label>
+        <label>Maximum ISO <input id="timelapse-max-iso" class="prompt" type="number" min="50" max="102400" value="6400" /></label>
+        <label>Minimum shutter seconds <input id="timelapse-min-shutter" class="prompt" type="number" min="0.000125" max="30" step="any" value="0.000125" /></label>
+        <label>Maximum shutter seconds <input id="timelapse-max-shutter" class="prompt" type="number" min="0.000125" max="30" step="any" value="30" /></label>
+        <label>Maximum EV change per frame <input id="timelapse-step" class="prompt" type="number" min="0.01" max="0.3" step="0.01" value="0.3" /></label>
+      </details>
+      <label>Movie frames per second <input id="timelapse-fps" class="prompt" type="number" min="1" max="60" value="24" /></label>
+      <label>Movie progress snapshots <select id="timelapse-preview-every" class="camera-select"><option value="0">Off</option><option value="2">Every 2 saved frames</option><option value="4" selected>Every 4 saved frames</option><option value="5">Every 5 saved frames</option></select></label>
+      <p class="voice-status">While the timelapse runs, a short movie of the frames saved so far is rebuilt at this interval; download it from this panel to check the result before it finishes. Off makes only the final movie.</p>
+      <p id="timelapse-duration" class="voice-status" role="status"></p>
+      <label><input id="timelapse-deflicker" type="checkbox" /> Deflicker (smooth frame-to-frame brightness; on by default for Holy Grail)</label>
+      <div id="timelapse-deflicker-options" hidden>
+        <label>Smoothing window (odd, 3–31 frames) <input id="timelapse-deflicker-window" class="prompt" type="number" min="3" max="31" step="2" value="5" /></label>
+        <label>Maximum correction (stops, 0.1–2) <input id="timelapse-deflicker-gain" class="prompt" type="number" min="0.1" max="2" step="0.1" value="1" /></label>
+        <p class="voice-status">Deflicker evens exposure flicker between saved frames within the limit above; it never rewrites originals and preserves gradual intentional changes.</p>
+      </div>
+      <button id="timelapse-apply-controls" class="ghost" type="button" hidden>Apply these exposure bounds to selected session</button>
+      <p id="timelapse-control-status" class="voice-status" role="status"></p>
+    </fieldset>
+    <label>Start delay (seconds, up to 10 hours) <input id="session-delay" class="prompt" type="number" min="0" max="36000" value="0" /></label>
+    <button id="session-start" class="again" disabled>Start selected session</button>
+    <button id="session-cancel" class="ghost" hidden>Cancel after current frame</button>
+    <button id="session-resume" class="ghost" hidden>Resume selected session</button>
+    <label>Previous sessions <select id="session-history" class="camera-select"><option value="">Choose a session</option></select></label>
+    <button id="session-refresh" class="ghost">Refresh sessions</button>
+    <button id="session-delete" class="ghost" hidden>Delete selected session</button>
+    <button id="session-download" class="ghost" hidden>Download timelapse frames (ZIP)</button>
+    <button id="session-preview-movie" class="ghost" hidden>Download movie progress snapshot</button>
+    <button id="session-movie" class="ghost" hidden>Download timelapse movie (MP4)</button>
+    <button id="session-encode-partial" class="ghost" hidden>Encode the good frames as a partial movie</button>
+    <p id="session-encode-partial-note" class="voice-status" hidden>The ambiguous frame is not used and nothing is shot; the session stays blocked.</p>
+    <button id="session-partial-movie" class="ghost" hidden>Download partial movie (MP4)</button>
+    <a id="session-review" class="ghost" href="/review" hidden>Review session result</a>
+    <p id="session-status" class="voice-status" role="status" aria-live="polite"></p>
+    <p id="session-camera-warning" class="voice-status" role="note" hidden></p>
+    <p class="voice-status">Panorama sweeps are manual — the app never moves the head or fires the shutter; focus bracketing is unavailable in this USB session workflow. Movie downloads appear only after a file is successfully rendered.</p>
+  </details>
+  <details id="handheld-panel" style="max-width:460px;width:100%;margin:12px auto" hidden>
+    <summary>Handheld: you press the shutter</summary>
+    <p class="voice-status">Set <strong>Still Img. Save Dest.</strong> to <strong>PC+Camera</strong>; press the camera shutter. The app meters each frame you take and sets the next exposure. It never fires the shutter. Uses the selected exact body and port with the current intent text.</p>
+    <label>Maximum frames <input id="handheld-max-frames" class="prompt" type="number" min="1" max="200" value="20" /></label>
+    <label>Maximum duration (seconds) <input id="handheld-max-duration" class="prompt" type="number" min="1" max="3600" value="600" /></label>
+    <button id="handheld-start" class="again" type="button">Start handheld session</button>
+    <button id="handheld-cancel" class="ghost" type="button" hidden>Stop metering</button>
+    <p id="handheld-status" class="voice-status" role="status" aria-live="polite"></p>
+    <p id="handheld-counters" class="voice-status"></p>
+    <p id="handheld-restore" class="voice-status"></p>
+    <div id="handheld-frames" class="frames-strip"></div>
+  </details>
+  <h2 class="section-heading">Settings</h2>
+  <details id="device-panel" style="max-width:460px;width:100%;margin:12px auto">
+    <summary>Device and settings</summary>
+    <label id="auto-save-photos-label"><input id="auto-save-photos" type="checkbox" /> Auto-save new photos to Photos</label>
+    <p class="voice-status">Off by default. Saves each new photo to Photos the same way Review does, and says "saved" only when the phone confirms it. Available in the phone app only.</p>
+    <p class="voice-status">Read the connected controller and camera inventory. Missing sensor data is shown as unavailable.</p>
+    <button id="device-refresh" class="ghost" type="button">Refresh device and cameras</button>
+    <p id="device-status" class="voice-status" role="status"></p>
+    <p class="voice-status">This phone remembers the camera token and the chosen camera across app restarts. Forget them when you hand the device to someone else.</p>
+    <p class="voice-status">Pair this phone with the 6-digit code the Mac terminal shows (10 minutes, single use) instead of pasting the token.</p>
+    <input id="pair-code" class="prompt" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" aria-label="6-digit pairing code" placeholder="6-digit code" />
+    <button id="pair-device" class="ghost" type="button">Pair with code</button>
+    <button id="forget-device" class="ghost" type="button">Forget this device (token, camera, session)</button>
+    <dl id="device-health" style="font-size:14px;line-height:1.5;overflow-wrap:anywhere"></dl>
+    <p id="discovery-status" class="voice-status">Network puck discovery is not available from this page. The controller address above is the server you opened.</p>
+    <details id="radio-panel" hidden style="margin-top:18px"><summary>Plan a portable radio configuration</summary>
+      <p class="voice-status">These are configuration candidates supplied by the server, not detected radio capabilities. This only renders a plan; it does not change Wi-Fi, start an access point, or establish regulatory support.</p>
+      <label>Candidate band <select id="radio-band" class="camera-select"></select></label>
+      <label>Candidate channel <select id="radio-channel" class="camera-select"></select></label>
+      <button id="radio-plan" class="ghost" type="button">Preview radio configuration</button><button id="radio-download" class="ghost" type="button" hidden>Download configuration plan</button>
+      <p id="radio-status" class="voice-status" role="status"></p><pre id="radio-receipt" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px"></pre>
+    </details>
+    <details id="manual-settings-panel" style="margin-top:18px"><summary>A7 II manual setting control</summary>
+      <p class="voice-status">Inspect an exact setting, preview the proposed change, then explicitly apply an identity-bound plan. This registry and its live-write proofs apply to the A7 II only. A7 III manual registry writes remain unavailable. Registry entries are not live body or lens choices.</p>
+      <button id="manual-load" class="ghost" type="button">Load setting registry</button>
+      <label>Setting <select id="manual-setting" class="camera-select"><option value="">Load settings first</option></select></label>
+      <p id="manual-setting-info" class="voice-status"></p>
+      <label>Route <select id="manual-route" class="camera-select"><option value="auto">Automatic route</option></select></label>
+      <p class="voice-status">If a preview says live apply is unavailable, choose USB as the route for an A7 II on this cable, then preview again.</p>
+      <label>Requested value <input id="manual-value" class="prompt" placeholder="Value to preview" maxlength="250" /></label>
+      <button id="manual-read" class="ghost" type="button" disabled>Read selected A7 II setting</button>
+      <button id="manual-plan" class="ghost" type="button" disabled>Preview change (dry run)</button>
+      <button id="manual-apply" class="ghost" type="button" disabled>Apply reviewed change</button>
+      <p id="manual-status" class="voice-status" role="status"></p>
+      <details><summary>Plan and readback receipt</summary><pre id="manual-receipt" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px"></pre></details>
+    </details>
+  </details>
+
+  <section id="result" class="result" aria-label="Result">
+    <div class="result-bar">
+      <!-- Closes the result and returns to the capture controls; it never takes a photo. -->
+      <button id="again" class="again" type="button"><span aria-hidden="true">‹</span> New photo</button>
+    </div>
+    <div class="result-head">
+      <div class="verdict"><span class="check">✓</span><span id="verdict-text">Got it</span></div>
+    </div>
+    <div class="result-photo">
+      <img id="shot" alt="Last captured frame" />
+      <canvas id="last-frame-canvas" hidden aria-label="Last captured frame with composition overlays"></canvas>
+    </div>
+    <div class="overlay">
+      <div id="last-frame-aids" hidden>
+        <div class="aid-toggles">
+          <label><input id="last-frame-grid" type="checkbox" checked /> Thirds grid</label>
+          <label><input id="last-frame-zebra" type="checkbox" checked /> Highlight warning</label>
+        </div>
+        <p id="last-frame-status" class="voice-status" role="status">Last captured frame — not a live view.</p>
+        <canvas id="last-frame-histogram" aria-label="Luminance histogram of the last captured frame"></canvas>
+      </div>
+      <p id="auto-save-status" class="voice-status" hidden role="status"></p>
+      <div class="row">
+        <a id="review-shot" class="ghost" href="/review">Edit / share / delete</a>
+        <button id="why-toggle" class="link">Why these settings?</button>
+      </div>
+      <p id="why" class="why"></p>
+      <div id="feedback" class="feedback">
+        <span class="label">Was this good?</span>
+        <button id="vote-up" class="vote" aria-label="Good shot">👍</button>
+        <button id="vote-down" class="vote" aria-label="Not good">👎</button>
+      </div>
+      <p id="stack-outcome" class="voice-status" hidden></p><a id="stack-session" class="ghost" hidden>Inspect stack session and saved frames</a>
+      <div id="critique-trail" class="critique-trail" hidden></div>
+      <div id="mood-variants" class="variant-panel" hidden></div>
+      <button id="apply-variant" class="apply-variant" type="button" hidden>apply + reshoot</button>
+      <div id="constraint-cards" class="constraint-cards" hidden></div>
+      <details class="result-details">
+        <summary>Requested recipe and white balance</summary>
+        <div id="result-mood" class="mood-card result-mood" hidden></div>
+      </details>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="/client.js?v=20260929a"></script>
+<script src="/workflows.js?v=20261003c"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const homeCaption = ["Reading the light…", "Taking over the camera…", "Dialing it in…", "Almost there…"];
+  const videoCaption = ["Starting native recording…", "Recording to the camera SD card…", "Waiting for the camera…", "Stopping recording…"];
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  // The shot the feedback thumbs refer to — set on every successful capture.
+  let lastShot = { image: null, intent: null, objectUrl: null };
+  // The exposure the last /shoot left on the body: what a Fixed stack or session inherits.
+  // Remembered on the device so a relaunch still shows the last known baseline; it is what
+  // this app last saw, not a fresh read of the camera.
+  const BASELINE_KEY = Autopilot.deviceStore.BASELINE_KEY;
+  let bodyBaseline = null;
+  // A pending Night Assist plan (its session_request); it carries its own metered exposure.
+  let nightAssistRequest = null;
+  try { bodyBaseline = JSON.parse(Autopilot.deviceStore.read(BASELINE_KEY) || "null"); } catch (_) { bodyBaseline = null; }
+  function stackBaselineSource() {
+    return $("stack-baseline-source").value === "current" ? "current" : "metered";
+  }
+  function renderBodyBaseline() {
+    $("stack-baseline").textContent = AutopilotWorkflows.inheritedBaselineText(bodyBaseline, stackBaselineSource());
+    renderSessionBaseline();
+  }
+  function sessionBaselineSource() {
+    return $("session-baseline-source").value === "current" ? "current" : "metered";
+  }
+  // Start meters first (POST /sessions/meter-plan) unless the owner keeps the body's exposure; a Night
+  // Assist plan carries its own metered exposure. The budget sentence counts the meter photo.
+  function renderSessionBaseline() {
+    const nightPlan = $("session-mode").value === "night" && Boolean(nightAssistRequest);
+    $("session-baseline-row").hidden = nightPlan;
+    $("session-baseline").textContent = AutopilotWorkflows.sessionBaselineText(bodyBaseline, sessionBaselineSource(), nightPlan);
+    $("session-budget").textContent = AutopilotWorkflows.sessionBudgetText(Number($("session-frames").value) || 0, sessionBaselineSource(), nightPlan,
+      Number($("session-delay").value) || 0);
+  }
+  function recordBodyBaseline(shot) {
+    // A stack session restores its starting settings, so the body is back at the previous
+    // baseline; only an ordinary capture leaves its final readback on the camera.
+    if (!shot || !shot.settings || shot.evidence?.stack_policy?.session_id) return;
+    bodyBaseline = { settings: shot.settings, image: shot.image || null, ts: Date.now(),
+      readback: shot.evidence?.settings_readback?.after_final || null };
+    Autopilot.deviceStore.write(BASELINE_KEY, JSON.stringify(bodyBaseline));
+    renderBodyBaseline();
+  }
+  let currentMood = null;
+  let moodVariants = [];
+  let moodPreviews = {};
+  let moodRecipes = {};
+  let selectedVariantId = null;
+  let selectedVariantIntent = null;
+  let captureMode = "photo";
+  let previewTimer;
+  let listening = false;
+  let availableCameras = [];
+  let serverIdentity = null;
+  let cameraSelectionRequired = true;
+
+  const TOKEN_KEY = "camera-autopilot-token";
+  // Survives an app kill (localStorage) so a cold launch on the phone does not ask again.
+  let apiToken = Autopilot.deviceStore.read(TOKEN_KEY);
+
+  function rememberToken(token) {
+    apiToken = token.trim();
+    // Persisting is best-effort: a storage failure must never break the authenticated request.
+    if (apiToken) { try { Autopilot.deviceStore.write(TOKEN_KEY, apiToken); } catch (_) {} }
+  }
+
+  function apiHeaders(base = {}) {
+    const headers = { ...base };
+    if (apiToken) headers["X-Camera-Autopilot-Token"] = apiToken;
+    return headers;
+  }
+
+  // One-time pairing: the Mac terminal shows 6 digits; the server trades them once for the token,
+  // which is stored exactly where a pasted token goes. Returns the HTTP status (0 = not sent).
+  const PAIRING_CODE = /^[0-9]{6}$/;
+  async function pairWithCode(code) {
+    const digits = String(code || "").replace(/\s+/g, "");
+    if (!PAIRING_CODE.test(digits)) return 0;
+    let res;
+    try {
+      res = await fetch("/api/pair", { method: "POST", headers: { "Content-Type": "application/json" },
+                                       body: JSON.stringify({ code: digits }) });
+    } catch (_) { return 0; }
+    if (!res.ok) return res.status;
+    let payload = null;
+    try { payload = await res.json(); } catch (_) {}
+    if (!payload || typeof payload.token !== "string" || !payload.token) return 0;
+    rememberToken(payload.token);
+    return res.status;
+  }
+
+  async function apiFetch(url, options = {}, retry = true) {
+    const res = await fetch(url, { ...options, headers: apiHeaders(options.headers || {}) });
+    if (res.status === 401 && retry) {
+      const answer = window.prompt("Camera token, or the 6-digit pairing code from the Mac terminal");
+      if (answer && PAIRING_CODE.test(answer.replace(/\s+/g, ""))) {
+        if (await pairWithCode(answer) === 200) return apiFetch(url, options, false);
+      } else if (answer) {
+        rememberToken(answer);
+        return apiFetch(url, options, false);
+      }
+    }
+    return res;
+  }
+
+  async function apiError(res, operation) {
+    let detail = "";
+    try {
+      const payload = await res.clone().json();
+      detail = payload.detail || payload.error || "";
+      if(detail && typeof detail === "object") detail = detail.message || detail.error || JSON.stringify(detail);
+    } catch (_) {}
+    const error = new Error(`${operation} failed: ${res.status}${detail ? ` (${detail})` : ""}`);
+    error.status = res.status;
+    error.detail = detail;
+    error.operation = operation;
+    return error;
+  }
+
+  function cameraFailureMessage(error) {
+    if (error?.outcomeUncertain && error.operation === 'shoot') {
+      return "Capture response was lost. A photo may already have been taken. Check Review and the camera card before any new capture. Do not retry to repair a missing response or display.";
+    }
+    if (error?.outcomeUncertain && error.operation === 'record') {
+      return "Recording response was lost. The camera may still be recording. Check the actual camera recording state and its card before any more camera action. Do not retry recording to repair a missing response.";
+    }
+    if(error?.operation === 'record' && error.status === 409) {
+      return (error.detail || 'Recording state is uncertain.') + ' Do not retry recording until the camera has been checked.';
+    }
+    if (error && error.status === 403) {
+      return "Secure camera access is required. Use HTTPS or the trusted-lab launcher.";
+    }
+    if (error && error.status === 401) {
+      return "The camera token was not accepted. Try again.";
+    }
+    return error?.detail || error?.message || "Couldn't reach the camera. Check it's on and try again.";
+  }
+
+  async function authedImageUrl(path) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+      const res = await apiFetch(path, {signal: controller.signal});
+      if (!res.ok) throw await apiError(res, "image");
+      return URL.createObjectURL(await res.blob());
+    } finally { clearTimeout(timeout); }
+  }
+
+  function node(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text !== undefined && text !== null) el.textContent = text;
+    return el;
+  }
+
+  function renderMoodCard(container, mood, shot = null) {
+    container.replaceChildren();
+    if (!mood) {
+      container.hidden = true;
+      return;
+    }
+
+    const top = node("div", "mood-top");
+    top.append(node("span", "mood-label", "Requested recipe"));
+    top.append(node("strong", "mood-name", mood.name || "Custom Vibe"));
+
+    const heard = node("p", "mood-heard", mood.heard ? `"${mood.heard}"` : "Reading the room");
+    const grid = node("dl", "mood-grid");
+    const settings = mood.settings || {};
+    [
+      ["Light", mood.lighting],
+      ["Color", mood.color],
+      ["Camera", mood.camera],
+      ["Requested settings", `${settings.exposure_bias || "neutral"} · WB ${settings.white_balance || "auto"} · ${settings.brightness_target || "112"}`],
+    ].forEach(([label, value]) => {
+      const item = node("div", "mood-item");
+      item.append(node("dt", "", label));
+      item.append(node("dd", "", value || "balanced"));
+      grid.append(item);
+    });
+
+    container.append(top, heard, grid);
+    if (shot) {
+      container.append(node("p", "mood-evidence", Autopilot.whiteBalanceEvidence(shot)));
+      container.append(node("p", "mood-evidence", "Recipe outcome has not been verified from the photo."));
+    }
+    container.hidden = false;
+  }
+
+  function renderCritiqueTrail(evidence) {
+    const container = $("critique-trail");
+    container.replaceChildren();
+    if (!evidence) { container.hidden = true; return; }
+    const rows = AutopilotWorkflows.critiqueTrailRows(evidence);
+    if (!rows.length) { container.hidden = true; return; }
+    rows.forEach((row) => {
+      const item = node("div", "critique-row" + (row.disabled ? " disabled" : ""));
+      if (row.disabled) {
+        item.textContent = row.text;
+      } else {
+        const head = node("strong", "", `Attempt ${row.index + 1} · target ${row.target}`);
+        item.append(head, node("span", "", ` — ${row.critique}`));
+        item.append(node("span", "adjust", ` → ${row.adjust}`));
+      }
+      container.append(item);
+    });
+    container.hidden = false;
+  }
+
+  function selectedVariant() {
+    return moodVariants.find((variant) => variant.id === selectedVariantId) || null;
+  }
+
+  function renderMoodVariants(imageName, variantPlan) {
+    const panel = $("mood-variants");
+    panel.replaceChildren();
+    moodVariants = (variantPlan && variantPlan.variants) || [];
+    selectedVariantId = variantPlan ? variantPlan.selected : null;
+
+    if (!imageName || !moodVariants.length) {
+      panel.hidden = true;
+      $("apply-variant").hidden = true;
+      selectedVariantIntent = null;
+      return;
+    }
+
+    const strip = node("div", "variant-strip");
+    moodVariants.forEach((variant) => {
+      const tile = node("button", "variant-tile");
+      tile.type = "button";
+      tile.dataset.variantId = variant.id;
+      tile.dataset.intent = variant.intent;
+      tile.classList.toggle("selected", variant.id === selectedVariantId);
+      tile.addEventListener("click", () => selectMoodVariant(variant.id, imageName));
+
+      const img = document.createElement("img");
+      img.alt = variant.name + " preview";
+      const serverPreview = moodPreviews[variant.id];
+      if (serverPreview) {
+        // Server-rendered preview (a self-contained data: URL). No CSS filter fakery.
+        img.src = serverPreview;
+      } else {
+        // Graceful fallback: the plain saved thumbnail, no filter, when previews are unavailable.
+        img.src = lastShot.objectUrl || '';
+      }
+      img.onerror = () => {
+        panel.hidden = true;
+        $("apply-variant").hidden = true;
+        showToast("Couldn't preview moods for this shot.");
+      };
+
+      const copy = node("div", "variant-copy");
+      copy.append(node("span", "variant-name", variant.name));
+      copy.append(node("span", "variant-recipe", moodRecipes[variant.id] || variant.preview?.recipe || ""));
+      tile.append(img, copy);
+      strip.append(tile);
+    });
+
+    panel.append(node("p", "voice-status", "Look previews only. The saved photo is unchanged; reshoot requests the selected camera recipe."), strip);
+    panel.hidden = false;
+    const selected = selectedVariant();
+    selectedVariantIntent = selected ? selected.intent : null;
+    $("apply-variant").hidden = !selectedVariantIntent;
+  }
+
+  function selectMoodVariant(variantId, imageName) {
+    selectedVariantId = variantId;
+    const selected = selectedVariant();
+    selectedVariantIntent = selected ? selected.intent : null;
+    renderMoodVariants(imageName, { selected: selectedVariantId, variants: moodVariants });
+  }
+
+  async function loadMoodVariants(intent, imageName) {
+    moodPreviews = {};
+    moodRecipes = {};
+    try {
+      const res = await fetch("/intent/variants", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intent: intent || null })
+      });
+      if (!res.ok) throw new Error("variants failed: " + res.status);
+      const variantPlan = await res.json();
+      // Fetch server-rendered previews once for this landed image. The token rides the
+      // authenticated header (never the URL); on failure the swatches fall back to the plain
+      // thumbnail with no filter.
+      if (imageName) {
+        try {
+          const rendered = await AutopilotWorkflows.fetchMoodPreviews(apiFetch, imageName);
+          moodPreviews = rendered.previews;
+          moodRecipes = rendered.recipes;
+        } catch (_) { /* graceful fallback: plain thumbnails */ }
+      }
+      renderMoodVariants(imageName, variantPlan);
+    } catch (e) {
+      renderMoodVariants(null, null);
+    }
+  }
+
+  async function previewIntent(intent) {
+    const clean = intent.trim();
+    if (!clean) {
+      currentMood = null;
+      $("voice-status").textContent = "";
+      renderMoodCard($("mood-card"), null);
+      return;
+    }
+    try {
+      const res = await fetch("/intent/preview", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intent: clean })
+      });
+      if (!res.ok) throw new Error("preview failed: " + res.status);
+      const plan = await res.json();
+      currentMood = plan.mood;
+      renderMoodCard($("mood-card"), currentMood);
+    } catch (e) {
+      currentMood = {
+        heard: clean,
+        name: "Custom Vibe",
+        lighting: "ready to read the light",
+        color: "natural color",
+        camera: "native autofocus with autopilot exposure",
+        settings: { exposure_bias: "neutral", white_balance: "auto", brightness_target: 112 }
+      };
+      renderMoodCard($("mood-card"), currentMood);
+    }
+  }
+
+  function schedulePreview(delay = 320) {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => previewIntent($("intent").value), delay);
+  }
+
+  // reflect readiness
+  async function refreshCameras() {
+  await apiFetch("/status").then(async r => {
+    if (!r.ok) return;
+    const s = await r.json();
+    $("status").textContent = s.ready ? (s.camera || "ready") : (s.selection_required ? "choose camera" : "connect camera");
+    $("dot").style.background = s.ready ? "var(--ok)" : "var(--muted)";
+    availableCameras = s.cameras || [];serverIdentity=s.server_identity || null;
+    $("sessions-panel").hidden = s.engine !== "real";
+    $("handheld-panel").hidden = s.engine !== "real";
+    if(s.engine === "real") refreshSessions();
+    $("camera-select").replaceChildren(new Option("Select camera", ""));
+    // Presentation only: a non-Sony USB device (an iPhone in PTP mode) is listed under its own
+    // heading so it does not read as a camera choice. Discovery, values and gating are unchanged.
+    const cameraGroup = document.createElement("optgroup"), otherGroup = document.createElement("optgroup");
+    cameraGroup.label = "Cameras";
+    otherGroup.label = "Other USB devices (not supported cameras)";
+    availableCameras.forEach((camera, i) => {
+      // The driver names the two bodies inconsistently: the A7 III reports a readable name
+      // while the A7 II reports the bare model code ILCE-7M2, which a beginner will not
+      // recognise as their camera. Show a friendly name for display only. The exact driver
+      // string stays the identity that is sent back, because a sleeping body can report the
+      // wrong model and the label must never be trusted for identity (see .claude/lessons.md).
+      const option = new Option(`${Autopilot.friendlyCameraName(camera.model)} · ${camera.port}${camera.serial ? "" : " · no USB serial, capture disabled"}`, String(i));
+      option.title = camera.model;
+      // The last 4 characters of the USB serial tell two bodies apart (the confirm dialogs show it too).
+      if (camera.serial) option.text += ` · serial …${String(camera.serial).slice(-4)}`;
+      (Autopilot.isSupportedCameraModel(camera.model) ? cameraGroup : otherGroup).append(option);
+    });
+    if (otherGroup.childElementCount) [cameraGroup, otherGroup].forEach(group => { if (group.childElementCount) $("camera-select").append(group); });
+    else $("camera-select").append(...cameraGroup.children);
+    const savedCamera = Autopilot.deviceStore.read(Autopilot.deviceStore.CAMERA_KEY) || null;
+    let savedPair = null;
+    try { savedPair = JSON.parse(savedCamera); } catch (_) {}
+    const serialMatches = availableCameras.flatMap((camera, i) => savedPair && camera.model === savedPair.model && Boolean(savedPair.serial) && camera.serial === savedPair.serial ? [i] : []);  // serial is the identity; the current row supplies today's port
+    const restored = serialMatches.length === 1 ? serialMatches[0] : -1;  // two rows with one serial are ambiguous: never pick the first
+    const soleIdentified = availableCameras.length === 1 && Boolean(availableCameras[0].serial) && availableCameras[0].serial_status === "present";  // a serial-less or duplicate-serial body is never picked for the user
+    cameraSelectionRequired = restored < 0 && (Boolean(savedCamera) || availableCameras.length > 1 || (availableCameras.length === 1 && !soleIdentified));
+    if (restored >= 0) {$("camera-select").value = String(restored);$("status").textContent=availableCameras[restored].model;}
+    else if (!cameraSelectionRequired && soleIdentified) $("camera-select").value = "0";
+    if(cameraSelectionRequired) $("status").textContent=savedCamera ? "Camera connection changed — select it again" : (availableCameras.length === 1 && !soleIdentified ? "Camera identity unavailable (no USB serial) — capture disabled" : "Choose which camera to use");
+    updateVideoAvailability();
+    syncCaptureControls();
+  }).catch(() => {});
+  }
+  refreshCameras();
+  $("refresh-cameras").onclick=refreshCameras;
+
+  let manualRows=[], manualPlan=null, manualPayload=null, radioChoices=[], radioPlan=null;
+  function invalidateManualPlan() {manualPlan=null;manualPayload=null;$('manual-apply').disabled=true;}
+  function noImageWhy(shot) {
+    // A refused fixed ladder fired nothing: the fix is a new capture at an allowed shutter.
+    const refusal=shot.evidence?.stack_policy?.ladder_refusal;
+    if(refusal){const why=shot.why || '', remedy=refusal.remedy || 'Start a new capture.';return why.includes(remedy)?why:(why+' '+remedy).trim();}
+    return (shot.why || 'No final gallery image was delivered. Inspect the saved session and camera card before any new capture.')+' Do not recapture to repair a missing result.';
+  }
+  function sessionResumable(state) {
+    // A fixed-ladder refusal is decided by the session's saved baseline: a rerun refuses again.
+    const ambiguous=(state.frames || []).some(frame=>['capturing','ambiguous'].includes(frame.status));
+    return !ambiguous && !state.ladder_refusal && ['cancelled','failed','restore_failed','ready','identity_refused','precondition_refused'].includes(state.status);
+  }
+  function manualApplyAllowed() {
+    const camera=availableCameras[$('camera-select').value];
+    return Boolean(camera?.model?.includes('ILCE-7M2') && camera?.serial && manualPlan?.identity_bound_live_write === true && manualPlan?.camera_identity?.explicit_selection===true && manualPlan?.camera_identity?.model===camera?.model && manualPlan?.camera_identity?.port===camera?.port && manualPlan?.camera_identity?.serial===camera?.serial && manualPayload);
+  }
+  function displayManualSetting() {
+    invalidateManualPlan();
+    const row=manualRows.find(item=>item.setting_id===$('manual-setting').value);
+    $('manual-route').replaceChildren(new Option('Automatic route','auto'));
+    if(row){Object.keys(row.routes || {}).forEach(route=>$('manual-route').append(new Option(({usb_gphoto:'USB',smart_remote_wifi:'Sony Smart Remote Wi-Fi',raw_ptp:'Experimental protocol — preview only'})[route] || route,route)));$('manual-setting-info').textContent=(row.label || row.setting_id)+' · registry status '+(row.status || 'unknown')+(row.preconditions?.length?' · '+row.preconditions.join('; '):'');}
+    else $('manual-setting-info').textContent='';
+    syncCaptureControls();
+  }
+  $('pair-device').onclick=async()=>{
+    const code=$('pair-code').value;$('pair-code').value='';
+    if(!PAIRING_CODE.test(code.replace(/\s+/g,''))){$('device-status').textContent='Enter the 6 digits shown on the Mac terminal.';return;}
+    $('pair-device').disabled=true;$('device-status').textContent='Pairing…';
+    try {
+      const status=await pairWithCode(code);
+      $('device-status').textContent=status===200?'Paired: this phone now holds the camera token.'
+        :status===429?'Too many pairing attempts. Wait a minute, then try again.'
+        :status===403?'Pairing needs the secure (HTTPS) address of the camera server.'
+        :'Pairing code not accepted. A code works once, expires after 10 minutes and stops after 5 wrong tries; get a new one on the Mac (python tools/pair_code.py).';
+    } finally { $('pair-device').disabled=false; }
+  };
+  $('forget-device').onclick=()=>{
+    if(!confirm('Forget the camera token, the chosen camera and the active session on this device? The next request will ask for the token again.'))return;
+    Autopilot.deviceStore.forget();
+    apiToken='';activeSession=null;selectedSessionState=null;bodyBaseline=null;cameraSelectionRequired=availableCameras.length>0;
+    $('camera-select').value='';if(availableCameras.length)$('status').textContent='Choose which camera to use';
+    $('auto-save-photos').checked=false;
+    sessionCameraWarning=null;renderSessionCameraWarning();
+    renderBodyBaseline();syncCaptureControls();syncAutoSaveControl();
+    $('device-status').textContent='Forgotten on this device: token, camera choice, active session, auto-save. Nothing on the server changed.';
+  };
+  $('device-refresh').onclick=async()=>{
+    if(busy)return;busy=true;syncCaptureControls();$('device-status').textContent='Reading controller…';
+    try {
+      await refreshCameras();
+      const response=await apiFetch('/device-health');if(!response.ok)throw await apiError(response,'Device status');
+      const health=await response.json();$('device-health').replaceChildren();
+      radioChoices=health.radio?.selection_action==='render_configuration_only' && Array.isArray(health.radio.renderable_band_choices) ? health.radio.renderable_band_choices.filter(choice=>typeof choice.id==='string' && Array.isArray(choice.candidate_channels)) : [];
+      $('radio-panel').hidden=!radioChoices.length;$('radio-band').replaceChildren();radioChoices.forEach(choice=>$('radio-band').append(new Option(choice.label || choice.id,choice.id)));renderRadioChannels();
+      $('discovery-status').textContent=serverIdentity ? (serverIdentity.display_name || 'Controller')+' · '+(serverIdentity.identity_scope==='configured_device'?'configured device '+serverIdentity.device_id:'identity belongs to this backend process')+'. Discovery uses this known server URL; automatic network and Bluetooth discovery are unavailable.' : 'Server identity unavailable. Camera discovery above uses this controller; automatic network puck discovery is unavailable.';
+      AutopilotWorkflows.healthRows(health,location.origin).forEach(([label,value])=>{const term=document.createElement('dt'),description=document.createElement('dd');term.textContent=label;term.style.marginTop='10px';term.style.color='var(--muted)';description.textContent=value;$('device-health').append(term,description);});
+      $('device-status').textContent=availableCameras.length+' camera connection'+(availableCameras.length===1?'':'s')+' reported. Select the exact model and port above. Updated '+new Date().toLocaleTimeString()+'.';
+    }catch(error){$('device-status').textContent='Device status unavailable: '+error.message;}
+    finally{busy=sessionRunning;syncCaptureControls();}
+  };
+  function renderRadioChannels(){
+    radioPlan=null;$('radio-download').hidden=true;$('radio-channel').replaceChildren();
+    const choice=radioChoices.find(item=>item.id===$('radio-band').value);
+    (choice?.candidate_channels || []).filter(Number.isInteger).forEach(channel=>$('radio-channel').append(new Option(String(channel),String(channel))));
+  }
+  $('radio-band').onchange=renderRadioChannels;
+  $('radio-channel').onchange=()=>{radioPlan=null;$('radio-download').hidden=true;};
+  $('radio-plan').onclick=async()=>{
+    if(!$('radio-channel').value)return;$('radio-plan').disabled=true;
+    try{const response=await apiFetch('/device/radio-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({band:$('radio-band').value,channel:Number($('radio-channel').value)})});if(!response.ok)throw await apiError(response,'Radio plan');const plan=await response.json();$('radio-receipt').textContent=JSON.stringify(plan,null,2);if(plan.host_changes!==false || plan.access_point_started!==false)throw new Error('The response did not confirm a configuration-only plan.');radioPlan=plan;$('radio-download').hidden=false;$('radio-status').textContent='Configuration rendered. No host settings changed; no access point started. Hardware and regulatory support remain unverified.';}
+    catch(error){radioPlan=null;$('radio-download').hidden=true;$('radio-status').textContent=error.message;}
+    finally{$('radio-plan').disabled=false;}
+  };
+  $('radio-download').onclick=()=>{if(!radioPlan)return;const url=URL.createObjectURL(new Blob([JSON.stringify(radioPlan,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='camera-radio-plan.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),30000);};
+  $('manual-load').onclick=async()=>{
+    $('manual-load').disabled=true;
+    try{const response=await apiFetch('/api/camera/settings');if(!response.ok)throw await apiError(response,'Settings registry');const data=await response.json();manualRows=Array.isArray(data.settings)?data.settings:[];$('manual-setting').replaceChildren(new Option('Select a setting',''));manualRows.forEach(row=>{const option=new Option(row.label && row.label!==row.setting_id?row.label+' ('+row.setting_id+')':row.setting_id,row.setting_id);option.title=row.setting_id;$('manual-setting').append(option);});$('manual-status').textContent=manualRows.length+' registry entries loaded. No camera settings were changed.';}
+    catch(error){$('manual-status').textContent=error.message;}
+    finally{$('manual-load').disabled=false;invalidateManualPlan();syncCaptureControls();}
+  };
+  $('manual-setting').onchange=displayManualSetting;
+  ['manual-route','manual-value','camera-select'].forEach(id=>$(id).addEventListener('change',invalidateManualPlan));
+  $('manual-value').addEventListener('input',invalidateManualPlan);
+  $('manual-read').onclick=async()=>{
+    if(busy)return;const camera=availableCameras[$('camera-select').value];if(!camera?.model?.includes('ILCE-7M2') || !$('manual-setting').value)return;
+    busy=true;syncCaptureControls();
+    try{const query=new URLSearchParams({live:'true',route:'usb_gphoto',camera_model:camera.model,camera_port:camera.port});if(camera.serial)query.set('camera_serial',camera.serial);const response=await apiFetch('/api/camera/settings/'+encodeURIComponent($('manual-setting').value)+'?'+query);if(!response.ok)throw await apiError(response,'Setting readback');const receipt=await response.json();$('manual-receipt').textContent=JSON.stringify(receipt,null,2);const current=receipt.current ?? 'unavailable';$('manual-status').textContent='Readback received: '+(current && typeof current==='object' && 'value' in current ? String(current.value) : JSON.stringify(current))+'. Full receipt below. No setting write was requested.';}
+    catch(error){$('manual-status').textContent='Readback unavailable: '+error.message;}
+    finally{busy=sessionRunning;syncCaptureControls();}
+  };
+  $('manual-plan').onclick=async()=>{
+    if(busy || !$('manual-setting').value)return;
+    invalidateManualPlan();const camera=availableCameras[$('camera-select').value];
+    let value=$('manual-value').value.trim();if(!value){$('manual-status').textContent='Enter a value to preview.';return;}
+    try{value=JSON.parse(value);}catch(_){}
+    const payload={value,route:$('manual-route').value,dry_run:true,allow_behavior_probe:false,camera_model:camera?.model || null,camera_port:camera?.port || null,camera_serial:camera?.serial || null};
+    busy=true;syncCaptureControls();
+    try{const response=await apiFetch('/api/camera/settings/'+encodeURIComponent($('manual-setting').value),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!response.ok)throw await apiError(response,'Setting preview');manualPlan=await response.json();manualPayload={setting_id:$('manual-setting').value,...payload};$('manual-receipt').textContent=JSON.stringify(manualPlan,null,2);$('manual-status').textContent='Dry run complete. No setting write was requested. '+(manualApplyAllowed()?'Review the exact camera and value before applying.':'Live apply unavailable: this response does not confirm an executable plan for the selected camera.');}
+    catch(error){$('manual-status').textContent=error.message;}
+    finally{busy=sessionRunning;syncCaptureControls();}
+  };
+  $('manual-apply').onclick=async()=>{
+    if(busy || !manualApplyAllowed())return;
+    const payload={...manualPayload,dry_run:false};const settingId=payload.setting_id;delete payload.setting_id;
+    if(!confirm('Apply '+settingId+' = '+JSON.stringify(payload.value)+' to '+payload.camera_model+' at '+payload.camera_port+' (serial '+payload.camera_serial+')?'))return;
+    busy=true;syncCaptureControls();
+    try{const response=await apiFetch('/api/camera/settings/'+encodeURIComponent(settingId),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!response.ok)throw await apiError(response,'Setting apply');const receipt=await response.json();$('manual-receipt').textContent=JSON.stringify(receipt,null,2);$('manual-status').textContent=receipt.verified===true?'Camera setting readback verified.':'Apply response received; verification is incomplete. Inspect the readback receipt before another change.';}
+    catch(error){$('manual-status').textContent='Setting outcome was not confirmed. Check the camera and receipt before any further write. '+error.message;}
+    finally{invalidateManualPlan();busy=sessionRunning;syncCaptureControls();}
+  };
+  // First-run hint: show once, then never again on this device.
+  if (!localStorage.getItem("seen-hint")) {
+    setTimeout(() => $("hint").classList.add("show"), 700);
+  }
+
+  // Soft, self-dismissing error toast — never blocks the shutter.
+  let toastTimer;
+  function showToast(message) {
+    $("toast").textContent = message;
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $("toast").classList.remove("show"), 4200);
+  }
+
+  function hideLastFrameAids() {
+    $("last-frame-aids").hidden = true;
+    $("last-frame-canvas").hidden = true;
+    $("auto-save-status").hidden = true;
+  }
+  function renderLastFrameAids() {
+    const frame = $("shot");
+    if (!frame.naturalWidth) return;
+    const canvas = $("last-frame-canvas");
+    canvas.hidden = false;
+    frame.hidden = true;
+    $("last-frame-aids").hidden = false;
+    // The photo box takes the photo's own shape, so the drawn rect (and every overlay clipped to
+    // it) fills the box; a tall box on a short screen still letterboxes via containedDrawRect.
+    canvas.parentElement.style.aspectRatio = `${frame.naturalWidth} / ${frame.naturalHeight}`;
+    void canvas.offsetWidth;
+    const measured = AutopilotWorkflows.paintPreview(canvas, $("last-frame-histogram"), frame, {
+      grid: $("last-frame-grid").checked, zebra: $("last-frame-zebra").checked, maxEdge: 1600,
+      fit: "contain", boxWidth: canvas.clientWidth, boxHeight: canvas.clientHeight,
+      pixelRatio: window.devicePixelRatio
+    });
+    canvas.dataset.paintedBox = `${canvas.clientWidth}x${canvas.clientHeight}@${window.devicePixelRatio}`;
+    $("last-frame-status").textContent = AutopilotWorkflows.lastFrameAidsCaption({
+      width: frame.naturalWidth, height: frame.naturalHeight, clippedPercent: measured.clippedPercent
+    });
+  }
+  function syncAutoSaveControl() {
+    const native = Autopilot.nativeMedia();
+    const box = $("auto-save-photos");
+    box.disabled = !native;
+    box.checked = Boolean(native) && Autopilot.autoSavePhotosEnabled();
+  }
+  async function maybeAutoSaveToPhotos(image, title) {
+    const native = Autopilot.nativeMedia();
+    if (!Autopilot.shouldAttemptPhotosSave(Autopilot.autoSavePhotosEnabled(), native)) {
+      $("auto-save-status").hidden = true;
+      return;
+    }
+    $("auto-save-status").hidden = false;
+    $("auto-save-status").textContent = "Saving to Photos…";
+    try {
+      const outcome = await Autopilot.exportImage(apiFetch, image, title, true);
+      $("auto-save-status").textContent = Autopilot.photosSaveStatusText(outcome);
+    } catch (error) {
+      $("auto-save-status").textContent = "Photo is on this backend. Photos save was not confirmed. " + (error.message || "");
+    }
+  }
+
+  let busy = false;
+  // USB ports re-enumerate; the serial is the only stable identity, and the server refuses without it.
+  const NO_SERIAL_MESSAGE = "This camera reports no USB serial, so its identity cannot be proven. Capture is disabled for it.";
+  async function captureRequest(path, payload, operation) {
+    try {
+      const res = await apiFetch(path, {
+        method: "POST", headers: apiHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw await apiError(res, operation);
+      return await res.json();
+    } catch (error) {
+      // No response, or an unreadable success response, cannot prove no action.
+      if (!error.status) {
+        error.operation = operation;
+        error.outcomeUncertain = true;
+      }
+      throw error;
+    }
+  }
+
+  async function takePhoto(intent, variantId = null) {
+    if(cameraSelectionRequired) throw new Error("Choose a camera before capturing. Refresh cameras if the connection changed.");
+    const camera = availableCameras[$("camera-select").value] || {};
+    if(camera.model && !camera.serial) throw new Error(NO_SERIAL_MESSAGE);
+    return captureRequest("/shoot", { intent: intent || null, variant_id: variantId, refine: $("refine").checked, stack_policy:{mode:$("stack-policy").value || "off",stack_mode:$("stack-mode").value || "night",frames:Number($("stack-frames").value || 3),...($("stack-policy").value==="fixed" ? {baseline:stackBaselineSource()} : {})}, camera_model: camera.model || null, camera_port: camera.port || null, camera_serial: camera.serial || null }, "shoot");
+  }
+
+  async function recordVideo(intent) {
+    if(cameraSelectionRequired) throw new Error("Choose a camera before capturing. Refresh cameras if the connection changed.");
+    const camera = availableCameras[$("camera-select").value] || {};
+    if(camera.model && !camera.serial) throw new Error(NO_SERIAL_MESSAGE);
+    return captureRequest("/record", { intent: intent || null, seconds: 8, camera_model: camera.model || null, camera_port: camera.port || null, camera_serial: camera.serial || null }, "record");
+  }
+
+  async function shoot(variantId = null) {
+    if (typeof variantId !== "string") variantId = null;
+    if (busy) return;
+    busy = true;syncCaptureControls();$("stack-outcome").hidden=true;$("stack-session").hidden=true;
+    $("hint").classList.remove("show");
+    localStorage.setItem("seen-hint", "1");
+    const intent = $("intent").value.trim();
+    $("shutter").disabled = true;
+    const captions = captureMode === "video" ? videoCaption : homeCaption;
+    let i = 0;
+    $("caption").textContent = captions[0];
+    $("caption").classList.add("pulse");
+    const tick = setInterval(() => { $("caption").textContent = captions[++i % captions.length]; }, 900);
+    try {
+      const shot = captureMode === "video" ? await recordVideo(intent) : await takePhoto(intent, variantId);
+      $('result').querySelector('.check').textContent=shot.image || captureMode==='video' ? '✓' : '!';
+      const stack=shot.evidence?.stack_policy;
+      $('stack-outcome').hidden=!stack;$('stack-session').hidden=!stack?.session_id;
+      if(stack){
+        const decision=stack.decision || {};
+        $('stack-outcome').textContent='Stack: '+(decision.mode || stack.status || 'recorded')+'. '+(decision.reason || stack.reason || '')+(stack.status ? ' Session '+stack.status+'.' : '');
+        if(Number.isFinite(shot.evidence?.physical_exposure_count))$('stack-outcome').textContent+=' Physical exposures: '+shot.evidence.physical_exposure_count+'.';
+        const baselineText=AutopilotWorkflows.stackBaselineOutcomeText(stack.baseline);
+        if(baselineText)$('stack-outcome').textContent+=' '+baselineText;
+        if(stack.session_id)$('stack-session').href='/?session='+encodeURIComponent(stack.session_id);
+      }
+      if(!shot.image && captureMode==='photo'){
+        if(lastShot.objectUrl)URL.revokeObjectURL(lastShot.objectUrl);
+        lastShot={image:null,intent:intent||null,objectUrl:null};
+        $('shot').removeAttribute('src');$('shot').hidden=true;
+        hideLastFrameAids();
+        $('verdict-text').textContent=shot.summary || 'Capture needs review';
+        $('why').textContent=noImageWhy(shot);
+        $('why').classList.add('show');$('feedback').hidden=true;$('review-shot').hidden=true;
+        renderMoodCard($('result-mood'),null);renderMoodVariants(null,null);Autopilot.renderCards($('constraint-cards'),[]);renderCritiqueTrail(null);
+        $('result').classList.add('show');return;
+      }
+      if (!shot.image && captureMode === "video") {
+        if(lastShot.objectUrl) URL.revokeObjectURL(lastShot.objectUrl);
+        lastShot={image:null,intent:intent||null,objectUrl:null};
+        $("shot").removeAttribute("src");$("shot").hidden=true;
+        hideLastFrameAids();
+        $("verdict-text").textContent=shot.recording?.clip_playback_verified === false ? "Movie start/stop commands completed" : (shot.summary || "Recording receipt");
+        const warnings=[...(Array.isArray(shot.warnings)?shot.warnings:[]), shot.warning, shot.recording?.warning, shot.recording?.receipt_error, shot.recording?.receipt_persistence_warning, shot.recording?.settings_readback?.warning, shot.recording?.receipt_cleanup_warning].filter(Boolean);
+        $("why").textContent=(shot.recording?.clip_playback_verified === false ? "Verify the clip on the camera SD card. It has not been downloaded or played back here." : (shot.why || "Start/stop receipt; verify the clip on the camera SD card."))+(warnings.length?' Warning: '+warnings.join(' · '):'');
+        $("why").classList.add("show");
+        renderMoodCard($("result-mood"),null);renderMoodVariants(null,null);
+        Autopilot.renderCards($("constraint-cards"),[]);renderCritiqueTrail(null);
+        $("feedback").hidden=true;$("review-shot").hidden=true;
+        $("result").classList.add("show");
+        return;
+      }
+      // Capture is confirmed before any display work. A preview failure must
+      // preserve its receipt and must never be reported as a camera failure.
+      if (lastShot.objectUrl) URL.revokeObjectURL(lastShot.objectUrl);
+      lastShot = { image: shot.image, intent: intent || null, objectUrl: null };
+      if (captureMode === "photo") recordBodyBaseline(shot);
+      $("shot").removeAttribute("src"); $("shot").hidden=true;
+      hideLastFrameAids();
+      $("feedback").hidden=false; $("review-shot").hidden=false;
+      resetFeedback();
+      $("verdict-text").textContent = shot.summary || "Photo saved";
+      $("why").textContent = shot.why || "";
+      renderCritiqueTrail(shot.evidence);
+      if(stack)$('why').textContent+=' '+$('stack-outcome').textContent;
+      $("review-shot").href = "/review#" + encodeURIComponent(shot.image);
+      $("result").classList.add("show");
+      const previewUnavailable = () => {
+        $("shot").hidden=true;
+        hideLastFrameAids();
+        $("why").textContent = "Photo saved; preview unavailable. Open Review to load the saved photo. Do not recapture to fix the display.";
+        $("why").classList.add("show");
+        renderMoodVariants(null, null);
+      };
+      try {
+        Autopilot.renderCards($("constraint-cards"), shot.cards);
+        currentMood = shot.mood || currentMood;
+        renderMoodCard($("result-mood"), currentMood, shot);
+        const objectUrl = await authedImageUrl("/shots/" + encodeURIComponent(shot.image) + "?t=" + Date.now());
+        lastShot.objectUrl = objectUrl;
+        $("shot").onerror = previewUnavailable;
+        $("shot").onload = () => { renderLastFrameAids(); };
+        $("shot").src = objectUrl;
+        if (captureMode === "photo") {
+          loadMoodVariants(intent, shot.image);
+          maybeAutoSaveToPhotos(shot.image, shot.summary);
+        }
+        else renderMoodVariants(null, null);
+      } catch (displayError) {
+        previewUnavailable();
+      }
+    } catch (e) {
+      const message = cameraFailureMessage(e);
+      showToast(message);
+      if (e.outcomeUncertain) {
+        $('result').querySelector('.check').textContent='!';
+        $("verdict-text").textContent = captureMode === "video" ? "Recording outcome uncertain" : "Capture outcome uncertain";
+        $("why").textContent = message; $("why").classList.add("show");
+        $("shot").hidden=true; $("feedback").hidden=true;
+        hideLastFrameAids();
+        $("review-shot").hidden=captureMode === "video"; $("review-shot").href="/review";
+        renderMoodCard($("result-mood"), null); renderMoodVariants(null, null);
+        Autopilot.renderCards($("constraint-cards"), []);renderCritiqueTrail(null);
+        $("result").classList.add("show");
+      }
+    } finally {
+      clearInterval(tick);
+      $("caption").classList.remove("pulse");
+      $("caption").textContent = captureMode === "video" ? "Tap to record video" : "Tap to get the shot";
+      busy = false;
+      syncCaptureControls();
+    }
+  }
+
+  function syncCaptureControls() {
+    $("shutter").disabled = busy || cameraSelectionRequired;
+    $("session-start").disabled = busy || cameraSelectionRequired;
+    $("preview-request").disabled = busy || cameraSelectionRequired;
+    $("camera-select").disabled = busy;
+    $("refresh-cameras").disabled = busy;
+    $("device-refresh").disabled=busy;
+    $("manual-plan").disabled=busy || !$("manual-setting").value;
+    $("manual-read").disabled=busy || !$("manual-setting").value || !availableCameras[$("camera-select").value]?.model?.includes("ILCE-7M2");
+    $("manual-apply").disabled=busy || !manualApplyAllowed();
+    ["manual-setting","manual-route","manual-value","manual-load"].forEach(id=>$(id).disabled=busy);
+    $("mode-photo").disabled = busy;
+    const selected=availableCameras[$("camera-select").value];
+    $("mode-video").disabled = busy || Boolean(selected?.model && !selected.model.includes("ILCE-7M2"));
+    ["stack-policy","stack-mode","stack-frames","stack-baseline-source"].forEach(id=>$(id).disabled=busy);
+    $("refine").disabled=busy || $("stack-policy").value!=='off';
+  }
+  function updateVideoAvailability() {
+    const camera=availableCameras[$("camera-select").value] || (availableCameras.length===1?availableCameras[0]:{});
+    const unsupported=Boolean(camera.model && !camera.model.includes("ILCE-7M2"));
+    $("mode-video").disabled=unsupported;
+    $("mode-video").title=unsupported?"Native movie control is not verified for this camera.":"Records to the camera SD card; no live adjustment or downloaded clip.";
+    if(unsupported && captureMode==='video') setCaptureMode('photo');
+  }
+  function setCaptureMode(mode) {
+    if(mode==='video' && $("mode-video").disabled)return;
+    captureMode = mode;
+    $("refine").parentElement.hidden=mode==='video';
+    $("stack-options").hidden=mode==='video';updateCaptureBudget();
+    $("mode-photo").classList.toggle("active", mode === "photo");
+    $("mode-video").classList.toggle("active", mode === "video");
+    $("mode-photo").setAttribute("aria-selected", mode === "photo" ? "true" : "false");
+    $("mode-video").setAttribute("aria-selected", mode === "video" ? "true" : "false");
+    $("caption").textContent = mode === "video" ? "Tap to record video" : "Tap to get the shot";
+  }
+
+  async function applySelectedVariant() {
+    if (!selectedVariantIntent) return;
+    // Keep the original intent; variant_id selects the exact recipe server-side.
+    $("intent").value = lastShot.intent || "";
+    schedulePreview(0);
+    $("result").classList.remove("show");
+    await shoot(selectedVariantId);
+  }
+
+  // Feedback: one tap posts {image, intent, verdict}. Fire-and-forget; never nags the tester.
+  function resetFeedback() {
+    $("feedback").classList.remove("thanks");
+    $("vote-up").classList.remove("picked");
+    $("vote-down").classList.remove("picked");
+    $("feedback").querySelector(".label").textContent = "Was this good?";
+  }
+  async function sendFeedback(verdict, button) {
+    if (!lastShot.image) return;
+    button.disabled = true;
+    try {
+      const response = await apiFetch("/feedback", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: lastShot.image, intent: lastShot.intent, verdict })
+      });
+      if (!response.ok) throw new Error('Feedback could not be saved.');
+      button.classList.add("picked");
+      $("feedback").querySelector(".label").textContent = "Feedback saved";
+      $("feedback").classList.add("thanks");
+    } catch (error) { showToast(error.message); }
+    finally { button.disabled = false; }
+  }
+
+  function setListening(active) {
+    listening = active;
+    $("voice-button").classList.toggle("listening", active);
+    $("voice-status").textContent = active ? "Listening…" : "";
+  }
+
+  if (!SpeechRecognition) {
+    $("voice-button").hidden = true;
+    $("intent-row").classList.add("no-voice");
+  } else {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = navigator.language || "en-US";
+
+    recognition.onstart = () => setListening(true);
+    recognition.onerror = () => {
+      setListening(false);
+      $("voice-status").textContent = "Could not hear that";
+    };
+    recognition.onend = () => setListening(false);
+    recognition.onresult = (event) => {
+      let interim = "";
+      let finalText = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript.trim();
+        if (event.results[i].isFinal) finalText += transcript;
+        else interim += transcript;
+      }
+      const heard = (finalText || interim).trim();
+      if (!heard) return;
+      $("intent").value = heard;
+      $("voice-status").textContent = finalText ? "Heard it" : heard;
+      schedulePreview(finalText ? 0 : 180);
+    };
+
+    $("voice-button").addEventListener("click", () => {
+      if (listening) recognition.stop();
+      else recognition.start();
+    });
+  }
+
+  const requestedSession=new URLSearchParams(location.search).get('session');
+  let activeSession = /^[a-f0-9]{32}$/.test(requestedSession || '') ? requestedSession : Autopilot.deviceStore.read(Autopilot.deviceStore.ACTIVE_SESSION_KEY, 'tab') || null;
+  if(requestedSession && activeSession===requestedSession)$('sessions-panel').open=true;
+  let sessionRunning = false;
+  let selectedSessionState = null;
+  let jobPollTimer = null;
+  let jobPollInFlight = false;
+  const activeJobStates = ['queued', 'running'];
+  async function sessionRequest(path, body) {
+    const response = await apiFetch(path, body === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!response.ok) throw await apiError(response,'Session');
+    return response.json();
+  }
+  // The latest POST /sessions or /jobs answer's host_camera_warning (#129), bound to that session.
+  let sessionCameraWarning=null;
+  function noteSessionCameraWarning(id,response) {
+    const text=AutopilotWorkflows.cameraClientWarning(response);
+    sessionCameraWarning=text?{id,text}:null;
+    renderSessionCameraWarning();
+  }
+  function renderSessionCameraWarning() {
+    const shown=sessionCameraWarning && sessionCameraWarning.id===activeSession ? sessionCameraWarning.text : '';
+    $('session-camera-warning').textContent=shown;
+    $('session-camera-warning').hidden=!shown;
+  }
+  function sessionBusy(value) {
+    sessionRunning=value;busy=value;syncCaptureControls();
+    $('session-history').disabled=value;
+    $('session-resume').disabled=value;
+    $('session-delete').disabled=value;
+  }
+  function showSession(state) {
+    activeSession=state.id;selectedSessionState=state;
+    Autopilot.deviceStore.write(Autopilot.deviceStore.ACTIVE_SESSION_KEY,state.id,'tab');
+    if([...$('session-history').options].some(option=>option.value===state.id))$('session-history').value=state.id;
+    const accepted=state.progress?.accepted ?? (state.frames || []).filter(frame=>frame.status==='accepted').length;
+    const intervals=(state.frames || []).map(frame=>frame.actual_interval_s).filter(value=>Number.isFinite(value));
+    const intervalText=intervals.length ? ` · actual interval ${(Math.min(...intervals)).toFixed(1)}–${(Math.max(...intervals)).toFixed(1)} s` : '';
+    // Split runtime: a completed capture may still be waiting for its merge (heavy_job).
+    const heavy=state.heavy_job?.status;
+    const shownStatus=['queued','running'].includes(heavy)?'captured, processing '+heavy:heavy==='failed'?'captured, processing failed':state.status;
+    $('session-status').textContent=`${state.mode}: ${shownStatus} · ${accepted}/${state.frame_count} frames saved${intervalText}${state.error ? ' · '+state.error : ''}`;
+    if(['queued','running'].includes(heavy))$('session-status').textContent+=' · The result is being made from the saved photos; the camera is free.';
+    if(heavy==='failed')$('session-status').textContent+=' · Processing failed: '+(state.heavy_job.error || 'unknown error')+'. Photos are already captured.';
+    if(state.long_exposure_timing){
+      const timing=state.long_exposure_timing, seconds=value=>Number.isFinite(value)?value.toFixed(2)+' s':'unverified';
+      $('session-status').textContent+=' · Estimated capture window '+seconds(timing.actual_capture_window_s)+' · integrated shutter settings '+seconds(timing.integrated_shutter_s)+' · overrun '+seconds(timing.overrun_s)+(timing.incomplete?' · timing incomplete':'')+'. Timing uses host markers and read-back shutter settings, not measured sensor timing; exposures have gaps.';
+    }
+    const ambiguous=(state.frames || []).some(frame=>['capturing','ambiguous'].includes(frame.status));
+    $('session-resume').hidden=!sessionResumable(state);
+    const publicationFailed=state.publication?.status==='failed';
+    if(publicationFailed){$('session-status').textContent+=' · Result publication failed; photos are already captured. '+(state.publication_error || '');$('session-resume').hidden=false;}
+    if(heavy==='failed')$('session-resume').hidden=false;
+    if(ambiguous)$('session-status').textContent+=' · Shutter outcome uncertain. Inspect the camera card and saved receipts. This page cannot reconcile or repeat that frame.';
+    const deliveryWarning=Autopilot.deliveryWarning(state);
+    if(deliveryWarning)$('session-status').textContent+=' · '+deliveryWarning;
+    $('session-resume').textContent=publicationFailed?'Retry saving result (no recapture)':heavy==='failed'?'Retry processing (no recapture)':'Resume selected session';
+    $('session-download').hidden=!state.sequence?.url;
+    $('session-movie').hidden=!(state.video?.status==='completed' && state.video?.url);
+    $('session-preview-movie').hidden=!(state.preview_video?.status==='completed' && state.preview_video?.url);
+    if(state.preview_video?.status==='completed')$('session-status').textContent+=' · Movie snapshot: '+state.preview_video.frame_count+' saved frames.';
+    if(state.preview_video_error)$('session-status').textContent+=' · New movie snapshot failed; '+state.preview_video_error;
+    if(state.smartlapse_status){const smart=state.smartlapse_status;$('session-status').textContent+=' · Smartlapse '+smart.effective_count+'/'+smart.requested_count+' planned frames'+(smart.reduced_for_throughput?' (reduced to fit measured camera throughput)':'')+'.';}
+    if(state.metadata?.baseline)$('session-status').textContent+=' · '+AutopilotWorkflows.sessionStartText(state.metadata.baseline);
+    $('session-status').textContent+=executionBudgetText(state.execution_budget);
+    $('timelapse-apply-controls').hidden=state.mode!=='timelapse' || ['completed','uncertain'].includes(state.status);
+    if(state.video && state.video.status!=='completed')$('session-status').textContent+=' · Movie '+state.video.status+'; saved frames remain available.';
+    // Owner decision 2026-10-02: a timelapse blocked by an ambiguous frame may encode its good frames as a partial movie.
+    const partialOffer=state.mode==='timelapse' && AutopilotWorkflows.partialMovieOffer(state);
+    $('session-encode-partial').hidden=$('session-encode-partial-note').hidden=!partialOffer;
+    if(partialOffer)$('session-encode-partial').textContent='Encode the '+partialOffer.count+' good frames as a partial movie';
+    $('session-partial-movie').hidden=!(state.partial_video?.status==='completed' && state.partial_video?.url);
+    const partialText=state.partial_video && AutopilotWorkflows.partialMovieSummary(state.partial_video);
+    if(partialText)$('session-status').textContent+=' · '+partialText;
+    $('session-review').hidden=!state.image;
+    if(state.image)$('session-review').href='/review#'+encodeURIComponent(state.image);
+    $('session-delete').hidden=state.status==='running';
+    $('session-cancel').hidden=state.status!=='running' && !sessionRunning;
+    if(state.stopped_early)$('session-status').textContent+=' · '+AutopilotWorkflows.crowdStopSummary(state.stopped_early);
+    renderSessionCameraWarning();
+    renderPanoramaPreview(state);
+    renderCrowdPreview(state);
+  }
+  async function refreshSessions() {
+    try {
+      const states=await sessionRequest('/sessions');
+      $('session-history').replaceChildren(new Option('Choose a session',''));
+      states.forEach(state=>$('session-history').append(new Option(`${state.mode} · ${state.status} · ${state.id.slice(0,8)}`,state.id)));
+      const running=states.find(state=>state.status==='running');
+      if(running && !sessionRunning) {activeSession=running.id;showSession(running);watchSessionJob(activeSession);}
+      else if(activeSession) {
+        $('session-history').value=activeSession;
+        if(!selectedSessionState && !sessionRunning) {
+          const stored=states.find(state=>state.id===activeSession);
+          if(stored){showSession(stored);watchSessionJob(activeSession);}
+        }
+      }
+    }catch(error){$('session-status').textContent=error.message;}
+  }
+  async function pollSessionJob(id) {
+    if(jobPollInFlight || activeSession!==id)return;
+    jobPollInFlight=true;
+    try {
+      const job=await sessionRequest('/sessions/'+id+'/jobs');
+      const state=job.session || await sessionRequest('/sessions/'+id);
+      showSession(state);
+      if(activeJobStates.includes(job.status)) {
+        sessionBusy(true);$('session-cancel').hidden=false;
+        $('session-status').textContent+=' · Background job '+job.status+(job.status==='queued' && job.scheduled_at ? ' · scheduled '+new Date(job.scheduled_at).toLocaleString() : '')+'. You may leave this page. The server must stay powered on.';
+      } else {
+        clearTimeout(jobPollTimer);jobPollTimer=null;sessionBusy(false);$('session-cancel').hidden=true;
+        if(['uncertain','recovery_required'].includes(job.status)) {
+          $('session-status').textContent+=' · '+(job.error || 'Server recovery required. Inspect camera state and receipts before continuing.')+' No automatic recapture.';
+          if(job.retry_safe !== true)$('session-resume').hidden=true;
+        } else if(job.error)$('session-status').textContent+=' · '+job.error;
+        const heavyPending=['queued','running'].includes(state.heavy_job?.status)
+          || (state.heavy_job?.status==='completed' && !['published','failed'].includes(state.publication?.status))
+          || ['queued','running'].includes(state.partial_video?.status);
+        if(heavyPending && job.runtime?.jobs_worker?.alive===false)
+          $('session-status').textContent+=' · The processing service is not running; the result waits until it restarts.';
+        if(heavyPending){
+          // The merge runs in another process and uses no camera: keep watching without locking the UI.
+          jobPollTimer=setTimeout(()=>pollSessionJob(id),3000);
+        }
+        return;
+      }
+    }catch(error){
+      // A lost GET or submit response is not evidence that a camera job stopped.
+      sessionBusy(true);
+      $('session-status').textContent='Job status unavailable. The session may still be running. Waiting for status; no new camera action will be submitted. '+error.message;
+    }finally{jobPollInFlight=false;}
+    jobPollTimer=setTimeout(()=>pollSessionJob(id),1500);
+  }
+  function watchSessionJob(id) {
+    clearTimeout(jobPollTimer);sessionBusy(true);pollSessionJob(id);
+  }
+  async function runSession(id, delaySeconds) {
+    sessionBusy(true);$('session-cancel').hidden=false;$('session-resume').hidden=true;
+    try {
+      // A retry of processing or publication runs now; only a new capture honours the start delay.
+      const job=await sessionRequest('/sessions/'+id+'/jobs',{delay_seconds:delaySeconds ?? Number($('session-delay').value || 0)});
+      noteSessionCameraWarning(id,job);
+    }catch(error){
+      $('session-status').textContent='Submission response unavailable. Checking the existing session before any further action. '+error.message;
+    }
+    // Never repeat a POST because the response was lost. Recover by reading this id.
+    watchSessionJob(id);
+  }
+  $('session-mode').onchange=()=>{$('timelapse-options').hidden=$('session-mode').value!=='timelapse';showSmartlapsePlan();showLongExposureOptions();showPanoramaOptions();$('crowd-options').hidden=$('session-mode').value!=='crowd_remove';};
+  function showPanoramaOptions() {
+    const panorama=$('session-mode').value==='panorama';
+    $('panorama-options').hidden=!panorama;
+    if(panorama){
+      // A guided sweep is bounded to 2..12 frames, exposure locked to current settings.
+      $('session-frames-label').textContent='Frames (guided sweep)';
+      $('session-frames').min='2';$('session-frames').max='12';
+      $('session-frames').value=Math.max(2,Math.min(12,Number($('session-frames').value) || 6));
+      $('session-interval').disabled=false;
+      updatePanoramaBudget();
+    }
+  }
+  function updatePanoramaBudget() {
+    $('panorama-budget').textContent=Number($('session-frames').value || 0)+' frames, exposure locked to current settings.';
+  }
+  ['session-frames','panorama-projection','panorama-hfov','panorama-rotation','panorama-autocrop','panorama-preview-every'].forEach(id=>$(id).addEventListener('change',updatePanoramaBudget));
+  let panoramaPreviewFrameCount=null, panoramaPreviewUrl=null;
+  async function renderPanoramaPreview(state) {
+    const wrap=$('panorama-preview-wrap'), img=$('panorama-preview-img'), status=$('panorama-preview-status');
+    const preview=state.preview_panorama, error=state.preview_panorama_error;
+    if(!preview && !error){wrap.hidden=true;return;}
+    wrap.hidden=false;
+    if(error){status.textContent='Panorama preview failed: '+(error.message || 'unknown')+'. Accepted frames preserved.';}
+    if(!preview){img.hidden=true;panoramaPreviewFrameCount=null;return;}
+    status.textContent=AutopilotWorkflows.panoramaPreviewSummary(preview);
+    // Only refetch the JPEG when the accepted-frame count advances.
+    if(preview.frame_count!==panoramaPreviewFrameCount){
+      panoramaPreviewFrameCount=preview.frame_count;
+      try{
+        const url=await AutopilotWorkflows.panoramaPreviewObjectUrl(apiFetch,state.id);
+        if(panoramaPreviewUrl)URL.revokeObjectURL(panoramaPreviewUrl);
+        panoramaPreviewUrl=url;img.src=url;img.hidden=false;
+      }catch(_){img.hidden=true;}
+    }
+  }
+  let crowdPreviewShown='', crowdPreviewUrl=null;
+  async function renderCrowdPreview(state) {
+    const crowd=state.mode==='crowd_remove';
+    $('crowd-stop').hidden=!(crowd && state.status==='running');
+    const wrap=$('crowd-preview-wrap'), img=$('crowd-preview-img'), status=$('crowd-preview-status');
+    const preview=crowd?state.preview_crowd:null, error=crowd?state.preview_crowd_error:null;
+    if(!preview && !error){wrap.hidden=true;return;}
+    wrap.hidden=false;
+    status.textContent=preview?AutopilotWorkflows.crowdPreviewSummary(preview):'';
+    if(error)status.textContent+=(status.textContent?' ':'')+'Latest crowd preview failed: '+(error.message || 'unknown')+'. Saved frames are kept.';
+    const key=AutopilotWorkflows.crowdPreviewKey(state.id,preview);
+    if(!preview || !key){img.hidden=true;crowdPreviewShown='';return;}
+    // Refetch only when this session's published snapshot differs from the image on screen; the
+    // key is committed after a successful fetch, so a failed fetch retries on the next poll.
+    if(key!==crowdPreviewShown){
+      try{
+        const url=await AutopilotWorkflows.crowdPreviewObjectUrl(apiFetch,state.id);
+        if(activeSession!==state.id || AutopilotWorkflows.crowdPreviewKey(selectedSessionState?.id,selectedSessionState?.preview_crowd)!==key){
+          URL.revokeObjectURL(url);return;  // A newer session or snapshot is showing now.
+        }
+        if(crowdPreviewUrl)URL.revokeObjectURL(crowdPreviewUrl);
+        crowdPreviewUrl=url;img.src=url;img.hidden=false;crowdPreviewShown=key;
+      }catch(_){img.hidden=true;crowdPreviewShown='';}
+    }
+  }
+  $('crowd-stop').onclick=async()=>{
+    if(!activeSession)return;
+    $('crowd-stop').disabled=true;
+    try{await sessionRequest('/sessions/'+activeSession+'/stop',{});$('session-status').textContent='Stop requested: the current exposure finishes, then the saved frames are merged.';}
+    catch(error){showToast(error.message);}
+    finally{$('crowd-stop').disabled=false;}
+  };
+  $('timelapse-aperture-lock').onchange=()=>{$('timelapse-aperture-bounds').hidden=$('timelapse-aperture-lock').checked;};
+  // Deflicker is optional; the object rides inside timelapse_options only when enabled so other
+  // session modes never carry an unknown option. window is odd 3..31, gain is 0.1..2 stops.
+  // Holy Grail defaults it on (window 7, 1 stop, as the server does); unchecking it there sends an
+  // explicit off, because a silent request gets the server's Holy Grail default.
+  $('timelapse-deflicker').onchange=()=>{
+    const on=$('timelapse-deflicker').checked;
+    $('timelapse-deflicker-options').hidden=!on;
+    $('timelapse-deflicker-window').disabled=!on;$('timelapse-deflicker-gain').disabled=!on;
+  };
+  function deflickerOption() {
+    if($('session-mode').value!=='timelapse')return {};
+    if(!$('timelapse-deflicker').checked)return $('timelapse-policy').value==='holy_grail' ? {deflicker:{enabled:false}} : {};
+    return {deflicker:{enabled:true, window:Number($('timelapse-deflicker-window').value), max_gain_stops:Number($('timelapse-deflicker-gain').value)}};
+  }
+  function applyPolicyDeflickerDefault() {
+    const holyGrail=$('timelapse-policy').value==='holy_grail';
+    $('timelapse-deflicker').checked=holyGrail;
+    if(holyGrail){$('timelapse-deflicker-window').value='7';$('timelapse-deflicker-gain').value='1';}
+    $('timelapse-deflicker').onchange();
+  }
+  $('timelapse-policy').onchange=()=>{const limit=$('timelapse-policy').value==='auto_custom'?'1':'0.3';$('timelapse-step').max=limit;$('timelapse-step').value=limit;$('smartlapse-duration').max=executionBudgetSeconds($('timelapse-policy').value);showSmartlapsePlan();applyPolicyDeflickerDefault();};
+  function longExposureDuration() {
+    if($('session-mode').value!=='long_exposure' || !$('long-exposure-duration').value.trim())return undefined;
+    const duration=Number($('long-exposure-duration').value);
+    if(!Number.isFinite(duration) || duration<1 || duration>3600)throw new Error('Choose an averaging window between 1 and 3600 seconds.');
+    const frames=Number($('session-frames').value);
+    if(!Number.isInteger(frames) || frames<2 || frames>16)throw new Error('Duration-based averaging needs a frame budget between 2 and 16.');
+    return duration;
+  }
+  function showLongExposureOptions() {
+    const selected=$('session-mode').value==='long_exposure';
+    const duration=selected && Boolean($('long-exposure-duration').value.trim());
+    $('long-exposure-options').hidden=!selected;
+    $('session-frames-label').textContent=duration?'Maximum frame budget':'Frames';
+    $('session-frames').min=duration?'2':'1';$('session-frames').max=duration?'16':'100';
+    if(duration){$('session-frames').value=Math.max(2,Math.min(16,Number($('session-frames').value) || 2));$('session-interval').value='0';}
+    $('session-interval').disabled=duration;
+  }
+  $('long-exposure-duration').addEventListener('input',showLongExposureOptions);
+  function executionBudgetSeconds(policy) {
+    return policy==='holy_grail' ? 10800 : 3600;  // Server-enforced per session: Holy Grail 3 h, every other mode 1 h.
+  }
+  function executionBudgetText(budget) {
+    if(!budget || !Number.isFinite(budget.budget_s) || !Number.isFinite(budget.used_s) || !Number.isFinite(budget.remaining_s))return '';
+    const minutes=value=>Math.round(value/60)+' min';
+    const rule=budget.applies==='holy_grail_timelapse'?'Holy Grail':'session';
+    return ' · Execution budget ('+rule+', '+(budget.budget_s/3600)+' h for this session, counted across resumes): '+minutes(budget.used_s)+' used, '+minutes(budget.remaining_s)+' left'+(budget.exhausted?'; spent, so this session captures no more frames':'')+'.';
+  }
+  function timelapseControls(includePlan=false) {
+    const controls={exposure:{mode:$('timelapse-policy').value,priority:$('timelapse-priority').value,aperture_locked:$('timelapse-aperture-lock').checked!==false,min_aperture:Number($('timelapse-min-aperture').value || .5),max_aperture:Number($('timelapse-max-aperture').value || 128),min_iso:Number($('timelapse-min-iso').value),max_iso:Number($('timelapse-max-iso').value),min_shutter_s:Number($('timelapse-min-shutter').value),max_shutter_s:Number($('timelapse-max-shutter').value),max_step_ev:Number($('timelapse-step').value)},preview_every:Number($('timelapse-preview-every').value)};
+    if(includePlan && $('smartlapse-enabled').checked){
+      const duration=Number($('smartlapse-duration').value),output=Number($('smartlapse-output').value),fps=Number($('timelapse-fps').value),frames=Math.round(output*fps);
+      const limit=executionBudgetSeconds($('timelapse-policy').value);
+      if(!(duration>0 && duration<=limit && frames>=2 && frames<=240))throw new Error('Smartlapse needs 2–240 movie frames and a real duration up to '+limit+' seconds (the '+(limit/3600)+'-hour '+(limit>3600?'Holy Grail':'session')+' execution budget). Reduce movie length or FPS.');
+      if(duration/(frames-1)>3600)throw new Error('Smartlapse frames must be at most one hour apart: '+Math.ceil(duration/3600+1)+' or more movie frames are needed for this duration. Increase movie length or FPS.');
+      controls.smartlapse={duration_s:duration,output_s:output,fps};
+    }
+    return controls;
+  }
+  function showSmartlapsePlan() {
+    const enabled=$('session-mode').value==='timelapse' && $('smartlapse-enabled').checked;
+    $('smartlapse-settings').hidden=!enabled;$('session-frames').disabled=enabled;
+    if(enabled){const frames=Math.round(Number($('smartlapse-output').value)*Number($('timelapse-fps').value));$('session-frames').value=frames;const limit=executionBudgetSeconds($('timelapse-policy').value);$('smartlapse-plan').textContent=frames+' requested frames. Maximum 240; actual movie length may be shorter if camera throughput cannot fit the duration. Real duration up to '+(limit/3600)+' h ('+(limit>3600?'Holy Grail':'session')+' execution budget).';}
+  }
+  ['smartlapse-enabled','smartlapse-output','timelapse-fps'].forEach(id=>$(id).addEventListener('change',showSmartlapsePlan));
+  // Expected shooting time and movie length for a timelapse. Camera throughput can stretch the
+  // real interval, so this is a lower bound, and the page says so.
+  function showTimelapseDuration() {
+    const target=$('timelapse-duration');
+    if($('session-mode').value!=='timelapse' || $('smartlapse-enabled').checked){target.textContent='';return;}
+    const frames=Number($('session-frames').value), interval=Number($('session-interval').value), fps=Number($('timelapse-fps').value);
+    if(!(frames>=1) || !(fps>=1)){target.textContent='';return;}
+    // Rounded down, so "at least" stays true (90 s reads 1 min 30 s, never 2 min).
+    const span=value=>{const total=Math.floor(value),hours=Math.floor(total/3600),minutes=Math.floor(total%3600/60),seconds=total%60;
+      return hours?hours+' h'+(minutes?' '+minutes+' min':''):minutes?minutes+' min'+(seconds?' '+seconds+' s':''):seconds+' s';};
+    const movie=(frames/fps).toFixed(frames/fps<10?1:0)+' s movie at '+fps+' fps';
+    target.textContent=interval>0
+      ? 'Expected: at least '+span((frames-1)*interval)+' of shooting ('+frames+' frames, one every '+interval+' s), making a '+movie+'. The camera can make the real interval longer.'
+      : 'Expected: '+frames+' frames as fast as the camera allows, making a '+movie+'. Set seconds between frames to plan the duration.';
+  }
+  ['session-mode','session-frames','session-interval','timelapse-fps','smartlapse-enabled'].forEach(id=>{$(id).addEventListener('change',showTimelapseDuration);$(id).addEventListener('input',showTimelapseDuration);});
+  showTimelapseDuration();
+  $('timelapse-apply-controls').onclick=async()=>{
+    if(!activeSession)return;
+    $('timelapse-apply-controls').disabled=true;
+    try{const result=await sessionRequest('/sessions/'+activeSession+'/controls',timelapseControls());$('timelapse-control-status').textContent='Control revision '+result.revision+' saved. Changes take effect at the next accepted-frame boundary.';}
+    catch(error){$('timelapse-control-status').textContent='Controls were not confirmed: '+error.message;}
+    finally{$('timelapse-apply-controls').disabled=false;}
+  };
+  // Timelapse configuration (policy, bounds, deflicker) belongs to timelapse sessions only: the server
+  // refuses it on every other mode, and the timelapse fields keep their values when the mode changes.
+  function timelapseSessionFields(mode) {
+    if(mode!=='timelapse')return {};
+    return {timelapse_mode:$('timelapse-policy').value,timelapse_options:{fps:Number($('timelapse-fps').value),min_iso:Number($('timelapse-min-iso').value),max_iso:Number($('timelapse-max-iso').value),min_shutter_s:Number($('timelapse-min-shutter').value),max_shutter_s:Number($('timelapse-max-shutter').value),max_step_ev:Number($('timelapse-step').value),...deflickerOption()}};
+  }
+  $('session-start').onclick=async()=>{
+    if(busy || sessionRunning)return;
+    const camera=availableCameras[$('camera-select').value] || (availableCameras.length===1?availableCameras[0]:null);
+    if(!camera || cameraSelectionRequired){showToast('Choose a camera first.');return;}
+    if(!camera.serial){showToast(NO_SERIAL_MESSAGE);return;}
+    // A Night Assist plan belongs to the body it was metered on: submit that body's own model, port and
+    // serial, and never run it on another body. A new port for the same serial is left to the server's verify/rebind path.
+    const nightPlan=$('session-mode').value==='night' && nightAssistRequest ? nightAssistRequest : null;
+    if(nightPlan && (camera.serial!==nightPlan.camera_serial || camera.model!==nightPlan.camera_model)){
+      showToast('This plan was made for '+(nightPlan.camera_model || 'another camera')+'; re-plan for the selected camera.');return;}
+    const sessionCamera=nightPlan?{camera_model:nightPlan.camera_model,camera_port:nightPlan.camera_port,camera_serial:nightPlan.camera_serial}
+      :{camera_model:camera.model,camera_port:camera.port,camera_serial:camera.serial};
+    // Everything the Start handler reads from the form; frozen while it meters and submits.
+    const SESSION_FORM_IDS=['session-mode','session-frames','session-ev','session-interval','session-delay','session-baseline-source',
+      'long-exposure-duration','crowd-stop-at','timelapse-policy','smartlapse-enabled','smartlapse-duration','smartlapse-output',
+      'timelapse-fps','timelapse-min-iso','timelapse-max-iso','timelapse-min-shutter','timelapse-max-shutter','timelapse-step',
+      'timelapse-priority','timelapse-aperture-lock','timelapse-min-aperture','timelapse-max-aperture','timelapse-preview-every',
+      'timelapse-deflicker','timelapse-deflicker-window','timelapse-deflicker-gain','panorama-projection','panorama-hfov',
+      'panorama-rotation','panorama-autocrop','panorama-preview-every'];
+    sessionBusy(true);
+    // The form is read once (Start delay included) and its inputs stay disabled until the requests
+    // settle, so the session submitted is the one the meter photo was taken for.
+    const frozen=SESSION_FORM_IDS.map(id=>[id,$(id).disabled]);
+    frozen.forEach(([id])=>{$(id).disabled=true;});
+    const delay=Number($('session-delay').value || 0);
+    try{
+      // Every check of the form runs before the meter photo: an invalid form costs no shutter.
+      const controls=$('session-mode').value==='timelapse' ? timelapseControls(true) : null;
+      const duration=longExposureDuration();
+      const isPanorama=$('session-mode').value==='panorama';
+      const panoramaFrames=Number($('session-frames').value);
+      if(isPanorama && (!Number.isInteger(panoramaFrames) || panoramaFrames<2 || panoramaFrames>12))throw new Error('A guided panorama sweep needs between 2 and 12 frames.');
+      const crowdStopAt=$('session-mode').value==='crowd_remove' && $('crowd-stop-at').value ? Number($('crowd-stop-at').value) : null;
+      if(crowdStopAt!==null && (Number($('session-frames').value)<6 || Number($('session-frames').value)>8))throw new Error('The automatic crowd stop needs a budget of 6 to 8 frames; use Stop when clean for more.');
+      const panoramaExtra=isPanorama?{panorama:{projection:$('panorama-projection').value,horizontal_fov_deg:Number($('panorama-hfov').value),rotation_deg:Number($('panorama-rotation').value),autocrop:$('panorama-autocrop').checked},preview_every:Number($('panorama-preview-every').value)}:{};
+      const body={mode:$('session-mode').value,frames:Number($('session-frames').value),ev_step:Number($('session-ev').value),interval_s:duration===undefined?Number($('session-interval').value):0,...(duration===undefined?{}:{duration_s:duration}),...timelapseSessionFields($('session-mode').value),...sessionCamera,...panoramaExtra,...(crowdStopAt===null?{}:{stop_when_cleared:crowdStopAt}),...(nightPlan?{night_assist:nightPlan.night_assist}:{})};
+      // Meter first (default): one meter photo through the /shoot metering path; the camera's exposure is
+      // put back, and the session starts at the recommendation. A Night Assist plan has its own exposure.
+      let startExtra={};
+      if(!nightPlan && $('session-baseline-source').value!=='current'){
+        // The meter photo is taken now, so it can only describe a session that starts now.
+        if(delay>0)throw new Error('Meter first takes its photo when you press Start, so it cannot meter a session that starts later. Set Start delay to 0, or choose "Keep the camera\'s current exposure" (the delayed session then starts from the exposure on the camera when it runs). No photo was taken.');
+        $('session-status').textContent='Metering: one meter photo (up to 2 more if it reads black or white)…';
+        // The server checks the whole session request again before it fires the meter.
+        const plan=await sessionRequest('/sessions/meter-plan',{...sessionCamera,session:body,...(controls?{controls}:{})});
+        const start=plan?.recommended_start;
+        if(!start)throw new Error((plan?.detail || 'Metering gave no starting exposure.')+' No session was created.');
+        $('session-status').textContent='Metered start: ISO '+start.iso+' · '+start.aperture+' · '+start.shutter+'.';
+        startExtra={start_settings:start,meter_plan:plan};
+      }
+      let state=await sessionRequest('/sessions',{...body,...startExtra});
+      noteSessionCameraWarning(state.id,state);
+      showSession(state);
+      if(controls){await sessionRequest('/sessions/'+state.id+'/controls',controls);state=await sessionRequest('/sessions/'+state.id);showSession(state);}
+      await runSession(state.id, delay);
+    }catch(error){sessionBusy(false);$('session-status').textContent='Session setup failed; no capture job was submitted. '+error.message;}
+    finally{frozen.forEach(([id,disabled])=>{$(id).disabled=disabled;});}
+  };
+  // Night assist: read the last saved shot, plan a night stack, and pre-fill the night session form.
+  // The planner's session_request (with its night_assist exposure) rides along on Start.
+  $('session-mode').addEventListener('change',()=>{if($('session-mode').value!=='night')nightAssistRequest=null;});
+  // After every handler that changes the frame count (Smartlapse, a duration, a Night Assist plan).
+  ['session-mode','session-frames','session-baseline-source','smartlapse-enabled','smartlapse-output','timelapse-fps','long-exposure-duration','session-delay']
+    .forEach(id=>{$(id).addEventListener('change',renderSessionBaseline);$(id).addEventListener('input',renderSessionBaseline);});
+  $('night-assist-run').onclick=async()=>{
+    const camera=availableCameras[$('camera-select').value] || (availableCameras.length===1?availableCameras[0]:null);
+    if(!camera || cameraSelectionRequired){showToast('Choose a camera first.');return;}
+    $('night-assist-run').disabled=true;
+    $('night-assist-result').textContent='Reading your last shot and planning a night stack…';
+    try{
+      const {image,plan}=await AutopilotWorkflows.nightAssistPlan(apiFetch,{camera_model:camera.model,camera_port:camera.port,camera_serial:camera.serial});
+      if(plan.status!=='ok' || !plan.session_request){
+        nightAssistRequest=null;
+        const label=plan.status==='insufficient_light'?'Insufficient light':plan.status==='meter_unreliable'?'Meter frame unreliable':'Not plannable';
+        $('night-assist-result').textContent=label+': '+(plan.reason || plan.why?.join(' ') || 'the last shot cannot support a reliable night stack.')+' No session was prepared.';
+        return;
+      }
+      nightAssistRequest=plan.session_request;
+      $('session-mode').value='night';$('session-mode').onchange();
+      const frames=Number(plan.frames);
+      if(Number.isInteger(frames) && frames>=1)$('session-frames').value=String(Math.min(100,frames));
+      const why=(Array.isArray(plan.why)?plan.why:[]).filter(Boolean);
+      $('night-assist-result').textContent='Night stack ready from '+image+' · status: '+(plan.status || 'planned')+' · '+$('session-frames').value+' frames.'+(why.length?' '+why.join(' '):'')+' Review, then Start selected session.';
+    }catch(error){$('night-assist-result').textContent='Night assist could not plan: '+error.message;}
+    finally{$('night-assist-run').disabled=false;renderSessionBaseline();}
+  };
+  $('session-cancel').onclick=async()=>{if(activeSession){try{await sessionRequest('/sessions/'+activeSession+'/cancel',{});$('session-status').textContent='Cancellation requested; waiting for current frame and restoration.';}catch(error){showToast(error.message);}}};
+  $('session-resume').onclick=async()=>{
+    if(!activeSession || busy)return;
+    // Processing failed after every frame was captured: the retry re-runs only the merge (no confirm, no camera rebind).
+    if(selectedSessionState?.heavy_job?.status==='failed'){await runSession(activeSession,0);return;}
+    if(selectedSessionState?.publication?.status!=='failed' && !confirm('Continue this session from its saved receipts? Verify the camera is idle and the same camera is connected. Uncertain frames will not be repeated.'))return;
+    sessionBusy(true);
+    try{
+      const metadata=selectedSessionState?.metadata || {};
+      if(selectedSessionState?.publication?.status!=='failed' && !metadata.camera_serial){
+        // Saved before cameras were bound by USB serial: never resume by port alone; re-select explicitly.
+        const camera=availableCameras[$('camera-select').value];
+        if(!camera?.serial || camera.model!==metadata.camera_model)throw new Error('This session was saved before cameras were bound by USB serial. Select its camera ('+(metadata.camera_model || 'original body')+') above, then resume.');
+        if(!confirm('Bind this session to '+camera.model+' (USB serial '+camera.serial+', '+camera.port+')? Only continue if this is the body that took its frames.'))throw new Error('Camera not re-selected; the session was not resumed.');
+        await sessionRequest('/sessions/'+activeSession+'/camera',{camera_model:camera.model,camera_port:camera.port,camera_serial:camera.serial});
+      }else if(selectedSessionState?.publication?.status!=='failed'){
+        // The same body (same serial) re-enumerated to another USB port: move only the port; the server proves the serial there.
+        const camera=availableCameras[$('camera-select').value];
+        if(camera?.serial===metadata.camera_serial && camera.model===metadata.camera_model && camera.port!==metadata.camera_port)
+          await sessionRequest('/sessions/'+activeSession+'/camera',{camera_model:camera.model,camera_port:camera.port,camera_serial:camera.serial});
+      }
+      if(selectedSessionState?.publication?.status!=='failed')await sessionRequest('/sessions/'+activeSession+'/resume',{});await runSession(activeSession,selectedSessionState?.publication?.status==='failed'?0:undefined);}
+    catch(error){sessionBusy(false);showToast(error.message);}
+  };
+  $('session-history').onchange=async()=>{if($('session-history').value&&!sessionRunning){try{showSession(await sessionRequest('/sessions/'+$('session-history').value));watchSessionJob(activeSession);}catch(error){showToast(error.message);}}};
+  $('session-refresh').onclick=refreshSessions;
+  $('session-delete').onclick=async()=>{
+    if(!activeSession || sessionRunning)return;
+    const unresolved=['pending','failed'].includes(selectedSessionState.restore) || (selectedSessionState.frames || []).some(frame=>['capturing','ambiguous'].includes(frame.status));
+    const warning=unresolved?'This session has uncertain shutter outcomes or unverified settings restoration. Deleting discards the evidence needed to reconcile it. ':'';
+    if(!confirm(warning+'Delete this local session, its source frames, receipts and published gallery result? Camera-card and exported copies remain.'))return;
+    try{
+      const response=await apiFetch('/sessions/'+activeSession+(unresolved?'?discard_unresolved=true':''),{method:'DELETE'});
+      if(!response.ok)throw await apiError(response,'Delete session');
+      activeSession=null;selectedSessionState=null;Autopilot.deviceStore.remove(Autopilot.deviceStore.ACTIVE_SESSION_KEY,'tab');$('session-status').textContent='Session deleted.';
+      ['session-delete','session-resume','session-download','session-movie','session-preview-movie','session-review','session-encode-partial','session-encode-partial-note','session-partial-movie','session-camera-warning'].forEach(id=>$(id).hidden=true);
+      await refreshSessions();
+    }catch(error){showToast(error.message);}
+  };
+  $('session-encode-partial').onclick=async()=>{
+    if(!activeSession || sessionRunning)return;
+    const id=activeSession;
+    $('session-encode-partial').disabled=true;
+    $('session-status').textContent+=' · Encoding the saved good frames; no camera is used.';
+    try{
+      const state=await sessionRequest('/sessions/'+id+'/encode-partial',{});
+      showSession(state);
+      // Split runtime: the processing service encodes it; keep watching without locking the UI.
+      if(['queued','running'].includes(state.partial_video?.status)){clearTimeout(jobPollTimer);jobPollTimer=setTimeout(()=>pollSessionJob(id),3000);}
+    }catch(error){showToast(error.message);}
+    finally{$('session-encode-partial').disabled=false;}
+  };
+  ['session-download','session-movie','session-preview-movie','session-partial-movie'].forEach(buttonId=>{
+    $(buttonId).onclick=async()=>{
+      const movie=buttonId!=='session-download';
+      const path=buttonId==='session-partial-movie' ? selectedSessionState?.partial_video?.url : buttonId==='session-preview-movie' ? selectedSessionState?.preview_video?.url : movie ? selectedSessionState?.video?.url : selectedSessionState?.sequence?.url;if(!path)return;
+      const prefix={'session-preview-movie':'timelapse-progress-','session-partial-movie':'timelapse-partial-'}[buttonId] || 'timelapse-';
+      $(buttonId).disabled=true;
+      try{await Autopilot.downloadArtifact(apiFetch,path,prefix+activeSession+(movie?'.mp4':'.zip'));showToast('Download requested.');}
+      catch(error){if(error.name!=='AbortError')showToast(error.message);}
+      finally{$(buttonId).disabled=false;}
+    };
+  });
+  window.addEventListener('pagehide',()=>clearTimeout(jobPollTimer));
+
+  // --- Handheld (body-shutter) session ---------------------------------------------------------
+  let handheldId=null, handheldTimer=null, handheldThumbs={};
+  function handheldExifLine(exif){
+    if(!exif)return 'EXIF unavailable';
+    const iso=Number.isFinite(exif.iso)?'ISO '+exif.iso:'ISO —';
+    const aperture=Number.isFinite(exif.aperture)?'f/'+exif.aperture:'f/—';
+    const shutter=Number.isFinite(exif.shutter)?exif.shutter+' s':'shutter —';
+    return `${iso} · ${aperture} · ${shutter}`;
+  }
+  function handheldNextLine(next){
+    if(!next)return 'no change to next exposure';
+    const bits=[];
+    if(next.iso!==undefined && next.iso!==null)bits.push('ISO '+next.iso);
+    if(next.aperture!==undefined && next.aperture!==null)bits.push('f/'+next.aperture);
+    if(next.shutter!==undefined && next.shutter!==null)bits.push(next.shutter+(String(next.shutter).includes('/')?'':' s'));
+    if(next.kelvin!==undefined && next.kelvin!==null)bits.push(next.kelvin+'K');
+    return bits.length?bits.join(' · '):'no change to next exposure';
+  }
+  async function renderHandheld(state){
+    $('handheld-status').textContent=`Handheld: ${state.status}${state.stop_reason?' · '+state.stop_reason:''}${state.summary?' · '+state.summary:''}`;
+    $('handheld-counters').textContent=`${(state.frames||[]).length} frames · ${state.applied_count||0} exposures set · ${state.failure_count||0} failures · ${state.stale_events_discarded||0} stale events discarded.`;
+    if(state.restored===true)$('handheld-restore').textContent='Original camera settings restored.';
+    else if(state.restored===false)$('handheld-restore').textContent='Original settings could NOT be verified as restored — check the camera.';
+    else $('handheld-restore').textContent='';
+    const container=$('handheld-frames');
+    container.replaceChildren();
+    for(const frame of (state.frames||[])){
+      const row=node('div','handheld-frame');
+      const img=document.createElement('img');
+      img.loading='lazy';
+      const path=frame.receipt?.path||'';
+      const name=path.split('/').pop();
+      if(name){
+        if(!handheldThumbs[name]){
+          try{handheldThumbs[name]=await authedImageUrl('/handheld/'+encodeURIComponent(handheldId)+'/frames/'+encodeURIComponent(name));}catch(_){handheldThumbs[name]='';}
+        }
+        if(handheldThumbs[name])img.src=handheldThumbs[name];
+      }
+      img.alt='Frame '+((frame.index??0)+1);
+      const meta=node('div','meta');
+      meta.append(node('div','exif',handheldExifLine(frame.receipt?.exif)));
+      meta.append(node('div','next','→ next: '+handheldNextLine(frame.settings_for_next_frame)+(frame.source?' ('+frame.source+')':'')));
+      (Array.isArray(frame.why)?frame.why:[]).forEach(line=>meta.append(node('div','',line)));
+      row.append(img,meta);
+      container.append(row);
+    }
+  }
+  async function pollHandheld(){
+    if(!handheldId)return;
+    try{
+      const state=await AutopilotWorkflows.handheldState(apiFetch,handheldId);
+      await renderHandheld(state);
+      if(AutopilotWorkflows.handheldTerminal(state.status)){
+        clearTimeout(handheldTimer);handheldTimer=null;
+        $('handheld-cancel').hidden=true;$('handheld-start').disabled=false;
+        return;
+      }
+    }catch(error){$('handheld-status').textContent='Handheld status unavailable: '+error.message+' The session may still be running; not resubmitting.';}
+    handheldTimer=setTimeout(pollHandheld,1500);
+  }
+  $('handheld-start').onclick=async()=>{
+    if(handheldId && !AutopilotWorkflows.handheldTerminal((await AutopilotWorkflows.handheldState(apiFetch,handheldId).catch(()=>({status:'stopped'}))).status))return;
+    const camera=availableCameras[$('camera-select').value] || (availableCameras.length===1?availableCameras[0]:null);
+    if(!camera || cameraSelectionRequired){showToast('Choose a camera first.');return;}
+    if(!camera.serial){showToast(NO_SERIAL_MESSAGE);return;}
+    $('handheld-start').disabled=true;handheldThumbs={};$('handheld-frames').replaceChildren();
+    try{
+      const started=await AutopilotWorkflows.startHandheld(apiFetch,{camera_model:camera.model,camera_port:camera.port,camera_serial:camera.serial,max_frames:Number($('handheld-max-frames').value||20),max_duration_s:Number($('handheld-max-duration').value||600),intent:$('intent').value.trim()||null});
+      handheldId=started.id;$('handheld-cancel').hidden=false;$('handheld-status').textContent='Handheld session started. Press the camera shutter.';
+      clearTimeout(handheldTimer);pollHandheld();
+    }catch(error){$('handheld-start').disabled=false;$('handheld-status').textContent='Could not start handheld session: '+error.message;}
+  };
+  $('handheld-cancel').onclick=async()=>{
+    if(!handheldId)return;
+    try{await AutopilotWorkflows.cancelHandheld(apiFetch,handheldId);$('handheld-status').textContent='Stop requested; metering ends after the current frame and settings are restored.';}
+    catch(error){showToast(error.message);}
+  };
+  window.addEventListener('pagehide',()=>clearTimeout(handheldTimer));
+
+  let liveFrame=null, liveFrameUrl=null, previewReceivedAt='';
+  function clearLivePreview() {
+    if(liveFrameUrl)URL.revokeObjectURL(liveFrameUrl);
+    liveFrameUrl=null;liveFrame=null;$('preview-aids').hidden=true;$('preview-clear').hidden=true;
+    $('preview-status').textContent='';
+  }
+  function renderLivePreview() {
+    if(!liveFrame)return;
+    const measured=AutopilotWorkflows.paintPreview($('preview-canvas'),$('preview-histogram'),liveFrame,{grid:$('preview-grid').checked,zebra:$('preview-zebra').checked,peaking:$('preview-peaking').checked});
+    AutopilotWorkflows.paintLoupe($('preview-loupe'),liveFrame);
+    $('preview-status').textContent=`Frozen preview received ${previewReceivedAt} · ${liveFrame.naturalWidth} × ${liveFrame.naturalHeight} · ${measured.clippedPercent.toFixed(1)}% near-clipped pixels. No still photo taken.`;
+  }
+  $('preview-request').onclick=async()=>{
+    if(busy || cameraSelectionRequired)return;
+    const camera=availableCameras[$('camera-select').value];
+    if(!camera){showToast('Choose a camera first.');return;}
+    busy=true;syncCaptureControls();clearLivePreview();$('preview-status').textContent='Requesting one fresh preview…';
+    try {
+      const response=await apiFetch('/api/camera/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({camera_model:camera.model,camera_port:camera.port})});
+      if(!response.ok)throw await apiError(response,'Preview');
+      if(!response.headers.get('Content-Type')?.startsWith('image/jpeg'))throw new Error('Preview did not return a JPEG frame.');
+      const blob=await response.blob();
+      if(blob.size>8*1024*1024)throw new Error('Preview exceeds display limit.');
+      liveFrameUrl=URL.createObjectURL(blob);liveFrame=new Image();liveFrame.src=liveFrameUrl;await liveFrame.decode();
+      if(liveFrame.naturalWidth*liveFrame.naturalHeight>8000000)throw new Error('Preview dimensions exceed display limit.');
+      previewReceivedAt=new Date().toLocaleTimeString();$('preview-aids').hidden=false;$('preview-clear').hidden=false;renderLivePreview();
+    }catch(error){clearLivePreview();$('preview-status').textContent='Live preview unavailable: '+(error.detail || error.message)+'. No still-photo fallback was requested.';}
+    finally{busy=false;syncCaptureControls();}
+  };
+  $('preview-clear').onclick=clearLivePreview;
+  ['preview-grid','preview-zebra','preview-peaking'].forEach(id=>$(id).onchange=renderLivePreview);
+  $('preview-canvas').onclick=event=>{
+    if(!liveFrame)return;const bounds=event.currentTarget.getBoundingClientRect();
+    AutopilotWorkflows.paintLoupe($('preview-loupe'),liveFrame,{x:(event.clientX-bounds.left)/bounds.width,y:(event.clientY-bounds.top)/bounds.height});
+  };
+  window.addEventListener('pagehide',clearLivePreview);
+  $("camera-select").addEventListener("change", () => {
+    clearLivePreview();
+    const camera = availableCameras[$("camera-select").value];
+    cameraSelectionRequired=!camera && availableCameras.length>0;
+    // Remember a camera only by its USB serial; a serial-less row is never persisted as an identity.
+    if (camera?.serial) Autopilot.deviceStore.write(Autopilot.deviceStore.CAMERA_KEY, JSON.stringify({model:camera.model,port:camera.port,serial:camera.serial}));
+    else Autopilot.deviceStore.remove(Autopilot.deviceStore.CAMERA_KEY);
+    if(camera) $("status").textContent=camera.model;
+    updateVideoAvailability();
+    syncCaptureControls();
+  });
+  function updateCaptureBudget() {
+    const policy=$('stack-policy').value, frames=Number($('stack-frames').value || 3);
+    const panel=AutopilotWorkflows.stackPanelVisibility(policy);
+    $('stack-settings').hidden=!panel.settings;
+    $('stack-baseline-row').hidden=!panel.fixedBaseline;
+    $('stack-baseline').hidden=!panel.fixedBaseline;
+    // Stack and refine are mutually exclusive: choosing a Fixed/Auto stack disables and clears
+    // refine (the backend rejects stack+refine), and the reason is shown next to the toggle.
+    const exclusivity=AutopilotWorkflows.stackRefineExclusivity(policy,$('refine').checked);
+    $('refine').checked=exclusivity.refine;
+    $('refine').disabled=busy || exclusivity.refineDisabled;
+    $('refine-note').textContent=exclusivity.note;
+    $('capture-count').textContent=captureMode==='video'
+      ? 'Records 8 seconds to the camera SD card. No exposure adjustment, clip download or preview.'
+      : policy==='fixed' ? AutopilotWorkflows.fixedStackBudgetText(frames, stackBaselineSource())
+      : policy==='auto' ? `Auto stack: up to ${2+frames} physical photos (up to 2 ordinary, then at most ${frames} stack frames). Unverified motion keeps the ordinary photo.`
+      : $('refine').checked ? 'Up to 4 photos: meter + final, with at most one improvement attempt.'
+      : 'One capture can take up to 2 photos: a meter frame and the final photo.';
+  }
+  ['stack-policy','stack-frames','refine','stack-baseline-source'].forEach(id=>$(id).addEventListener('change',updateCaptureBudget));
+  $('stack-baseline-source').addEventListener('change',renderBodyBaseline);
+  renderBodyBaseline();
+  $("shutter").addEventListener("click", shoot);
+  $("mode-photo").addEventListener("click", () => setCaptureMode("photo"));
+  $("mode-video").addEventListener("click", () => setCaptureMode("video"));
+  $("intent").addEventListener("input", schedulePreview);
+  $("vote-up").addEventListener("click", () => sendFeedback("up", $("vote-up")));
+  $("vote-down").addEventListener("click", () => sendFeedback("down", $("vote-down")));
+  $("apply-variant").addEventListener("click", applySelectedVariant);
+  $("again").addEventListener("click", () => {
+    $("result").classList.remove("show");
+    $("result").scrollTop = 0;
+    $("why").classList.remove("show");
+    hideLastFrameAids();
+    renderMoodVariants(null, null);
+  });
+  $("why-toggle").addEventListener("click", () => $("why").classList.toggle("show"));
+  ["last-frame-grid","last-frame-zebra"].forEach(id=>$(id).onchange=renderLastFrameAids);
+  // Escape closes the result like "New photo"; a rotation or resize redraws the photo box.
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && $("result").classList.contains("show")) $("again").click();
+  });
+  let resultResizeTimer;
+  function repaintResultIfBoxChanged() {
+    clearTimeout(resultResizeTimer);
+    resultResizeTimer = setTimeout(() => {
+      const canvas = $("last-frame-canvas");
+      if (!$("result").classList.contains("show") || canvas.hidden) return;
+      // Repaint only when the CSS box or the screen ratio differs from the last paint.
+      if (canvas.dataset.paintedBox !== `${canvas.clientWidth}x${canvas.clientHeight}@${window.devicePixelRatio}`) renderLastFrameAids();
+    }, 200);
+  }
+  window.addEventListener("resize", repaintResultIfBoxChanged);
+  // A screen-ratio change alone (window moved to another display) fires no resize event.
+  function watchPixelRatio() {
+    const query = window.matchMedia?.(`(resolution: ${window.devicePixelRatio}dppx)`);
+    query?.addEventListener?.("change", () => { repaintResultIfBoxChanged(); watchPixelRatio(); }, { once: true });
+  }
+  watchPixelRatio();
+  $("auto-save-photos").onchange=()=>{
+    if(!Autopilot.nativeMedia()){$("auto-save-photos").checked=false;Autopilot.setAutoSavePhotos(false);return;}
+    Autopilot.setAutoSavePhotos($("auto-save-photos").checked);
+  };
+  syncAutoSaveControl();
+</script>
+</body>
+</html>

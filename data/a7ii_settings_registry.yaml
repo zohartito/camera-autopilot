@@ -1,0 +1,4063 @@
+{
+  "schema_version": 1,
+  "camera": "Sony A7 II ILCE-7M2",
+  "route_priority": [
+    "smart_remote_wifi",
+    "usb_gphoto",
+    "raw_ptp",
+    "camera_remote_command",
+    "openmemories",
+    "guided_physical"
+  ],
+  "settings": [
+    {
+      "setting_id": "camera.image_size",
+      "label": "Image Size",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_1",
+      "photo_sources": [
+        "IMG_5776.jpg",
+        "IMG_5814.jpg"
+      ],
+      "current_photo_value": "L:24M / L",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still-image mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "imagesize"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 2"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.aspect_ratio",
+      "label": "Aspect Ratio",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_1",
+      "photo_sources": [
+        "IMG_5776.jpg",
+        "IMG_5814.jpg"
+      ],
+      "current_photo_value": "3:2",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still-image mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "aspectratio"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 2"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.quality",
+      "label": "Quality",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_1",
+      "photo_sources": [
+        "IMG_5776.jpg",
+        "IMG_5814.jpg"
+      ],
+      "current_photo_value": "Fine / RAW & JPEG",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still-image mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "imagequality"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 2"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.raw_file_type",
+      "label": "RAW File Type",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_1",
+      "photo_sources": [
+        "IMG_5776.jpg"
+      ],
+      "current_photo_value": "Compressed",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "RAW or RAW+JPEG quality"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.panorama_size",
+      "label": "Panorama: Size",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_1",
+      "photo_sources": [
+        "IMG_5776.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Physical mode dial must be Sweep Panorama"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Mode-dial gated"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Record mode-dial gate proof; only pursue remote/actuator route if panoramic capture becomes product scope."
+    },
+    {
+      "setting_id": "camera.panorama_direction",
+      "label": "Panorama: Direction",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_1",
+      "photo_sources": [
+        "IMG_5776.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Physical mode dial must be Sweep Panorama"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Mode-dial gated"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Record mode-dial gate proof and map to guided setup."
+    },
+    {
+      "setting_id": "camera.file_format",
+      "label": "File Format",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_2",
+      "photo_sources": [
+        "IMG_5777.jpg"
+      ],
+      "current_photo_value": "AVCHD",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie-capable mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "needs_probe"
+        },
+        "smart_remote_wifi": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Run USB and Smart Remote movie-mode probes for file format setters and readback."
+    },
+    {
+      "setting_id": "camera.record_setting",
+      "label": "Record Setting",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_2",
+      "photo_sources": [
+        "IMG_5777.jpg"
+      ],
+      "current_photo_value": "60i 17M(FH)",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie file format selected"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.dual_video_rec",
+      "label": "Dual Video REC",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_2",
+      "photo_sources": [
+        "IMG_5777.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie mode and compatible format"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.drive_mode",
+      "label": "Drive Mode",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_2",
+      "photo_sources": [
+        "IMG_5777.jpg",
+        "IMG_5814.jpg"
+      ],
+      "current_photo_value": "Single Shooting",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still-image mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "capturemode"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "visible_in": "Smart Remote page 2",
+          "method": "setShootMode"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.flash_mode",
+      "label": "Flash Mode",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_2",
+      "photo_sources": [
+        "IMG_5777.jpg",
+        "IMG_5815.jpg"
+      ],
+      "current_photo_value": "Fill-flash / Flash Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Flash-compatible still mode"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "usb_gphoto": {
+          "status": "state_gated",
+          "node": "flashmode"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_read",
+          "visible_in": "Smart Remote page 3"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "USB flashmode is visible but refused all writes without a compatible flash state; retest only with a flash/flash-trigger attached, otherwise keep as state-gated read evidence."
+    },
+    {
+      "setting_id": "camera.flash_comp",
+      "label": "Flash Comp.",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_2",
+      "photo_sources": [
+        "IMG_5777.jpg",
+        "IMG_5815.jpg"
+      ],
+      "current_photo_value": "+/-0.0",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Flash-compatible still mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "needs_probe"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 3"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe USB nodes for flash compensation and Smart Remote API methods after unlock."
+    },
+    {
+      "setting_id": "camera.red_eye_reduction",
+      "label": "Red Eye Reduction",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_3",
+      "photo_sources": [
+        "IMG_5778.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Flash-compatible still mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.focus_mode",
+      "label": "Focus Mode",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_3",
+      "photo_sources": [
+        "IMG_5778.jpg",
+        "IMG_5815.jpg"
+      ],
+      "current_photo_value": "Manual Focus / Continuous AF",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Lens attached and AF/MF switch compatible"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "focusmode"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "method_hint": "setFocusMode"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.focus_area",
+      "label": "Focus Area",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_3",
+      "photo_sources": [
+        "IMG_5778.jpg",
+        "IMG_5815.jpg"
+      ],
+      "current_photo_value": "Flexible Spot / Wide",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Autofocus mode and compatible focus area mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "method": "setTouchAFPosition"
+        },
+        "raw_ptp": {
+          "status": "unsupported_on_a7ii",
+          "propcode": "0xD22C/0xD2DC"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [
+        "backend/wifi_a7ii.py"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.focus_settings",
+      "label": "Focus Settings",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_3",
+      "photo_sources": [
+        "IMG_5778.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "AF mode and focus area support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "needs_probe"
+        },
+        "raw_ptp": {
+          "status": "unsupported_on_a7ii"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.af_illuminator",
+      "label": "AF Illuminator",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_3",
+      "photo_sources": [
+        "IMG_5778.jpg"
+      ],
+      "current_photo_value": "Auto",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "AF mode and low-light AF support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.exposure_comp",
+      "label": "Exposure Comp.",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_4",
+      "photo_sources": [
+        "IMG_5779.jpg",
+        "IMG_5804.PNG",
+        "IMG_5807.PNG",
+        "IMG_5815.jpg"
+      ],
+      "current_photo_value": "+/-0.0",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Exposure mode permits EV bias; physical dial may lock"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "visible_in": "phone EV UI",
+          "method": "setExposureCompensation"
+        },
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "exposurecompensation"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep Smart Remote and USB set/read/revert artifacts attached; re-test only if the physical exposure compensation dial state changes."
+    },
+    {
+      "setting_id": "camera.exposure_step",
+      "label": "Exposure step",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_4",
+      "photo_sources": [
+        "IMG_5779.jpg"
+      ],
+      "current_photo_value": "0.3EV",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still/movie exposure settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.iso",
+      "label": "ISO",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_4",
+      "photo_sources": [
+        "IMG_5779.jpg",
+        "IMG_5815.jpg"
+      ],
+      "current_photo_value": "ISO 800 / ISO 6400",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Exposure mode permits ISO control"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "iso"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "method": "setIsoSpeedRate"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.aperture",
+      "label": "Aperture",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_liveview",
+      "photo_sources": [
+        "IMG_5808.PNG"
+      ],
+      "current_photo_value": "F5.6",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Exposure mode and lens permit aperture control"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "f-number"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "method": "setFNumber"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.shutter_speed",
+      "label": "Shutter Speed",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_liveview",
+      "photo_sources": [
+        "IMG_5808.PNG"
+      ],
+      "current_photo_value": "1/30",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Exposure mode permits shutter-speed control"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "shutterspeed"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "method": "setShutterSpeed"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.metering_mode",
+      "label": "Metering Mode",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_4",
+      "photo_sources": [
+        "IMG_5779.jpg",
+        "IMG_5816.jpg"
+      ],
+      "current_photo_value": "Multi",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still/movie exposure mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "exposuremetermode"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 4"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.white_balance",
+      "label": "White Balance",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_4",
+      "photo_sources": [
+        "IMG_5779.jpg",
+        "IMG_5808.PNG",
+        "IMG_5816.jpg"
+      ],
+      "current_photo_value": "Cloudy / Auto / AWB",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "WB mode permits selected preset"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "whitebalance"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "visible_in": "Smart Remote page 4",
+          "method": "setWhiteBalance"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.dro_auto_hdr",
+      "label": "DRO/Auto HDR",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_4",
+      "photo_sources": [
+        "IMG_5779.jpg",
+        "IMG_5816.jpg"
+      ],
+      "current_photo_value": "D-Range Opt.",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "JPEG rendering mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "dro"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 4"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "camera.creative_style",
+      "label": "Creative Style",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_5",
+      "photo_sources": [
+        "IMG_5780.jpg",
+        "IMG_5816.jpg"
+      ],
+      "current_photo_value": "Standard",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "JPEG/video rendering mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 4"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.picture_effect",
+      "label": "Picture Effect",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_5",
+      "photo_sources": [
+        "IMG_5780.jpg",
+        "IMG_5816.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "JPEG/video rendering mode"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "usb_gphoto": {
+          "status": "state_gated",
+          "node": "pictureeffect"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 4"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.picture_profile",
+      "label": "Picture Profile",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_5",
+      "photo_sources": [
+        "IMG_5780.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie/profile-capable mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe movie/profile mode and Command package for picture profile setters."
+    },
+    {
+      "setting_id": "camera.zoom",
+      "label": "Zoom",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_5",
+      "photo_sources": [
+        "IMG_5780.jpg",
+        "IMG_5817.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Power zoom lens or digital/clear-image zoom enabled"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "usb_gphoto": {
+          "status": "state_gated",
+          "node": "zoom"
+        },
+        "smart_remote_wifi": {
+          "status": "proven_read",
+          "visible_in": "Smart Remote page 5"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "USB zoom is visible but refused a tiny set/read/revert nudge with the current lens; retest with a power-zoom lens or after enabling digital/clear-image zoom."
+    },
+    {
+      "setting_id": "camera.focus_magnifier",
+      "label": "Focus Magnifier",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_5",
+      "photo_sources": [
+        "IMG_5780.jpg",
+        "IMG_5817.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Manual focus or magnifier-capable mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 5"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.long_exposure_nr",
+      "label": "Long Exposure NR",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_6",
+      "photo_sources": [
+        "IMG_5781.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still-image long exposure settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "available_not_wrapped",
+          "checklist": "camera_config"
+        }
+      },
+      "proof_artifacts": [
+        "backend/camera_config.py"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.high_iso_nr",
+      "label": "High ISO NR",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_6",
+      "photo_sources": [
+        "IMG_5781.jpg"
+      ],
+      "current_photo_value": "Normal",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "JPEG rendering mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "available_not_wrapped",
+          "checklist": "camera_config"
+        }
+      },
+      "proof_artifacts": [
+        "backend/camera_config.py"
+      ],
+      "next_action": "Probe settings storage and Command rows; keep guided target Low."
+    },
+    {
+      "setting_id": "camera.center_lock_on_af",
+      "label": "Center Lock-on AF",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_6",
+      "photo_sources": [
+        "IMG_5781.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "AF mode and subject tracking support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe Smart Remote tracking methods and on-camera CameraEx focus APIs."
+    },
+    {
+      "setting_id": "camera.smile_face_detect",
+      "label": "Smile/Face Detect.",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_6",
+      "photo_sources": [
+        "IMG_5781.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Face-detection supported mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "visible_in": "Smart Remote page 5 as Face Detection"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "available_not_wrapped",
+          "checklist": "camera_config"
+        }
+      },
+      "proof_artifacts": [
+        "backend/camera_config.py"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.soft_skin_effect",
+      "label": "Soft Skin Effect",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_6",
+      "photo_sources": [
+        "IMG_5781.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "JPEG face-detection rendering mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.auto_obj_framing",
+      "label": "Auto Obj. Framing",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_6",
+      "photo_sources": [
+        "IMG_5781.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Auto/face-detection compatible JPEG mode"
+      ],
+      "status": "state_gated",
+      "routes": {
+        "guided_physical": {
+          "status": "state_gated"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Identify exact menu preconditions by toggling Auto mode/Face Detection manually and retesting."
+    },
+    {
+      "setting_id": "camera.auto_mode",
+      "label": "Auto Mode",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_7",
+      "photo_sources": [
+        "IMG_5782.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Physical mode dial set to Auto"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Physical mode dial"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Record physical dial gate; expose guided setup only."
+    },
+    {
+      "setting_id": "camera.scene_selection",
+      "label": "Scene Selection",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_7",
+      "photo_sources": [
+        "IMG_5782.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Physical mode dial set to Scene"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Physical mode dial"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Record physical dial gate; expose guided setup only."
+    },
+    {
+      "setting_id": "camera.movie_mode",
+      "label": "Movie",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_7",
+      "photo_sources": [
+        "IMG_5782.jpg",
+        "IMG_5817.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Physical mode dial or movie function active"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "usb_gphoto": {
+          "status": "protocol_ok_needs_behavior",
+          "node": "movie"
+        },
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Mode choice is dial-gated; record toggle still needs USB behavior proof"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Separate movie-record toggle from movie-mode menu gate in API labels, then prove the USB movie node with an explicit behavior session."
+    },
+    {
+      "setting_id": "camera.steadyshot",
+      "label": "SteadyShot",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_7",
+      "photo_sources": [
+        "IMG_5782.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Stabilized lens/body setting available"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "available_not_wrapped",
+          "checklist": "camera_config"
+        }
+      },
+      "proof_artifacts": [
+        "backend/camera_config.py"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.steadyshot_settings",
+      "label": "SteadyShot Settings",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_7",
+      "photo_sources": [
+        "IMG_5782.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Manual focal length or stabilized lens setting available"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage and Command rows for focal length/IBIS config."
+    },
+    {
+      "setting_id": "camera.color_space",
+      "label": "Color Space",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_7",
+      "photo_sources": [
+        "IMG_5782.jpg"
+      ],
+      "current_photo_value": "sRGB",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still-image JPEG/RAW metadata setting"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "available_not_wrapped",
+          "checklist": "camera_config"
+        }
+      },
+      "proof_artifacts": [
+        "backend/camera_config.py"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.auto_slow_shutter",
+      "label": "Auto Slow Shut.",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_8",
+      "photo_sources": [
+        "IMG_5783.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie auto exposure mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe movie mode and Command rows for auto slow shutter setting."
+    },
+    {
+      "setting_id": "camera.audio_recording",
+      "label": "Audio Recording",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_8",
+      "photo_sources": [
+        "IMG_5783.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.audio_rec_level",
+      "label": "Audio Rec Level",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_8",
+      "photo_sources": [
+        "IMG_5783.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Movie mode and manual audio-level mode"
+      ],
+      "status": "state_gated",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Enter movie/audio-level context and rerun probes."
+    },
+    {
+      "setting_id": "camera.audio_out_timing",
+      "label": "Audio Out Timing",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_8",
+      "photo_sources": [
+        "IMG_5783.jpg"
+      ],
+      "current_photo_value": "Live",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie/audio monitoring mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.wind_noise_reduction",
+      "label": "Wind Noise Reduct.",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_8",
+      "photo_sources": [
+        "IMG_5783.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie/audio recording mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "camera.memory_recall",
+      "label": "Memory recall",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_9",
+      "photo_sources": [
+        "IMG_5784.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Memory recall mode/dial state"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Mode/dial preset recall"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Document as guided setup until remote mode selection is proven."
+    },
+    {
+      "setting_id": "camera.memory",
+      "label": "Memory",
+      "menu_group": "camera_settings",
+      "menu_page": "camera_9",
+      "photo_sources": [
+        "IMG_5784.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Current camera settings can be saved to memory slot"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep manual-only unless profile-save workflow is explicitly approved."
+    },
+    {
+      "setting_id": "custom.zebra",
+      "label": "Zebra",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_1",
+      "photo_sources": [
+        "IMG_5785.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Display overlay support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "custom.mf_assist",
+      "label": "MF Assist",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_1",
+      "photo_sources": [
+        "IMG_5785.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Manual focus mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe manual-focus assist settings and raw PTP manual-focus behavior."
+    },
+    {
+      "setting_id": "custom.focus_magnif_time",
+      "label": "Focus Magnif. Time",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_1",
+      "photo_sources": [
+        "IMG_5785.jpg"
+      ],
+      "current_photo_value": "No Limit",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Focus magnifier enabled"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage for focus magnifier timeout."
+    },
+    {
+      "setting_id": "custom.grid_line",
+      "label": "Grid Line",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_1",
+      "photo_sources": [
+        "IMG_5785.jpg",
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Display overlay support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_phone": {
+          "status": "available_not_wrapped",
+          "visible_in": "phone settings"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Separate phone overlay grid from camera overlay grid; probe both."
+    },
+    {
+      "setting_id": "custom.marker_display",
+      "label": "Marker Display",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_1",
+      "photo_sources": [
+        "IMG_5785.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie marker support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe movie marker display controls."
+    },
+    {
+      "setting_id": "custom.marker_settings",
+      "label": "Marker Settings",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_1",
+      "photo_sources": [
+        "IMG_5785.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Marker Display On and movie marker context"
+      ],
+      "status": "state_gated",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Set Marker Display on manually, then rerun menu/probe inventory."
+    },
+    {
+      "setting_id": "custom.audio_level_display",
+      "label": "Audio Level Display",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_2",
+      "photo_sources": [
+        "IMG_5786.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie/audio display support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe display overlay controls."
+    },
+    {
+      "setting_id": "custom.auto_review",
+      "label": "Auto Review",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_2",
+      "photo_sources": [
+        "IMG_5786.jpg"
+      ],
+      "current_photo_value": "2 Sec",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still-image post-capture review"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage for auto review duration."
+    },
+    {
+      "setting_id": "custom.disp_button",
+      "label": "DISP Button",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_2",
+      "photo_sources": [
+        "IMG_5786.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Display customization menu"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Treat as operator UI config; probe only after capture-critical rows."
+    },
+    {
+      "setting_id": "custom.peaking_level",
+      "label": "Peaking Level",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_2",
+      "photo_sources": [
+        "IMG_5786.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "MF/peaking display support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe peaking controls and assess if useful for focus verification."
+    },
+    {
+      "setting_id": "custom.peaking_color",
+      "label": "Peaking Color",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_2",
+      "photo_sources": [
+        "IMG_5786.jpg"
+      ],
+      "current_photo_value": "White",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Peaking enabled"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage for peaking color."
+    },
+    {
+      "setting_id": "custom.exposure_set_guide",
+      "label": "Exposure Set. Guide",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_2",
+      "photo_sources": [
+        "IMG_5786.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Display guide support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage; low product priority."
+    },
+    {
+      "setting_id": "custom.live_view_display",
+      "label": "Live View Display",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_3",
+      "photo_sources": [
+        "IMG_5787.jpg"
+      ],
+      "current_photo_value": "Setting Effect ON",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still/movie live view"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe because metering/liveview interpretation depends on setting effect."
+    },
+    {
+      "setting_id": "custom.disp_cont_af_area",
+      "label": "Disp. cont. AF area",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_3",
+      "photo_sources": [
+        "IMG_5787.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Continuous AF mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe display overlay controls."
+    },
+    {
+      "setting_id": "custom.phase_detect_area",
+      "label": "Phase Detect. Area",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_3",
+      "photo_sources": [
+        "IMG_5787.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phase detect AF supported lens/mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe and tie to AF behavior tests."
+    },
+    {
+      "setting_id": "custom.pre_af",
+      "label": "Pre-AF",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_3",
+      "photo_sources": [
+        "IMG_5787.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "AF mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe pre-AF control; useful for battery/latency policy."
+    },
+    {
+      "setting_id": "custom.zoom_setting",
+      "label": "Zoom Setting",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_3",
+      "photo_sources": [
+        "IMG_5787.jpg"
+      ],
+      "current_photo_value": "Optical zoom only",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Zoom-capable still mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "usb_gphoto": {
+          "status": "unsupported_on_a7ii",
+          "node": "zoom",
+          "reason": "Live USB proof showed this is a zoom position/control node, not the persistent Zoom Setting menu row."
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "custom.eye_start_af",
+      "label": "Eye-Start AF",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_3",
+      "photo_sources": [
+        "IMG_5787.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Viewfinder/adapter/lens support"
+      ],
+      "status": "state_gated",
+      "routes": {
+        "guided_physical": {
+          "status": "state_gated"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Identify lens/adapter precondition; likely operator-only."
+    },
+    {
+      "setting_id": "custom.finder_monitor",
+      "label": "Finder/Monitor",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_4",
+      "photo_sources": [
+        "IMG_5788.jpg"
+      ],
+      "current_photo_value": "Auto",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Display selection support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe display routing controls."
+    },
+    {
+      "setting_id": "custom.release_wo_lens",
+      "label": "Release w/o Lens",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_4",
+      "photo_sources": [
+        "IMG_5788.jpg"
+      ],
+      "current_photo_value": "Enable",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Body setting"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe because adapted-lens product support may need it."
+    },
+    {
+      "setting_id": "custom.af_with_shutter",
+      "label": "AF w/ shutter",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_4",
+      "photo_sources": [
+        "IMG_5788.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "AF mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe AF-with-shutter control and relate to half-press route."
+    },
+    {
+      "setting_id": "custom.ael_with_shutter",
+      "label": "AEL w/ shutter",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_4",
+      "photo_sources": [
+        "IMG_5788.jpg"
+      ],
+      "current_photo_value": "Auto",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Exposure lock support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "unsupported_on_a7ii",
+          "node": "AELButton",
+          "reason": "Live USB proof showed AELButton is not a writable persistent AEL-with-shutter setting route."
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "custom.e_front_curtain_shut",
+      "label": "e-Front Curtain Shut.",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_4",
+      "photo_sources": [
+        "IMG_5788.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Still shutter mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe shutter-type setting support."
+    },
+    {
+      "setting_id": "custom.s_auto_img_extract",
+      "label": "S. Auto Img. Extract.",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_4",
+      "photo_sources": [
+        "IMG_5788.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "Superior Auto mode"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Superior Auto/dial state"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Document as mode-gated; no autopilot value unless Auto mode is pursued."
+    },
+    {
+      "setting_id": "custom.exp_comp_set",
+      "label": "Exp.comp.set",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_5",
+      "photo_sources": [
+        "IMG_5789.jpg"
+      ],
+      "current_photo_value": "Ambient&flash",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Exposure compensation settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe EV-comp policy setting."
+    },
+    {
+      "setting_id": "custom.reset_ev_comp",
+      "label": "Reset EV Comp.",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_5",
+      "photo_sources": [
+        "IMG_5789.jpg"
+      ],
+      "current_photo_value": "Reset",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Exposure compensation settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage; low priority."
+    },
+    {
+      "setting_id": "custom.bracket_order",
+      "label": "Bracket order",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_5",
+      "photo_sources": [
+        "IMG_5789.jpg"
+      ],
+      "current_photo_value": "0 -> - -> +",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Bracket drive mode"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_set",
+          "node": "capturemode"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "custom.face_registration",
+      "label": "Face Registration",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_5",
+      "photo_sources": [
+        "IMG_5789.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Face detection features"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Treat as user-data/admin feature; do not automate without explicit approval."
+    },
+    {
+      "setting_id": "custom.aps_c_size_capture",
+      "label": "APS-C Size Capture",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_5",
+      "photo_sources": [
+        "IMG_5789.jpg"
+      ],
+      "current_photo_value": "Auto",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Sensor crop support"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "usb_gphoto": {
+          "status": "state_gated",
+          "node": "sensorcrop"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "custom.af_micro_adj",
+      "label": "AF Micro Adj.",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_5",
+      "photo_sources": [
+        "IMG_5789.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Lens/adapter supports micro-adjust"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep manual/admin only unless lens calibration workflow is approved."
+    },
+    {
+      "setting_id": "custom.lens_comp",
+      "label": "Lens Comp.",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_6",
+      "photo_sources": [
+        "IMG_5790.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Lens correction support"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe lens compensation toggles."
+    },
+    {
+      "setting_id": "custom.af_system",
+      "label": "AF System",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_6",
+      "photo_sources": [
+        "IMG_5790.jpg"
+      ],
+      "current_photo_value": "-",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "A-mount adapter/lens AF system support"
+      ],
+      "status": "state_gated",
+      "routes": {
+        "guided_physical": {
+          "status": "state_gated"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Identify required adapter/lens; do not mark unsupported until tested."
+    },
+    {
+      "setting_id": "custom.function_menu_set",
+      "label": "Function Menu Set.",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_6",
+      "photo_sources": [
+        "IMG_5790.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Operator UI customization"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe only after capture-critical settings."
+    },
+    {
+      "setting_id": "custom.custom_key_settings",
+      "label": "Custom Key Settings",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_6",
+      "photo_sources": [
+        "IMG_5790.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Operator UI customization"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage; avoid changing user custom keys by default."
+    },
+    {
+      "setting_id": "custom.dial_setup",
+      "label": "Dial Setup",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_6",
+      "photo_sources": [
+        "IMG_5790.jpg"
+      ],
+      "current_photo_value": "F/no. / SS",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Manual exposure dial assignment"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage; low priority."
+    },
+    {
+      "setting_id": "custom.dial_ev_comp",
+      "label": "Dial Ev Comp",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_6",
+      "photo_sources": [
+        "IMG_5790.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Dial exposure compensation setting"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe because it may unlock EV-comp behavior."
+    },
+    {
+      "setting_id": "custom.zoom_ring_rotate",
+      "label": "Zoom Ring Rotate",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_7",
+      "photo_sources": [
+        "IMG_5791.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Power zoom lens"
+      ],
+      "status": "state_gated",
+      "routes": {
+        "guided_physical": {
+          "status": "state_gated"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Test only with compatible power zoom lens."
+    },
+    {
+      "setting_id": "custom.movie_button",
+      "label": "MOVIE Button",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_7",
+      "photo_sources": [
+        "IMG_5791.jpg"
+      ],
+      "current_photo_value": "Always",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie button setting"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "usb_gphoto": {
+          "status": "unsupported_on_a7ii",
+          "node": "movie",
+          "reason": "Live USB proof showed the movie node is a record-operation control, not the persistent MOVIE Button policy row."
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "custom.dial_wheel_lock",
+      "label": "Dial / Wheel Lock",
+      "menu_group": "custom_settings",
+      "menu_page": "custom_7",
+      "photo_sources": [
+        "IMG_5791.jpg"
+      ],
+      "current_photo_value": "Unlock",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Operator UI setting"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe storage; low priority."
+    },
+    {
+      "setting_id": "wireless.send_to_smartphone",
+      "label": "Send to Smartphone",
+      "menu_group": "wireless",
+      "menu_page": "wireless_1",
+      "photo_sources": [
+        "IMG_5792.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback/network mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe mapping to avContent transfer and Smart Remote Contents Transfer functions."
+    },
+    {
+      "setting_id": "wireless.send_to_computer",
+      "label": "Send to Computer",
+      "menu_group": "wireless",
+      "menu_page": "wireless_1",
+      "photo_sources": [
+        "IMG_5792.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Network configured"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe only after product transfer route is stable."
+    },
+    {
+      "setting_id": "wireless.view_on_tv",
+      "label": "View on TV",
+      "menu_group": "wireless",
+      "menu_page": "wireless_1",
+      "photo_sources": [
+        "IMG_5792.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "DLNA/TV network mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe support route only if DLNA/TV output enters product scope."
+    },
+    {
+      "setting_id": "wireless.one_touch_nfc",
+      "label": "One-touch(NFC)",
+      "menu_group": "wireless",
+      "menu_page": "wireless_1",
+      "photo_sources": [
+        "IMG_5792.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "NFC hardware/app state"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Physical NFC tap"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Document physical NFC gate."
+    },
+    {
+      "setting_id": "wireless.airplane_mode",
+      "label": "Airplane Mode",
+      "menu_group": "wireless",
+      "menu_page": "wireless_1",
+      "photo_sources": [
+        "IMG_5792.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Wireless settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe carefully; changing can break route reachability."
+    },
+    {
+      "setting_id": "wireless.wps_push",
+      "label": "WPS Push",
+      "menu_group": "wireless",
+      "menu_page": "wireless_2",
+      "photo_sources": [
+        "IMG_5793.jpg",
+        "IMG_5827.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Wireless configuration mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped",
+          "visible_in": "Tweak Network Setting"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5827.jpg"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "wireless.access_point_set",
+      "label": "Access Point Set.",
+      "menu_group": "wireless",
+      "menu_page": "wireless_2",
+      "photo_sources": [
+        "IMG_5793.jpg",
+        "IMG_5827.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Wireless configuration mode"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped",
+          "visible_in": "Tweak Network Setting"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5827.jpg"
+      ],
+      "next_action": "Expose as guided network setup; avoid programmatic changes until app route needs STA Wi-Fi."
+    },
+    {
+      "setting_id": "wireless.edit_device_name",
+      "label": "Edit Device Name",
+      "menu_group": "wireless",
+      "menu_page": "wireless_2",
+      "photo_sources": [
+        "IMG_5793.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Wireless settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe settings storage; low priority."
+    },
+    {
+      "setting_id": "wireless.disp_mac_address",
+      "label": "Disp MAC Address",
+      "menu_group": "wireless",
+      "menu_page": "wireless_2",
+      "photo_sources": [
+        "IMG_5793.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Wireless settings"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "guided_physical": {
+          "status": "proven_read"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5793.jpg"
+      ],
+      "next_action": "Read via Android if needed for diagnostics."
+    },
+    {
+      "setting_id": "wireless.ssid_pw_reset",
+      "label": "SSID/PW Reset",
+      "menu_group": "wireless",
+      "menu_page": "wireless_2",
+      "photo_sources": [
+        "IMG_5793.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Wireless settings"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep disabled unless explicit network-reset approval."
+    },
+    {
+      "setting_id": "wireless.reset_network_set",
+      "label": "Reset Network Set.",
+      "menu_group": "wireless",
+      "menu_page": "wireless_2",
+      "photo_sources": [
+        "IMG_5793.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Wireless settings"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep disabled unless explicit network-reset approval."
+    },
+    {
+      "setting_id": "application.application_list",
+      "label": "Application List",
+      "menu_group": "application",
+      "menu_page": "application_1",
+      "photo_sources": [
+        "IMG_5794.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Application menu"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped",
+          "reason": "Physical application-menu launch surface; proof-app install/launch still needs live evidence"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5794.jpg"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "application.introduction",
+      "label": "Introduction",
+      "menu_group": "application",
+      "menu_page": "application_1",
+      "photo_sources": [
+        "IMG_5794.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Application menu"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "guided_physical": {
+          "status": "proven_read"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5794.jpg"
+      ],
+      "next_action": "No product control needed."
+    },
+    {
+      "setting_id": "application.smart_remote_exit",
+      "label": "Exit Application",
+      "menu_group": "application",
+      "menu_page": "smart_remote_control_1",
+      "photo_sources": [
+        "IMG_5813.jpg"
+      ],
+      "current_photo_value": "Exit Application",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Smart Remote Control app is running on camera"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Exiting the camera app can sever the current Smart Remote route"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5813.jpg"
+      ],
+      "next_action": "Probe whether Smart Remote can exit the app cleanly; until then expose as guided physical route-disruptive gate."
+    },
+    {
+      "setting_id": "playback.delete",
+      "label": "Delete",
+      "menu_group": "playback",
+      "menu_page": "playback_1",
+      "photo_sources": [
+        "IMG_5795.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode and card content"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        },
+        "smart_remote_wifi": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep API writes disabled; only list/delete if later explicit media-management approval."
+    },
+    {
+      "setting_id": "playback.view_mode",
+      "label": "View Mode",
+      "menu_group": "playback",
+      "menu_page": "playback_1",
+      "photo_sources": [
+        "IMG_5795.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "service": "avContent"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe mapping to avContent listing filters if needed."
+    },
+    {
+      "setting_id": "playback.image_index",
+      "label": "Image Index",
+      "menu_group": "playback",
+      "menu_page": "playback_1",
+      "photo_sources": [
+        "IMG_5795.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "service": "avContent"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe gallery browsing only if product needs camera-side playback."
+    },
+    {
+      "setting_id": "playback.display_rotation",
+      "label": "Display Rotation",
+      "menu_group": "playback",
+      "menu_page": "playback_1",
+      "photo_sources": [
+        "IMG_5795.jpg"
+      ],
+      "current_photo_value": "Manual",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback display settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe storage; low priority."
+    },
+    {
+      "setting_id": "playback.slide_show",
+      "label": "Slide Show",
+      "menu_group": "playback",
+      "menu_page": "playback_1",
+      "photo_sources": [
+        "IMG_5795.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "guided_physical": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe only if slideshow control enters product scope."
+    },
+    {
+      "setting_id": "playback.rotate",
+      "label": "Rotate",
+      "menu_group": "playback",
+      "menu_page": "playback_1",
+      "photo_sources": [
+        "IMG_5795.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode and selected image"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep disabled unless media-management approval."
+    },
+    {
+      "setting_id": "playback.enlarge_image",
+      "label": "Enlarge Image",
+      "menu_group": "playback",
+      "menu_page": "playback_2",
+      "photo_sources": [
+        "IMG_5796.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "service": "avContent"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe camera-side enlarge only if downloaded full-res review is insufficient."
+    },
+    {
+      "setting_id": "playback.still_image_pb",
+      "label": "Still Image PB",
+      "menu_group": "playback",
+      "menu_page": "playback_2",
+      "photo_sources": [
+        "IMG_5796.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "service": "avContent"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe only if camera-side playback is needed."
+    },
+    {
+      "setting_id": "playback.protect",
+      "label": "Protect",
+      "menu_group": "playback",
+      "menu_page": "playback_2",
+      "photo_sources": [
+        "IMG_5796.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback mode and selected image"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep disabled unless explicit media-management approval."
+    },
+    {
+      "setting_id": "playback.specify_printing",
+      "label": "Specify Printing",
+      "menu_group": "playback",
+      "menu_page": "playback_2",
+      "photo_sources": [
+        "IMG_5796.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Playback/DPOF support"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "No product control planned unless requested."
+    },
+    {
+      "setting_id": "setup.monitor_brightness",
+      "label": "Monitor Brightness",
+      "menu_group": "setup",
+      "menu_page": "setup_1",
+      "photo_sources": [
+        "IMG_5797.jpg"
+      ],
+      "current_photo_value": "Manual",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Display settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe display settings storage."
+    },
+    {
+      "setting_id": "setup.viewfinder_brightness",
+      "label": "Viewfinder Bright.",
+      "menu_group": "setup",
+      "menu_page": "setup_1",
+      "photo_sources": [
+        "IMG_5797.jpg"
+      ],
+      "current_photo_value": "Auto",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Viewfinder display settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe display settings storage."
+    },
+    {
+      "setting_id": "setup.finder_color_temp",
+      "label": "Finder Color Temp.",
+      "menu_group": "setup",
+      "menu_page": "setup_1",
+      "photo_sources": [
+        "IMG_5797.jpg"
+      ],
+      "current_photo_value": "+/-0",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Viewfinder display settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe display settings storage."
+    },
+    {
+      "setting_id": "setup.volume_settings",
+      "label": "Volume Settings",
+      "menu_group": "setup",
+      "menu_page": "setup_1",
+      "photo_sources": [
+        "IMG_5797.jpg"
+      ],
+      "current_photo_value": "7",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Audio playback settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; low priority."
+    },
+    {
+      "setting_id": "setup.audio_signals",
+      "label": "Audio signals",
+      "menu_group": "setup",
+      "menu_page": "setup_1",
+      "photo_sources": [
+        "IMG_5797.jpg"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup audio settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; useful for quiet operation."
+    },
+    {
+      "setting_id": "setup.tile_menu",
+      "label": "Tile Menu",
+      "menu_group": "setup",
+      "menu_page": "setup_2",
+      "photo_sources": [
+        "IMG_5798.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Menu display settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; low priority."
+    },
+    {
+      "setting_id": "setup.mode_dial_guide",
+      "label": "Mode Dial Guide",
+      "menu_group": "setup",
+      "menu_page": "setup_2",
+      "photo_sources": [
+        "IMG_5798.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup display settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; useful for guided setup UX."
+    },
+    {
+      "setting_id": "setup.delete_confirm",
+      "label": "Delete confirm.",
+      "menu_group": "setup",
+      "menu_page": "setup_2",
+      "photo_sources": [
+        "IMG_5798.jpg"
+      ],
+      "current_photo_value": "Cancel first",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Delete UI settings"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Do not automate without media-management approval."
+    },
+    {
+      "setting_id": "setup.display_quality",
+      "label": "Display Quality",
+      "menu_group": "setup",
+      "menu_page": "setup_2",
+      "photo_sources": [
+        "IMG_5798.jpg"
+      ],
+      "current_photo_value": "Standard",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Display settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage."
+    },
+    {
+      "setting_id": "setup.pwr_save_start_time",
+      "label": "Pwr Save Start Time",
+      "menu_group": "setup",
+      "menu_page": "setup_2",
+      "photo_sources": [
+        "IMG_5798.jpg"
+      ],
+      "current_photo_value": "30 Min",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Power-save settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "usb_gphoto": {
+          "status": "proven_read",
+          "reason": "Keepalive works around idle timer"
+        }
+      },
+      "proof_artifacts": [
+        "server.py"
+      ],
+      "next_action": "Probe setup storage; keep USB keepalive workaround active."
+    },
+    {
+      "setting_id": "setup.cleaning_mode",
+      "label": "Cleaning Mode",
+      "menu_group": "setup",
+      "menu_page": "setup_3",
+      "photo_sources": [
+        "IMG_5799.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Sensor cleaning operation"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Never trigger remotely without explicit human confirmation."
+    },
+    {
+      "setting_id": "setup.demo_mode",
+      "label": "Demo Mode",
+      "menu_group": "setup",
+      "menu_page": "setup_3",
+      "photo_sources": [
+        "IMG_5799.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; low priority."
+    },
+    {
+      "setting_id": "setup.tc_ub_settings",
+      "label": "TC/UB Settings",
+      "menu_group": "setup",
+      "menu_page": "setup_3",
+      "photo_sources": [
+        "IMG_5799.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Movie/timecode settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "setup.remote_ctrl",
+      "label": "Remote Ctrl",
+      "menu_group": "setup",
+      "menu_page": "setup_3",
+      "photo_sources": [
+        "IMG_5799.jpg"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "IR remote settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; low priority."
+    },
+    {
+      "setting_id": "setup.hdmi_settings",
+      "label": "HDMI Settings",
+      "menu_group": "setup",
+      "menu_page": "setup_3",
+      "photo_sources": [
+        "IMG_5799.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "HDMI output settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "camera_remote_command": {
+          "status": "needs_probe"
+        },
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe only if HDMI monitor/capture route becomes useful."
+    },
+    {
+      "setting_id": "setup.usb_connection",
+      "label": "USB Connection",
+      "menu_group": "setup",
+      "menu_page": "setup_4",
+      "photo_sources": [
+        "IMG_5800.jpg"
+      ],
+      "current_photo_value": "PC Remote",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup menu; changing may drop USB"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Changing this can sever current control route"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5800.jpg"
+      ],
+      "next_action": "Expose as guided prerequisite for USB route, not as remote setter."
+    },
+    {
+      "setting_id": "setup.usb_lun_setting",
+      "label": "USB LUN Setting",
+      "menu_group": "setup",
+      "menu_page": "setup_4",
+      "photo_sources": [
+        "IMG_5800.jpg"
+      ],
+      "current_photo_value": "Multi",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "USB settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "guided_physical": {
+          "status": "available_not_wrapped"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; low priority."
+    },
+    {
+      "setting_id": "setup.language",
+      "label": "Language",
+      "menu_group": "setup",
+      "menu_page": "setup_4",
+      "photo_sources": [
+        "IMG_5800.jpg",
+        "IMG_5824.jpg"
+      ],
+      "current_photo_value": "English / 35 of 35 unlocked",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup language menu; OpenMemories language unlock"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped",
+          "visible_in": "Tweak Region tab"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5824.jpg"
+      ],
+      "next_action": "Keep as guided/protected setting; do not change language automatically."
+    },
+    {
+      "setting_id": "setup.date_time_setup",
+      "label": "Date/Time Setup",
+      "menu_group": "setup",
+      "menu_page": "setup_4",
+      "photo_sources": [
+        "IMG_5800.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup clock settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "setup.area_setting",
+      "label": "Area Setting",
+      "menu_group": "setup",
+      "menu_page": "setup_4",
+      "photo_sources": [
+        "IMG_5800.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup region settings"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped",
+          "visible_in": "Tweak Region tab"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5824.jpg"
+      ],
+      "next_action": "Keep guided/protected; do not alter region automatically."
+    },
+    {
+      "setting_id": "setup.format",
+      "label": "Format",
+      "menu_group": "setup",
+      "menu_page": "setup_5",
+      "photo_sources": [
+        "IMG_5801.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Memory card inserted"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "API must always reject non-dry-run format unless later explicit approval is added."
+    },
+    {
+      "setting_id": "setup.file_number",
+      "label": "File Number",
+      "menu_group": "setup",
+      "menu_page": "setup_5",
+      "photo_sources": [
+        "IMG_5801.jpg"
+      ],
+      "current_photo_value": "Series",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "File numbering settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; useful for capture file management."
+    },
+    {
+      "setting_id": "setup.set_file_name",
+      "label": "Set File Name",
+      "menu_group": "setup",
+      "menu_page": "setup_5",
+      "photo_sources": [
+        "IMG_5801.jpg"
+      ],
+      "current_photo_value": "DSC",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "File naming settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        },
+        "camera_remote_command": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; avoid changing until file-management policy exists."
+    },
+    {
+      "setting_id": "setup.select_rec_folder",
+      "label": "Select REC Folder",
+      "menu_group": "setup",
+      "menu_page": "setup_5",
+      "photo_sources": [
+        "IMG_5801.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Memory card folder settings"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep guarded; media-management route only."
+    },
+    {
+      "setting_id": "setup.new_folder",
+      "label": "New Folder",
+      "menu_group": "setup",
+      "menu_page": "setup_5",
+      "photo_sources": [
+        "IMG_5801.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Memory card folder settings"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Keep guarded; media-management route only."
+    },
+    {
+      "setting_id": "setup.folder_name",
+      "label": "Folder Name",
+      "menu_group": "setup",
+      "menu_page": "setup_5",
+      "photo_sources": [
+        "IMG_5801.jpg"
+      ],
+      "current_photo_value": "Standard Form",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Memory card folder settings"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Probe setup storage; low priority."
+    },
+    {
+      "setting_id": "setup.recover_image_db",
+      "label": "Recover Image DB",
+      "menu_group": "setup",
+      "menu_page": "setup_6",
+      "photo_sources": [
+        "IMG_5802.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Memory card inserted"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Never trigger automatically; manual recovery only."
+    },
+    {
+      "setting_id": "setup.display_media_info",
+      "label": "Display Media Info.",
+      "menu_group": "setup",
+      "menu_page": "setup_6",
+      "photo_sources": [
+        "IMG_5802.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Memory card inserted"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "proven_read",
+          "service": "avContent"
+        },
+        "usb_gphoto": {
+          "status": "proven_read",
+          "reason": "storage summary"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "Expose read-only card/media info if needed."
+    },
+    {
+      "setting_id": "setup.version",
+      "label": "Version",
+      "menu_group": "setup",
+      "menu_page": "setup_6",
+      "photo_sources": [
+        "IMG_5802.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup version screen"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "usb_gphoto": {
+          "status": "proven_read",
+          "reason": "summary reports version 4.0"
+        },
+        "openmemories": {
+          "status": "needs_probe",
+          "visible_in": "Tweak Info tab"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5822.jpg"
+      ],
+      "next_action": "Expose as read-only diagnostic."
+    },
+    {
+      "setting_id": "setup.certification_logo",
+      "label": "Certification Logo",
+      "menu_group": "setup",
+      "menu_page": "setup_6",
+      "photo_sources": [
+        "IMG_5802.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup info screen"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "guided_physical": {
+          "status": "proven_read"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5802.jpg"
+      ],
+      "next_action": "No product control needed."
+    },
+    {
+      "setting_id": "setup.setting_reset",
+      "label": "Setting Reset",
+      "menu_group": "setup",
+      "menu_page": "setup_6",
+      "photo_sources": [
+        "IMG_5802.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Setup reset menu"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "guided_physical": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [],
+      "next_action": "API must always reject non-dry-run reset unless later explicit approval is added."
+    },
+    {
+      "setting_id": "phone.self_timer",
+      "label": "Self-Timer",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5804.PNG",
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app connected to Smart Remote"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "relation": "drive/selftimer methods likely",
+          "method": "setSelfTimer"
+        },
+        "openmemories": {
+          "status": "needs_probe",
+          "relation": "CameraEx ParametersModifier self timer endpoint",
+          "endpoint": "POST /settings/param.self_timer"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5805.PNG"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "phone.camera_information",
+      "label": "Camera Information",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app connected"
+      ],
+      "status": "proven_read",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "proven_read",
+          "method": "getEvent/device info"
+        }
+      },
+      "proof_artifacts": [
+        "backend/wifi_a7ii.py"
+      ],
+      "next_action": "Expose read-only camera info in settings API."
+    },
+    {
+      "setting_id": "phone.review_image",
+      "label": "Review Image",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "2sec",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app UI"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_phone": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5805.PNG"
+      ],
+      "next_action": "Probe whether Smart Remote API exposes this phone-app preference."
+    },
+    {
+      "setting_id": "phone.review_image_size",
+      "label": "Size of Review Image",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5867.PNG",
+        "IMG_5868.PNG"
+      ],
+      "current_photo_value": "2M",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app connected to Smart Remote"
+      ],
+      "status": "proven_set",
+      "routes": {
+        "smart_remote_wifi": {
+          "status": "proven_set",
+          "method": "setPostviewImageSize",
+          "getters": [
+            "getPostviewImageSize",
+            "getAvailablePostviewImageSize"
+          ]
+        },
+        "smart_remote_phone": {
+          "status": "proven_read",
+          "visible_in": "phone settings"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5867.PNG",
+        "IMG_5868.PNG"
+      ],
+      "next_action": "No repeat proof required for the existing proven setter. Preserve the attached behavior evidence; retest only for regression or to promote another route."
+    },
+    {
+      "setting_id": "phone.save_options",
+      "label": "Save Options",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "On",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app UI"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_phone": {
+          "status": "needs_probe"
+        },
+        "smart_remote_wifi": {
+          "status": "available_not_wrapped",
+          "relation": "avContent transfer"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5805.PNG"
+      ],
+      "next_action": "Probe phone-save preference separately from camera full-res transfer route."
+    },
+    {
+      "setting_id": "phone.location_information",
+      "label": "Location Information",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app permissions/GPS"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "smart_remote_phone": {
+          "status": "manual_physical_gate",
+          "reason": "Phone OS permission and app preference"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5805.PNG"
+      ],
+      "next_action": "Leave to phone app; product can write GPS metadata later if needed."
+    },
+    {
+      "setting_id": "phone.grid_line",
+      "label": "Grid Line",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app overlay"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_phone": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5805.PNG"
+      ],
+      "next_action": "Probe as phone overlay, not camera setting, unless API proves otherwise."
+    },
+    {
+      "setting_id": "phone.mirror_mode",
+      "label": "Mirror Mode",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_settings",
+      "photo_sources": [
+        "IMG_5805.PNG"
+      ],
+      "current_photo_value": "Off",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app liveview display"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "smart_remote_phone": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5805.PNG"
+      ],
+      "next_action": "Probe as phone display preference unless API proves otherwise."
+    },
+    {
+      "setting_id": "phone.shoot_mode",
+      "label": "Shoot Mode",
+      "menu_group": "smart_remote_phone",
+      "menu_page": "phone_liveview",
+      "photo_sources": [
+        "IMG_5804.PNG",
+        "IMG_5806.PNG",
+        "IMG_5808.PNG"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "Phone app connected"
+      ],
+      "status": "manual_physical_gate",
+      "routes": {
+        "guided_physical": {
+          "status": "manual_physical_gate",
+          "reason": "Physical mode/dial or Smart Remote function state"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5806.PNG"
+      ],
+      "next_action": "Map exact phone shoot-mode UI to camera function/mode after Smart Remote API dump."
+    },
+    {
+      "setting_id": "openmem.info_model",
+      "label": "OpenMemories Info Model",
+      "menu_group": "openmemories",
+      "menu_page": "info",
+      "photo_sources": [
+        "IMG_5822.jpg"
+      ],
+      "current_photo_value": "ILCE-7M2",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak app"
+      ],
+      "status": "needs_probe",
+      "routes": {
+        "openmemories": {
+          "status": "needs_probe"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5822.jpg"
+      ],
+      "next_action": "OpenMemories Route 3 is permanently disabled; historical proof is unavailable and unverified. Use an approved non-Route-3 path only when one is available."
+    },
+    {
+      "setting_id": "openmem.disable_video_recording_limit",
+      "label": "Disable video recording limit",
+      "menu_group": "openmemories",
+      "menu_page": "video",
+      "photo_sources": [
+        "IMG_5823.jpg"
+      ],
+      "current_photo_value": "unchecked",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Video tab"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped",
+          "visible_in": "Tweak Video tab"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5823.jpg"
+      ],
+      "next_action": "Keep manual/reversible; do not alter until video-product route needs it."
+    },
+    {
+      "setting_id": "openmem.rx100m4_4k_limit",
+      "label": "Disable 4K video recording limit (RX100M4 only)",
+      "menu_group": "openmemories",
+      "menu_page": "video",
+      "photo_sources": [
+        "IMG_5823.jpg"
+      ],
+      "current_photo_value": "not available",
+      "greyed_in_photo": true,
+      "preconditions": [
+        "RX100M4 only, not A7 II"
+      ],
+      "status": "unsupported_on_a7ii",
+      "routes": {
+        "openmemories": {
+          "status": "unsupported_on_a7ii"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5823.jpg"
+      ],
+      "next_action": "No A7 II action; keep registry row because it appears in photo."
+    },
+    {
+      "setting_id": "openmem.unlock_languages",
+      "label": "Unlock all languages",
+      "menu_group": "openmemories",
+      "menu_page": "region",
+      "photo_sources": [
+        "IMG_5824.jpg"
+      ],
+      "current_photo_value": "35/35 languages activated",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Region tab"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5824.jpg"
+      ],
+      "next_action": "Keep as protected setting; no automatic language changes."
+    },
+    {
+      "setting_id": "openmem.pal_ntsc_warning",
+      "label": "Enable PAL/NTSC selector & warning",
+      "menu_group": "openmemories",
+      "menu_page": "region",
+      "photo_sources": [
+        "IMG_5824.jpg"
+      ],
+      "current_photo_value": "Disabled",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Region tab"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5824.jpg"
+      ],
+      "next_action": "Keep manual/reversible; relevant to video region only."
+    },
+    {
+      "setting_id": "openmem.unlock_protected_settings",
+      "label": "Unlock protected settings",
+      "menu_group": "openmemories",
+      "menu_page": "protection",
+      "photo_sources": [
+        "IMG_5825.jpg"
+      ],
+      "current_photo_value": "Protection disabled",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Protection tab"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5825.jpg"
+      ],
+      "next_action": "Use only with backup/rollback before protected-setting experiments."
+    },
+    {
+      "setting_id": "openmem.enable_wifi",
+      "label": "Enable WiFi",
+      "menu_group": "openmemories",
+      "menu_page": "developer",
+      "photo_sources": [
+        "IMG_5826.jpg",
+        "IMG_5829.jpg"
+      ],
+      "current_photo_value": "Connected to <redacted Wi-Fi SSID> / <redacted camera LAN IP>",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Developer tab"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5829.jpg"
+      ],
+      "next_action": "Use to host clean-room proof app over LAN; verify ports after rollback."
+    },
+    {
+      "setting_id": "openmem.enable_telnet",
+      "label": "Enable Telnet",
+      "menu_group": "openmemories",
+      "menu_page": "developer",
+      "photo_sources": [
+        "IMG_5826.jpg",
+        "IMG_5829.jpg"
+      ],
+      "current_photo_value": "enabled / port 23",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Developer tab"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "openmemories": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5829.jpg"
+      ],
+      "next_action": "Enable only during test windows; final rollback scan must show port 23 closed."
+    },
+    {
+      "setting_id": "openmem.enable_adb",
+      "label": "Enable ADB",
+      "menu_group": "openmemories",
+      "menu_page": "developer",
+      "photo_sources": [
+        "IMG_5826.jpg",
+        "IMG_5829.jpg"
+      ],
+      "current_photo_value": "enabled / port 5555",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Developer tab"
+      ],
+      "status": "dangerous_admin",
+      "routes": {
+        "openmemories": {
+          "status": "dangerous_admin"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5829.jpg"
+      ],
+      "next_action": "Enable only during test windows; final rollback scan must show port 5555 closed."
+    },
+    {
+      "setting_id": "openmem.network_hotspot",
+      "label": "Hotspot",
+      "menu_group": "openmemories",
+      "menu_page": "network",
+      "photo_sources": [
+        "IMG_5827.jpg"
+      ],
+      "current_photo_value": "",
+      "greyed_in_photo": false,
+      "preconditions": [
+        "OpenMemories Tweak Network Settings"
+      ],
+      "status": "available_not_wrapped",
+      "routes": {
+        "openmemories": {
+          "status": "available_not_wrapped"
+        }
+      },
+      "proof_artifacts": [
+        "IMG_5827.jpg"
+      ],
+      "next_action": "Use only if clean-room app needs camera-hosted AP behavior."
+    }
+  ]
+}

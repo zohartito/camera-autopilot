@@ -1,0 +1,26 @@
+{
+  "name": "camera-autopilot-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Capacitor native iOS and Android wrapper for the Camera Autopilot web UI. Loads the existing FastAPI-served web client (backend/web/index.html); the UI is not duplicated.",
+  "scripts": {
+    "sync": "cap sync",
+    "backend:show": "node scripts/backend_config.cjs show",
+    "backend:set": "node scripts/backend_config.cjs set",
+    "backend:reset": "node scripts/backend_config.cjs reset",
+    "test:config": "node scripts/test_backend_config.cjs",
+    "test": "npm run test:config",
+    "build:ios:sim": "bash scripts/build_ios_simulator.sh",
+    "smoke:ios:sim": "bash scripts/run_ios_simulator_smoke.sh",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.4.2",
+    "@capacitor/ios": "8.4.2",
+    "@capacitor/android": "8.4.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.4.2"
+  }
+}

@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+# The intent brain (intent_brain.py) talks to a LOCAL Ollama model via stdlib urllib — no API
+# billing, no extra deps. Configure with OLLAMA_HOST / OLLAMA_MODEL; falls back to a keyword map.
+# Real-camera mode (CAMERA_ENGINE=real) also needs the engine deps from the root
+# requirements.txt (sonyremote/ + server.py): gphoto2, pillow, astral
+#
+# The CV/ML stack (stacking.py, wifi_stack.py, wifi_tracking.py, embed_index.py) is HEAVY and
+# lives in its own venv (backend/.venv-ml). It needs opencv-CONTRIB-python
+# (CSRT/KCF trackers in cv2.legacy.*), not bare opencv-python. See
+# backend/run_tests.sh for how the two venvs split the test lanes.

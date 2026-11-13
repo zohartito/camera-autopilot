@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "format": "lossless-float32-npy-mmap",
+  "rows": 233785,
+  "dimensions": 512,
+  "quantization": "none",
+  "source": {
+    "bytes": 697615942,
+    "sha256": "949d4bf79d42345df73a5c4eee886a4b4a6383a06e26b9abd20bb0d7a9531128"
+  },
+  "files": {
+    "embeddings.npy": {
+      "bytes": 478791808,
+      "sha256": "d96c82e7bf0f3b7dd94db73186ae7995e9886010021ef9ffed6fa848b330b266",
+      "shape": [
+        233785,
+        512
+      ],
+      "dtype": "<f4"
+    },
+    "iso.npy": {
+      "bytes": 1870408,
+      "sha256": "db87aa681351f7ae52cda1b84cde228156c8582af860c8d475028ee8e2ec152c",
+      "shape": [
+        233785
+      ],
+      "dtype": "<i8"
+    },
+    "f_number.npy": {
+      "bytes": 1870408,
+      "sha256": "3b9dafdf723198d7ecefd2e1a52842430c6fc7356147c177f9ae9fca25f4b4ca",
+      "shape": [
+        233785
+      ],
+      "dtype": "<f8"
+    },
+    "shutter_s.npy": {
+      "bytes": 1870408,
+      "sha256": "7898f2111527228f90c06ea679c2ca1c7fb1825820a3d4f20e7f04c9e49aaad5",
+      "shape": [
+        233785
+      ],
+      "dtype": "<f8"
+    },
+    "focal_mm.npy": {
+      "bytes": 1870408,
+      "sha256": "5af7a1a6d90ffb829d9b0b4801d88f6f4a7b04c9800013ebe42f41bce5ea5561",
+      "shape": [
+        233785
+      ],
+      "dtype": "<f8"
+    },
+    "titles.npy": {
+      "bytes": 211341768,
+      "sha256": "f616b6729af14997f655118224d5fd0c541f0cb78fdc0e514f43175ef81b1bb1",
+      "shape": [
+        233785
+      ],
+      "dtype": "<U226"
+    }
+  }
+}

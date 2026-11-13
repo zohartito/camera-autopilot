@@ -1,0 +1,4 @@
+# Heavy-jobs role: merges, panorama stitch child, deflicker; ffmpeg comes from apt.
+numpy
+pillow
+opencv-python-headless

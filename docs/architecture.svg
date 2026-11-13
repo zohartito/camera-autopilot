@@ -1,0 +1,87 @@
+<svg viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <title>Camera Copilot architecture and the simple-to-complex build path</title>
+  <desc>Phone talks to a Raspberry Pi puck over Wi-Fi; the puck controls the Sony camera over USB and talks to Claude in the cloud. Below, a four-step staircase from Mac-tethered today to a sellable puck-plus-app product.</desc>
+  <style>
+    :root{
+      --ink:#1c1c1e; --muted:#6b6b70; --line:#c9c9cf; --surface:#f4f4f6;
+      --accent:#0d9488; --accent-soft:#d3f1ec; --accent-ink:#0b6e64;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --ink:#ececf0; --muted:#9a9aa2; --line:#3a3a40; --surface:#232327;
+             --accent:#2dd4bf; --accent-soft:#0f3d39; --accent-ink:#7ff0e2; }
+    }
+    .ttl{ fill:var(--ink); font-size:18px; font-weight:700; }
+    .lbl{ fill:var(--ink); font-size:14px; font-weight:650; }
+    .sub{ fill:var(--muted); font-size:11px; }
+    .tag{ fill:var(--muted); font-size:10.5px; font-weight:600; letter-spacing:.02em; }
+    .box{ fill:var(--surface); stroke:var(--line); stroke-width:1.5; }
+    .brain{ fill:var(--accent-soft); stroke:var(--accent); stroke-width:2; }
+    .flow{ stroke:var(--line); stroke-width:2; fill:none; }
+    .flowA{ stroke:var(--accent); stroke-width:2.4; fill:none; }
+  </style>
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--line)"/></marker>
+    <marker id="arA" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/></marker>
+  </defs>
+
+  <text x="30" y="30" class="ttl">How it fits together</text>
+
+  <rect x="300" y="44" width="150" height="44" rx="12" class="box"/>
+  <text x="375" y="64" text-anchor="middle" class="lbl">Claude</text>
+  <text x="375" y="80" text-anchor="middle" class="sub">vision + brains</text>
+
+  <text x="34" y="150" class="lbl">You</text>
+  <text x="34" y="166" class="sub">just talk</text>
+
+  <rect x="110" y="118" width="150" height="64" rx="12" class="box"/>
+  <text x="185" y="146" text-anchor="middle" class="lbl">Phone</text>
+  <text x="185" y="163" text-anchor="middle" class="sub">voice + see shots</text>
+
+  <rect x="305" y="118" width="150" height="64" rx="12" class="box brain"/>
+  <text x="380" y="146" text-anchor="middle" class="lbl">Pi puck</text>
+  <text x="380" y="163" text-anchor="middle" class="sub">agent + control</text>
+
+  <rect x="560" y="118" width="160" height="64" rx="12" class="box"/>
+  <text x="640" y="146" text-anchor="middle" class="lbl">Sony A7 II</text>
+  <text x="640" y="163" text-anchor="middle" class="sub">USB tether</text>
+
+  <path class="flow" d="M70,158 H108" marker-end="url(#ar)"/>
+  <text x="86" y="150" text-anchor="middle" class="tag">talk</text>
+
+  <path class="flow" d="M262,150 H303" marker-end="url(#ar)"/>
+  <text x="282" y="142" text-anchor="middle" class="tag">Wi-Fi</text>
+
+  <path class="flowA" d="M457,150 H558" marker-end="url(#arA)"/>
+  <text x="507" y="142" text-anchor="middle" class="tag" fill="var(--accent-ink)">USB · built today</text>
+
+  <path class="flowA" d="M380,116 V90" marker-end="url(#arA)"/>
+  <text x="392" y="106" class="tag">hotspot</text>
+
+  <line x1="30" y1="214" x2="730" y2="214" stroke="var(--line)" stroke-width="1"/>
+
+  <text x="30" y="252" class="ttl">Start simple, add complexity</text>
+
+  <rect x="30" y="430" width="160" height="62" rx="12" class="box brain"/>
+  <text x="110" y="404" text-anchor="middle" class="tag" fill="var(--accent-ink)">YOU ARE HERE</text>
+  <text x="110" y="458" text-anchor="middle" class="lbl">1 - Mac tethered</text>
+  <text x="110" y="475" text-anchor="middle" class="sub">prove the loop</text>
+
+  <rect x="215" y="398" width="160" height="62" rx="12" class="box"/>
+  <text x="295" y="426" text-anchor="middle" class="lbl">2 - Pi + phone</text>
+  <text x="295" y="443" text-anchor="middle" class="sub">portable, iPhone ok</text>
+
+  <rect x="400" y="366" width="160" height="62" rx="12" class="box"/>
+  <text x="480" y="394" text-anchor="middle" class="lbl">3 - Solder + 3D</text>
+  <text x="480" y="411" text-anchor="middle" class="sub">a real gadget</text>
+
+  <rect x="570" y="334" width="160" height="62" rx="12" class="box"/>
+  <text x="650" y="362" text-anchor="middle" class="lbl">4 - Puck + app</text>
+  <text x="650" y="379" text-anchor="middle" class="sub">product to sell</text>
+
+  <path class="flow" d="M190,452 L213,438" marker-end="url(#ar)"/>
+  <path class="flow" d="M375,420 L398,406" marker-end="url(#ar)"/>
+  <path class="flow" d="M560,388 L568,376" marker-end="url(#ar)"/>
+
+  <rect x="600" y="250" width="14" height="14" rx="3" class="brain"/>
+  <text x="622" y="261" class="tag">teal = already working / where you are</text>
+</svg>

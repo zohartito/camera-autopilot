@@ -1,0 +1,6 @@
+# Compact-perception role: CLIP taste retrieval and subject floor (CPU torch on arm64).
+numpy
+pillow
+torch
+torchvision
+open_clip_torch
