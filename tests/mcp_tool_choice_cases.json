@@ -1,0 +1,12 @@
+[
+  {"request": "Take a moody shot of the street", "before": "shoot", "expected": "shoot", "mode": "agent"},
+  {"request": "When is golden hour at these coordinates tomorrow?", "before": "sun_times", "expected": "sun_times", "mode": "agent"},
+  {"request": "Which camera is attached, and what serial should I pass?", "before": "detect_camera", "expected": "detect_camera", "mode": "agent"},
+  {"request": "Read the current exposure without taking a photo", "before": "get_camera_settings", "expected": "get_camera_settings", "mode": "agent"},
+  {"request": "Which ISO values does this body accept?", "before": "list_setting_options", "expected": "get_camera_settings", "arguments": {"setting": "iso"}, "mode": "agent"},
+  {"request": "Save six seconds of USB preview as a clip", "before": "record_video", "expected": "record", "arguments": {"duration_s": 6, "mode": "liveview_clip", "serial": "SERIAL"}, "mode": "expert"},
+  {"request": "Record ten seconds on the card", "before": "record_native_video", "expected": "record", "arguments": {"duration_s": 10, "mode": "native_movie", "serial": "SERIAL"}, "mode": "expert"},
+  {"request": "Set ISO to 200 without taking a photo", "before": "set_exposure", "expected": "set_exposure", "arguments": {"iso": "200"}, "mode": "expert"},
+  {"request": "Capture one still using the settings already on the camera", "before": "capture_photo", "expected": "capture_photo", "mode": "expert"},
+  {"request": "Adjust exposure toward a JPEG mean brightness of 112", "before": "auto_expose", "expected": "auto_expose", "mode": "expert"}
+]

@@ -183,20 +183,50 @@ the launcher and USB-bridge security scripts and a deterministic intent eval. CI
 
 ## MCP server
 
-`server.py` exposes the camera over MCP (server name `sony-camera`): low-level tools such as
-`detect_camera`, `get_camera_settings`, `set_exposure`, `capture_photo`, `auto_expose` and
-`sun_times`, plus one high-level tool, `shoot(intent, auto_correct=False)`, which runs the same
-intent, metering and capture path as the web app and returns the photo, the settings used and a
-one-line reason. With `auto_correct=True` it critiques its own frame with a local vision model and
-re-shoots, and falls back to a single shot when no model is available.
+`server.py` (server name `sony-camera`) leads with four agent tools:
 
-**MCP mock mode currently applies to `shoot` only.** Until the server-wide MCP guard lands,
-low-level camera tools still construct a real camera connection even with `CAMERA_ENGINE=mock`.
-Use only `shoot` for a camera-free MCP demo. To add it to Claude Code:
+| Tool | Use it for |
+| --- | --- |
+| `shoot(intent, auto_correct=False, serial=None)` | A photo from one plain-language goal |
+| `sun_times` | Offline golden/blue-hour and sunrise/sunset planning |
+| `detect_camera` | USB identity discovery before a real capture |
+| `get_camera_settings(setting=None)` | Read exposure and, optionally, a setting's valid choices |
+
+Set **`CAMERA_MCP_EXPERT=1`** and restart the server to add `set_exposure`, `set_control`,
+`capture_photo`, `auto_expose`, `get_liveview` and `record` (10 tools total). Existing documented
+names are preserved; explicit controls/capture are now expert-only. `list_setting_options`
+is folded into `get_camera_settings(setting=...)`. `record_video` and `record_native_video`
+are replaced on MCP by `record(duration_s, mode="liveview_clip" | "native_movie", serial=...)`.
+All old functions remain importable in Python. Native recording returns command evidence,
+not proof of a saved clip; inspect the SD card. Recording stays expert-only.
+
+`shoot` uses the same intent, metering and capture path as the web app, returning a preview,
+settings, reason and delivery/quality evidence. `auto_correct=True` allows up to two product
+capture attempts (which may include meter frames). Real capture uses local vision or luma
+fallback; mock/no critique stops after one attempt. HDR bracket, timelapse and panorama
+controls are separate workflows, not options on this MCP tool.
+
+The default engine is **mock**. Discovery/settings are camera-free in mock mode and expert
+hardware operations refuse without accessing USB. Real shooting requires `CAMERA_ENGINE=real`
+and a discovered serial (or the existing `CAMERA_SERIAL` fallback). Verified hardware scope
+remains a USB-tethered Mac and the two bodies listed above. Agent responses and `record`
+include `camera_state` and `next` guidance; unknown connection/settings state is explicit.
+See [the surface audit](docs/MCP_TOOL_SURFACE.md) for the split, enum limits and compatibility.
+To add the default surface to Claude Code:
 
 ```bash
 claude mcp add sony-camera -e CAMERA_ENGINE=mock -- /ABS/PATH/camera-autopilot/.venv/bin/python /ABS/PATH/camera-autopilot/server.py
 ```
+
+Inspect the actual registry without calling a camera tool:
+
+```bash
+CAMERA_ENGINE=mock .venv/bin/python scripts/mcp_list_tools.py
+CAMERA_ENGINE=mock CAMERA_MCP_EXPERT=1 .venv/bin/python scripts/mcp_list_tools.py
+```
+
+Add `--json` for full descriptions and schemas. Ten offline tool-choice cases check expected
+mode/registration; they do not measure LLM selection accuracy.
 
 ## Repository layout
 

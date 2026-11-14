@@ -4,8 +4,7 @@ Drives server.py over the REAL MCP stdio transport (official client SDK, no in-p
 shortcuts), with CAMERA_ENGINE=mock so NO camera and NO Ollama are needed. It proves the
 MERGED design:
 
-  - `shoot` is registered ALONGSIDE every pre-existing low-level camera tool (additive — the 11
-    low-level tools all survive),
+  - the default registry contains exactly the four goal/status tools,
   - its input schema exposes `intent` (required str) + `auto_correct` (optional bool),
   - calling shoot("moody golden hour") returns the finished-shot SHAPE: an Image block to look at
     plus an EXPLICIT structuredContent record {ok, engine, intent, auto_correct, image_path,
@@ -41,21 +40,7 @@ from mcp.types import ImageContent
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Every safe low-level tool that survives the addition of `shoot`. Indefinite movie toggles were
-# deliberately removed in favor of bounded native recording.
-EXISTING_TOOLS = {
-    "detect_camera",
-    "get_camera_settings",
-    "list_setting_options",
-    "set_exposure",
-    "set_control",
-    "capture_photo",
-    "auto_expose",
-    "get_liveview",
-    "record_video",
-    "record_native_video",
-    "sun_times",
-}
+AGENT_TOOLS = {"shoot", "sun_times", "detect_camera", "get_camera_settings"}
 
 # The keys the explicit structuredContent record must carry (the codex return shape).
 EXPECTED_RECORD_KEYS = {
@@ -67,6 +52,8 @@ EXPECTED_RECORD_KEYS = {
     "settings",
     "summary",
     "why",
+    "camera_state",
+    "next",
 }
 
 
@@ -86,6 +73,7 @@ async def run_checks() -> list[tuple[str, bool, str]]:
     results: list[tuple[str, bool, str]] = []
 
     env = dict(os.environ)
+    env["CAMERA_MCP_EXPERT"] = "0"
     env["CAMERA_ENGINE"] = "mock"               # no hardware
     # Point all local model endpoints at a dead port so the test is deterministic and portable: the intent
     # brain takes its keyword fallback, and the reflexion loop's critique degrades cleanly. (On a box
@@ -105,16 +93,12 @@ async def run_checks() -> list[tuple[str, bool, str]]:
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            # --- Check 1: shoot is registered AND every low-level tool survived -----------
+            # --- Check 1: the exact default surface -------------------------------
             listed = await session.list_tools()
             tools = {tool.name: tool for tool in listed.tools}
             has_shoot = "shoot" in tools
-            missing_existing = EXISTING_TOOLS - set(tools)
-            ok = has_shoot and not missing_existing
-            detail = f"{len(tools)} tools; shoot={'present' if has_shoot else 'MISSING'}"
-            if missing_existing:
-                detail += f"; LOST existing {sorted(missing_existing)}"
-            results.append(("shoot registered + all 11 low-level tools intact", ok, detail))
+            ok = set(tools) == AGENT_TOOLS
+            results.append(("exact default tool surface", ok, f"{len(tools)} tools: {', '.join(tools)}"))
 
             # --- Check 2: shoot's input schema is well-formed ----------------------------
             schema = tools["shoot"].input_schema if has_shoot else {}
@@ -148,6 +132,9 @@ async def run_checks() -> list[tuple[str, bool, str]]:
                 and bool(record.get("why"))
                 and isinstance(record.get("settings"), dict)
                 and record.get("settings")
+                and record["camera_state"]["engine"] == "mock"
+                and record["camera_state"]["connected"] is False
+                and record["next"]
             )
             detail = (
                 f"isError={shot.is_error}, image_block={has_image}, "

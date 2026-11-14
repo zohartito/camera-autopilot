@@ -295,7 +295,9 @@ def mcp(monkeypatch):
     server._stop_keepalive()  # importing server started its keep-alive thread
 
 
-def test_mcp_detect_camera_reports_serial_and_serial_status(mcp, bus):
+def test_mcp_detect_camera_reports_serial_and_serial_status(mcp, bus, monkeypatch):
+    # Exercise discovery against the fake USB bus; mock mode intentionally skips probing.
+    monkeypatch.setattr(mcp, "_engine_name", lambda: "real")
     bus.views = [[_ioreg(SERIAL_A, 3), _ioreg(None, 4, product="ILCE-7M3")]]
     report = mcp.detect_camera()
     rows = {row["port"]: row for row in report["cameras"]}

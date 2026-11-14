@@ -14,12 +14,15 @@ if the link drops; capture is fired at most once per call (never retried — it 
 from __future__ import annotations
 
 import io
+import os
+from functools import wraps
+from typing import Annotated, Literal
 import sys
 import threading
 from datetime import date as date_cls
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 # ``server.py`` is also launched from the repository root.  Make backend-owned
 # resource guards importable before importing any of them.
@@ -31,6 +34,9 @@ from astral import Observer
 from astral.sun import SunDirection, blue_hour, golden_hour, sun
 from mcp.server.mcpserver import Image, MCPServer
 from mcp.types import CallToolResult, TextContent
+from mcp.server.mcpserver.exceptions import ToolError
+from pydantic import BeforeValidator
+from camera_caps import A7II_CAPS
 from PIL import Image as PILImage
 from image_safety import image_size, open_rgb
 
@@ -40,15 +46,115 @@ from sonyremote import (Camera, CameraError, CameraIdentityError, CaptureOutcome
                         read_settings_checked)
 from sonyremote.autoexpose import auto_expose as run_auto_expose
 
-# The autopilot's *intelligence* (intent brain, engines, the closed reflexion loop) lives in
-# backend/. Put it on the path so the high-level `shoot` tool below can reuse it as a thin wrapper —
-# exactly the same modules the FastAPI app and the `shoot.py` CLI already drive. The 11 low-level
-# camera tools above do NOT depend on this; if backend/ ever moved, they keep working.
-mcp = MCPServer("sony-camera")
+# The SDK validates arguments before invoking tool functions. Keep schema errors as useful
+# structured responses too, without replacing the backend capture or intent pipeline.
+class GuidedMCPServer(MCPServer):
+    async def call_tool(self, name, arguments, context=None):
+        # Schema validation runs before the function; preserve guidance on those errors too.
+        try:
+            return await super().call_tool(name, arguments, context)
+        except ToolError as exc:
+            return _error_result(str(exc), tool=name)
+
+
+mcp = GuidedMCPServer("sony-camera")
 
 # --- single reused, lock-guarded camera connection ----------------------------
 _lock = threading.RLock()
 _camera: Camera | None = None
+
+
+# Observations only: formatting a response must never open a USB connection or query a model.
+_last_observation: dict = {}
+
+
+def _engine_name() -> str:
+    mode = os.getenv("CAMERA_ENGINE")
+    return mode if mode in {"real", "wifi"} else "mock"
+
+
+def _camera_state() -> dict:
+    mode = _engine_name()
+    cached_serial = getattr(_camera, "verified_serial", None) if mode == "real" else None
+    observed = _last_observation if _last_observation.get("engine") == mode else {}
+    if cached_serial and cached_serial != observed.get("serial"):
+        observed = {}
+    return {"engine": mode, "serial": cached_serial or observed.get("serial"),
+            "connected": False if mode == "mock" else (True if cached_serial else None),
+            "last_settings": observed.get("settings"),
+            "settings_source": observed.get("source", "unknown")}
+
+
+def _remember_settings(settings, *, serial=None, source, engine=None):
+    global _last_observation
+    _last_observation = {"engine": engine or _engine_name(), "serial": serial,
+                         "settings": dict(settings), "source": source}
+
+
+def _guidance(tool: str, *, error=False) -> list[dict]:
+    if error:
+        return [{"tool": "get_camera_settings",
+                 "when": "Inspect state and correct the request before any new action; never automatically retry a shutter or recording."}]
+    if tool == "detect_camera":
+        return [{"tool": "get_camera_settings", "when": "Read exposure and optional setting choices without taking a photo."},
+                {"tool": "shoot", "when": "A photo is requested; pass a discovered serial in real mode."}]
+    if tool == "sun_times":
+        return [{"tool": "detect_camera", "when": "Ready to shoot at the planned time; discover the body first in real mode."}]
+    return [{"tool": "get_camera_settings", "when": "Read current exposure without another capture."},
+            {"tool": "shoot", "when": "A new photo is explicitly requested after reviewing the previous result."}]
+
+
+def _with_context(data: dict, *, tool="shoot", error=False, next_steps=None) -> dict:
+    return {**data, "camera_state": data.get("camera_state", _camera_state()),
+            "next": next_steps if next_steps is not None else data.get("next", _guidance(tool, error=error))}
+
+
+def _error_result(message: str, *, tool="shoot", next_steps=None) -> CallToolResult:
+    return CallToolResult(content=[TextContent(type="text", text=message)], isError=True,
+                          structuredContent=_with_context({"ok": False, "detail": message},
+                                                          tool=tool, error=True, next_steps=next_steps))
+
+
+def _instructive(fn):
+    """Add response guidance without changing the underlying capture path or retry policy."""
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        with _lock:
+            try:
+                result = fn(*args, **kwargs)
+            except (CameraIdentityError, PlaceholderSettingsError) as exc:
+                return _identity_refusal_result(exc)
+            except (CameraError, ValueError, ZoneInfoNotFoundError) as exc:
+                return _error_result(str(exc), tool=fn.__name__)
+            if isinstance(result, CallToolResult):
+                result.structured_content = _with_context(result.structured_content or {},
+                                                          tool=fn.__name__, error=result.is_error)
+                return result
+            if isinstance(result, dict):
+                return _with_context(result, tool=fn.__name__)
+            # Legacy image/list expert tools keep their content blocks on the wire.
+            content = [item.to_image_content() if isinstance(item, Image) else
+                       TextContent(type="text", text=str(item)) for item in result]
+            return CallToolResult(content=content,
+                                  structuredContent=_with_context({"ok": True}, tool=fn.__name__))
+    return wrapped
+
+
+def _choice(value, values, parameter, example):
+    if value not in values:
+        raise ValueError(f"{parameter} must be one of {list(values)} (got {value!r}). Example: {example}")
+    return value
+
+
+_ISO_VALUES = tuple(str(value) for value in A7II_CAPS.isos)
+_SHUTTER_VALUES = tuple(A7II_CAPS.shutter_labels)
+_RECORD_MODES = ("liveview_clip", "native_movie")
+ExposureISO = Annotated[Literal[_ISO_VALUES], BeforeValidator(
+    lambda value: _choice(value, _ISO_VALUES, "iso", "set_exposure(iso='200')"))]
+ExposureShutter = Annotated[Literal[_SHUTTER_VALUES], BeforeValidator(
+    lambda value: _choice(value, _SHUTTER_VALUES, "shutter", "set_exposure(shutter='1/250')"))]
+RecordMode = Annotated[Literal["liveview_clip", "native_movie"], BeforeValidator(
+    lambda value: _choice(value, _RECORD_MODES, "mode", "record(duration_s=6, mode='native_movie', serial='SERIAL')"))]
 
 
 def _get_camera(serial: str | None = None) -> Camera:
@@ -110,7 +216,9 @@ def _identity_refusal_result(exc: CameraIdentityError | PlaceholderSettingsError
     structured = {"ok": False, **exc.as_dict(), **engine_mod.long_refusal_restore_state(exc)}
     text = str(exc) + (f" Warning: {structured['warning']}" if structured.get("warning") else "")
     return CallToolResult(content=[TextContent(type="text", text=text)],
-                          structuredContent=structured, isError=True)
+                          structuredContent=_with_context(structured, error=True, next_steps=[
+                              {"tool": "detect_camera", "when": "Check power/USB and discover the body, then pass its serial to a new request."},
+                              {"tool": "get_camera_settings", "when": "Wake the camera and verify valid exposure readback before any new action."}]), isError=True)
 
 
 def _reset_camera() -> None:
@@ -208,11 +316,15 @@ def _downscale_for_vision(src: Path, max_edge: int = 1568) -> bytes:
 
 
 # --- camera tools -------------------------------------------------------------
-@mcp.tool()
-def detect_camera() -> dict:
-    """List attached cameras with their USB serial. Call this first; pass a camera's `serial` to
-    every tool that fires the shutter or records. USB ports re-enumerate, so the serial is the only
-    stable identity; a camera whose serial_status is not "present" cannot be used for capture."""
+@_instructive
+def detect_camera() -> dict[str, object]:
+    """Use to discover USB identities before shooting; use get_camera_settings for exposure reads.
+
+    Pass a discovered serial to shoot or expert recording/capture tools in real mode.
+    Discovery does not prove an open connection. Mock mode returns no physical cameras.
+    """
+    if _engine_name() == "mock":
+        return {"cameras": [], "detail": "Mock engine: no physical camera was probed; shoot produces a demo."}
     with _lock:
         rows = detect_identified()
     if not rows:
@@ -225,45 +337,83 @@ def detect_camera() -> dict:
                                 f"({c['serial_status']})" for c in cameras)}
 
 
-@mcp.tool()
-def get_camera_settings() -> dict:
-    """Read the camera's current exposure settings (iso, aperture, shutter, white balance, ...)
-    plus the shooting (PASM) mode the dial is in."""
-    # Re-reads a placeholder answer (f/0, ISO 0, 65535/65535); a persistent one is an error, not 0s.
+@_instructive
+def get_camera_settings(setting: str | None = None) -> dict[str, object]:
+    """Use to read exposure or valid setting choices without a shutter; use shoot for a photo.
+
+    Optional setting (for example 'iso' or 'white_balance') includes that control's options,
+    replacing list_setting_options. Expert set_exposure changes numeric exposure; set_control
+    handles other ordinary controls. Mock mode reports only the last simulated settings and
+    reference ISO/shutter choices, never a hardware read.
+    """
+    if setting is not None and setting not in _SAFE_CONTROL_SETTINGS:
+        _choice(setting, sorted(_SAFE_CONTROL_SETTINGS), "setting", "get_camera_settings(setting='iso')")
+    if _engine_name() == "mock":
+        result = {"settings": _camera_state()["last_settings"], "shooting_mode": None,
+                  "detail": "Mock engine: settings are simulated, not a hardware read."}
+        if setting:
+            result.update({"setting": setting, "options": list({"iso": _ISO_VALUES,
+                           "shutter": _SHUTTER_VALUES}.get(setting, ())),
+                           "options_source": "reference_only; other choices require a connected body"})
+        return result
+    # Keep the legacy top-level setting keys, adding options only when requested.
     settings, reread = _read(lambda cam: read_settings_checked(cam, purpose="get_camera_settings"))
     if reread:
-        settings["settings_read"] = reread  # e.g. aperture_unreported for a manual lens
+        settings["settings_read"] = reread
     settings["shooting_mode"] = _read(lambda cam: cam.shooting_mode())
+    _remember_settings(settings, serial=getattr(_camera, "verified_serial", None), source="last_read")
+    if setting:
+        settings.update({"setting": setting, "options": list_setting_options(setting),
+                         "options_source": "connected_body"})
     return settings
 
 
-@mcp.tool()
 def list_setting_options(setting: str) -> list[str]:
     """List the valid values for a setting (e.g. 'iso', 'aperture', 'shutter', 'white_balance')
     so you only ever set values the camera will accept."""
     return _read(lambda cam: cam.list_options(setting))
 
 
-@mcp.tool()
 def set_exposure(
-    iso: str | None = None,
+    iso: ExposureISO | None = None,
     aperture: str | None = None,
-    shutter: str | None = None,
+    shutter: ExposureShutter | None = None,
     white_balance: str | None = None,
     exposure_comp: str | None = None,
 ) -> dict:
-    """Set any subset of exposure controls. Values are strings matching the camera's own labels
-    (e.g. iso='100', aperture='8', shutter='1/250'). Use list_setting_options first if unsure.
-    Returns the settings that were applied and verified."""
-    return _read(
-        lambda cam: cam.set_exposure(
-            iso=iso,
-            aperture=aperture,
-            shutter=shutter,
-            white_balance=white_balance,
-            exposure_comp=exposure_comp,
-        )
-    )
+    """Use for explicit exposure values; use shoot for a visual goal or set_control for other knobs.
+
+    ISO and shutter enums are the numeric A7 II reference subset from camera_caps, not a
+    promise of support on every body. Aperture, white balance and compensation are body/lens
+    dependent strings. Read get_camera_settings(setting='iso') for live options first.
+    All supplied values are checked against live choices before any write. For other
+    body-specific ISO/shutter labels, experts can use set_control after reading options.
+    """
+    for name, value, values, example in (
+        ("iso", iso, _ISO_VALUES, "set_exposure(iso='200')"),
+        ("shutter", shutter, _SHUTTER_VALUES, "set_exposure(shutter='1/250')"),
+    ):
+        if value is not None:
+            _choice(value, values, name, example)
+    if _engine_name() != "real":
+        return _error_result("set_exposure requires CAMERA_ENGINE=real; mock mode never writes hardware.", tool="set_exposure")
+    values = dict(iso=iso, aperture=aperture, shutter=shutter,
+                  white_balance=white_balance, exposure_comp=exposure_comp)
+
+    def apply(cam):
+        for name, value in values.items():
+            if value is not None:
+                options = cam.list_options(name)
+                example = (f"set_exposure({name}={options[0]!r})" if options else
+                           f"get_camera_settings(setting={name!r})")
+                # Preserve the existing SDK shorthand: aperture='8' also means 'f/8'.
+                label = f"f/{value}" if name == "aperture" and f"f/{value}" in options else value
+                _choice(label, options, name, example)
+        return cam.set_exposure(**values)
+
+    applied = _read(apply)
+    _remember_settings(applied, serial=getattr(_camera, "verified_serial", None), source="last_write_readback")
+    return applied
 
 
 # These are ordinary settings, never shutter/movie/focus actions or arbitrary nodes.
@@ -275,9 +425,10 @@ _SAFE_CONTROL_SETTINGS = frozenset({
 })
 
 
-@mcp.tool()
 def set_control(setting: str, value: str) -> dict:
-    """Set an allowlisted ordinary setting without reconnecting to retry a failed write.
+    """Use for an explicit ordinary control such as focusmode; prefer set_exposure for exposure.
+
+    Read get_camera_settings(setting=...) first for body-specific choices. No reconnect retry.
 
     Supported nodes include imagequality, capturemode, exposuremetermode, flashmode,
     imagesize, aspectratio, dro, whitebalance, focusmode/focusarea and numeric exposure
@@ -286,9 +437,11 @@ def set_control(setting: str, value: str) -> dict:
     Sony may step repeatedly toward the requested value within the same connection.
     """
     if setting not in _SAFE_CONTROL_SETTINGS:
-        raise ValueError("Control is not an allowed ordinary setting; action nodes are unavailable here")
+        raise ValueError(f"Control must be an allowed ordinary setting: {sorted(_SAFE_CONTROL_SETTINGS)}. "
+                         "Example: set_control(setting='focusmode', value='Manual')")
     if setting in {"shutter", "shutterspeed"} and str(value).strip().casefold() == "bulb":
-        raise ValueError("Bulb is unavailable through this bounded setting tool")
+        raise ValueError(f"Bulb is unavailable through this bounded setting tool. Valid reference values: {list(_SHUTTER_VALUES)}. "
+                         "Example: set_control(setting='shutter', value='1/250')")
 
     def set_once(cam):
         from sonyremote.camera import gp
@@ -297,9 +450,30 @@ def set_control(setting: str, value: str) -> dict:
             raise ValueError("Only ordinary menu/radio/range settings are allowed; actions and toggles are rejected")
         if description.get("readonly"):
             raise CameraError("This setting is read-only on the connected body")
+        if "choices" in description:
+            choices = description["choices"]
+            label = f"f/{value}" if setting == "aperture" and f"f/{value}" in choices else value
+            example = (f"set_control(setting={setting!r}, value={choices[0]!r})" if choices else
+                       f"get_camera_settings(setting={setting!r})")
+            _choice(label, choices, "value", example)
+        elif "range" in description:
+            from math import isfinite, isclose
+            minimum, maximum, step = description["range"]
+            try:
+                number = float(value)
+                valid = isfinite(number) and minimum <= number <= maximum
+                if valid and step > 0:
+                    offset = (number - minimum) / step
+                    valid = isclose(offset, round(offset), abs_tol=1e-6)
+            except (TypeError, ValueError):
+                valid = False
+            if not valid:
+                raise ValueError(f"value must be in [{minimum}, {maximum}] with step {step} (got {value!r}). "
+                                 f"Example: set_control(setting={setting!r}, value={str(minimum)!r})")
         return cam.set_setting(setting, value)
 
     applied = _once(set_once)
+    _remember_settings({setting: applied}, serial=getattr(_camera, "verified_serial", None), source="last_write_readback")
     return {"setting": setting, "applied": applied, "reconnect_retry": False}
 
 
@@ -321,7 +495,8 @@ def _capture_uncertain_result(exc: CaptureOutcomeUncertain) -> CallToolResult:
                   "capture_path": path, "image_path": path, "detail": str(exc),
                   "preserved_image": _verified_saved_image(path)}
     return CallToolResult(content=[TextContent(type="text", text=str(exc))],
-                          structuredContent=structured, isError=True)
+                          structuredContent=_with_context(structured, error=True, next_steps=[
+                              {"tool": "get_camera_settings", "when": "After inspecting any preserved image and the camera, read state; do not automatically retry capture."}]), isError=True)
 
 
 def _final_shutter_refused_result(exc: CameraError) -> CallToolResult:
@@ -334,7 +509,8 @@ def _final_shutter_refused_result(exc: CameraError) -> CallToolResult:
                   "transport_receipt": getattr(exc, "transport_receipt", None),
                   **({"meter_restore": exc.meter_restore} if getattr(exc, "meter_restore", None) else {})}
     return CallToolResult(content=[TextContent(type="text", text=str(exc))],
-                          structuredContent=structured, isError=True)
+                          structuredContent=_with_context(structured, error=True, next_steps=[
+                              {"tool": "get_camera_settings", "when": "After inspecting any preserved image and the camera, read state; do not automatically retry capture."}]), isError=True)
 
 
 def _saved_photo_result(path: Path, structured: dict, detail: str) -> CallToolResult:
@@ -359,9 +535,8 @@ def _saved_photo_result(path: Path, structured: dict, detail: str) -> CallToolRe
     return CallToolResult(content=content, structuredContent=structured, isError=False)
 
 
-@mcp.tool()
 def capture_photo(serial: str) -> CallToolResult:
-    """Capture once and preserve the JPEG even when readback or preview rendering fails.
+    """Use to capture once at the existing exposure; use shoot to choose settings from a goal.
 
     serial: the camera's USB serial from detect_camera. The body is proven by it before any shutter.
     """
@@ -416,9 +591,8 @@ def capture_photo(serial: str) -> CallToolResult:
         f"Full-resolution capture preserved at {state['path']}. Settings source: {state['settings_source']}.")
 
 
-@mcp.tool()
 def auto_expose(serial: str, target_brightness: int = 112) -> CallToolResult:
-    """Bounded JPEG exposure feedback: at most two captures; deliver the last saved frame.
+    """Use for a numeric JPEG brightness target (at most two captures); use shoot for a visual goal.
 
     serial: the camera's USB serial from detect_camera. The body is proven by it before any shutter.
     Exposure convergence, settings readback and MCP preview are reported independently.
@@ -490,15 +664,15 @@ def auto_expose(serial: str, target_brightness: int = 112) -> CallToolResult:
     return _saved_photo_result(state["path"], structured, detail)
 
 
-@mcp.tool()
 def get_liveview() -> list:
-    """EXPERIMENTAL: grab a single live-view frame. Sony USB preview is unreliable and may fail
-    — prefer capture_photo() for a dependable look at the scene."""
+    """Use for one experimental preview without a saved still; use shoot for a finished photo.
+
+    Sony USB live view is unreliable and may fail. No shutter is issued by this tool.
+    """
     path: Path = _read(lambda cam: cam.liveview_frame())
     return [Image(data=_downscale_for_vision(path), format="jpeg"), "Live-view frame (experimental)."]
 
 
-@mcp.tool()
 def record_video(seconds: float = 6.0, serial: str | None = None) -> list:
     """Record a short clip from the camera's live-view and save it as an MP4 to disk — for
     watching a scene change over time (e.g. a device reacting to input). Returns the saved MP4
@@ -513,7 +687,6 @@ def record_video(seconds: float = 6.0, serial: str | None = None) -> list:
     ]
 
 
-@mcp.tool()
 def record_native_video(seconds: float = 6.0, serial: str | None = None) -> dict:
     """Issue bounded native movie start/stop commands and return action evidence only.
 
@@ -533,6 +706,45 @@ def record_native_video(seconds: float = 6.0, serial: str | None = None) -> dict
             "clip_existence_verified": False, "clip_playback_verified": False,
             "audio_verified": False, "retry_record": False,
             "detail": "Movie start/stop commands completed; inspect the camera SD card to verify a clip."}
+
+
+@_instructive
+def record(duration_s: float = 6.0, mode: RecordMode = "liveview_clip",
+           serial: str | None = None) -> dict[str, object]:
+    """Use for a bounded video request; use shoot for a still or get_liveview for a single preview.
+
+    Expert-only. liveview_clip saves a best-effort MP4 from unreliable USB preview frames.
+    native_movie issues start/stop commands to the body; it does not verify a saved SD-card clip,
+    playback or audio. Set the physical movie mode as required and inspect the card afterwards.
+    duration_s must be finite and positive; existing transport duration limits still apply.
+    Pass the serial from detect_camera. Mock mode refuses recording without accessing hardware.
+    Uncertain start/stop remains quarantined; never automatically retry it.
+    """
+    from math import isfinite
+    _choice(mode, _RECORD_MODES, "mode", "record(duration_s=6, mode='native_movie', serial='SERIAL')")
+    if not isfinite(duration_s) or duration_s <= 0:
+        raise ValueError("duration_s must be finite and > 0. Example: record(duration_s=6, mode='liveview_clip', serial='SERIAL')")
+    if _engine_name() != "real":
+        return _error_result("Recording requires CAMERA_ENGINE=real; mock mode records nothing.", tool="record")
+    try:
+        if mode == "native_movie":
+            result = record_native_video(seconds=duration_s, serial=serial)
+            result["mode"] = mode
+            result["next"] = [{"tool": "get_camera_settings",
+                               "when": "After inspecting the SD card for clip/playback/audio evidence; never retry to infer success."}]
+            return result
+        result = record_video(seconds=duration_s, serial=serial)
+        return CallToolResult(content=[item.to_image_content() if isinstance(item, Image) else
+                                      TextContent(type="text", text=item) for item in result],
+                              structuredContent={"ok": True, "mode": mode, "retry_record": False,
+                                                 "requested_seconds": duration_s})
+    except (CameraIdentityError, PlaceholderSettingsError) as exc:
+        return _identity_refusal_result(exc)
+    except RecordingStopUncertain as exc:
+        result = _error_result(str(exc), tool="record", next_steps=[
+            {"tool": "get_camera_settings", "when": "Only after the operator verifies recording has stopped and resolves quarantine; never retry record automatically."}])
+        result.structured_content.update({"recording_stop_uncertain": True, "retry_record": False})
+        return result
 
 
 def start_movie(serial: str | None = None) -> dict:
@@ -562,10 +774,11 @@ def _format_autoexpose(report: dict) -> str:
 
 
 # --- planning tool (no camera needed) -----------------------------------------
-@mcp.tool()
-def sun_times(latitude: float, longitude: float, date: str = "today", tz: str | None = None) -> dict:
-    """Golden hour, blue hour, sunrise/sunset for a location and date — for planning when to
-    shoot. Pass latitude/longitude (e.g. Lake Tahoe ~ 39.09, -120.04). date is 'today' or
+@_instructive
+def sun_times(latitude: float, longitude: float, date: str = "today", tz: str | None = None) -> dict[str, object]:
+    """Use to plan golden/blue hour or sunrise/sunset; use shoot only when ready to take a photo.
+
+    No camera or network is needed. Pass latitude/longitude (e.g. Lake Tahoe ~ 39.09, -120.04). date is 'today' or
     ISO 'YYYY-MM-DD'. tz is an optional IANA name (e.g. 'America/Los_Angeles'); defaults to the
     computer's local timezone."""
     tzinfo = ZoneInfo(tz) if tz else datetime.now().astimezone().tzinfo
@@ -631,30 +844,26 @@ def _vision_for(intent: str | None):
     return critique
 
 
-@mcp.tool()
+@_instructive
 def shoot(intent: str, auto_correct: bool = False, serial: str | None = None) -> list:
-    """Take the whole shot from one plain-language vibe — the autopilot does ALL the reasoning.
+    """Use to take a photo from one plain-language goal; use get_camera_settings for read-only status.
 
-    This is the high-level entry point: instead of dialing ISO/aperture/shutter yourself with the
-    low-level tools, just say what you want and get a FINISHED photo back. The autopilot interprets
-    the intent into an exposure plan (a LOCAL model, with a deterministic keyword fallback so it
-    never stalls), takes over the camera, and returns the image plus the settings it chose and a
-    plain-language "why".
+    Examples: "make it moody", "bright and airy", "freeze my kid running". Empty intent asks
+    for balanced exposure. Use sun_times to plan light instead of taking a photo now.
+    Verified hardware scope is a USB-tethered Mac and two tested bodies: Sony A7 II and A7 III.
+    CAMERA_ENGINE defaults to mock (a simulated demo, no shutter). In real mode pass the USB
+    serial from detect_camera; CAMERA_SERIAL is the fallback and identity is checked before firing.
 
-    intent: what you want, in plain words. Examples: "moody golden hour", "bright and airy for
-        instagram", "freeze my kid running", "noir film still". Pass "" to just read the light and
-        set a clean, balanced exposure.
-    auto_correct: when True, engage the closed reflexion loop — after the first shot the autopilot
-        critiques its own frame and RE-SHOOTS at a corrected exposure target until it's happy (or a
-        small cap is hit). Needs the local vision model; if it's unavailable (e.g. mock with no
-        Ollama) it degrades cleanly to a single shot. Default False = one decisive shot.
-    serial: the camera's USB serial from detect_camera. Required with CAMERA_ENGINE=real (the
-        server's CAMERA_SERIAL is the fallback); the body is proven by it before any shutter.
+    auto_correct=False runs one product capture request, which may include meter frames.
+    True allows up to two capture attempts, adding time and shutters for critique/correction.
+    Real capture can use a local vision model or a deterministic luma fallback; mock/no critique
+    stops after one attempt. It is not a promise of one physical shutter per attempt.
+    This tool does not expose HDR bracket, timelapse or panorama controls; those have separate
+    backend/operator workflows. Long exposures and refinement retain the product's refusal rules.
 
-    Returns a downscaled image to look at, a short human summary, and a structured record under
-    `structuredContent`: {ok, engine, intent, auto_correct, image_path, settings, summary, why}
-    (plus attempts/stopped_reason when auto_correct ran). Honors CAMERA_ENGINE (default mock, so
-    this works with no camera attached; set CAMERA_ENGINE=real for the tethered Sony A7 II).
+    Returns an image preview when available, settings, summary/why, quality and delivery evidence,
+    camera_state and next steps in structuredContent. Last-shot settings are historical, not a
+    fresh read of the body's restored settings. A preview failure never warrants another shutter.
     """
     import engine as engine_mod
 
@@ -705,6 +914,13 @@ def shoot(intent: str, auto_correct: bool = False, serial: str | None = None) ->
         "applied": shot.applied,
     }
     structured.update(extra)
+    _remember_settings(report["final_settings"], serial=structured["camera_serial"],
+                       source="simulated_shot" if eng.name == "mock" else "last_shot", engine=eng.name)
+    structured["camera_state"] = {**_camera_state(), "engine": eng.name,
+                                  "serial": structured["camera_serial"],
+                                  "connected": False if eng.name == "mock" else None,
+                                  "last_settings": report["final_settings"],
+                                  "settings_source": "simulated_shot" if eng.name == "mock" else "last_shot"}
 
     delivered = _verified_saved_image(report["final_image"])
     convergence = shot.evidence.get("exposure_converged")
@@ -755,6 +971,29 @@ def shoot(intent: str, auto_correct: bool = False, serial: str | None = None) ->
     content.append(TextContent(type="text", text=f"{line}\nSettings: {report['final_settings']}"))
 
     return CallToolResult(content=content, structuredContent=structured, isError=False)
+
+
+# Register goals first. The legacy functions remain importable but options/video wrappers
+# have no separate MCP registration. Only the exact flag value "1" enables expert controls.
+AGENT_TOOLS = (shoot, sun_times, detect_camera, get_camera_settings)
+EXPERT_TOOLS = (set_exposure, set_control, capture_photo, auto_expose, get_liveview, record)
+
+
+def _expert_entry(fn):
+    @wraps(fn)
+    def guarded(*args, **kwargs):
+        if _engine_name() != "real":
+            return _error_result(f"{fn.__name__} requires CAMERA_ENGINE=real; mock mode never accesses hardware.",
+                                 tool=fn.__name__)
+        return fn(*args, **kwargs)
+    return _instructive(guarded)
+
+
+for _tool in AGENT_TOOLS:
+    mcp.tool()(_tool)
+if os.getenv("CAMERA_MCP_EXPERT") == "1":
+    for _tool in EXPERT_TOOLS:
+        mcp.tool()(_tool if _tool is record else _expert_entry(_tool))
 
 
 if __name__ == "__main__":
