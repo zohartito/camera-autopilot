@@ -12,7 +12,7 @@ limited — the same wall that blocks remote focus-point also hides most deep-me
     so the app walks you through them ONCE — `ONE_TIME_CHECKLIST`.
 
 On a CRSDK body (A7 IV+) almost all of these become remote, so the device configures nearly
-everything itself — see `wifi_engine.py` / `docs/FOCUS_HARDWARE.md`.
+everything itself — see `wifi_engine.py`. The original focus-hardware study is private/unpublished.
 """
 from __future__ import annotations
 

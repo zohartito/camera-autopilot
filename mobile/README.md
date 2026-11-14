@@ -131,4 +131,4 @@ token/cache, live capture) is unproven. The owner's daily phone is an iPhone, so
 that receipt cannot be taken here.
 
 A29 (Arsenal Android panorama) is a different row and stays blocked. Scope:
-[docs/ANDROID_PARITY_SCOPE_2026-09-20.md](../docs/ANDROID_PARITY_SCOPE_2026-09-20.md).
+`docs/ANDROID_PARITY_SCOPE_2026-09-20.md` (private/unpublished).

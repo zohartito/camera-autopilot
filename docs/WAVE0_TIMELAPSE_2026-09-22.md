@@ -1,7 +1,7 @@
 # Wave 0 lane 0D: timelapse engine (Holy Grail, SmartLapse), 2026-09-22
 
-Camera-free lane from `docs/SEQUENTIAL_AGENT_STACK_2026-09-20.md`. No camera was opened and no
-shutter fired. Everything below is **software evidence from a simulator**; none of it is a sunset.
+Camera-free lane from `docs/SEQUENTIAL_AGENT_STACK_2026-09-20.md` (private/unpublished).
+No camera was opened and no shutter fired. Everything below is **software evidence from a simulator**; none of it is a sunset.
 Rows touched: A31 SmartLapse, A32 Auto with custom intervals, A33 Holy Grail. **No row is promoted**:
 each still needs a live receipt (indoor lamp-dimmer ramp on a real body, then a real sunset in Wave 3).
 

@@ -1,8 +1,7 @@
 """Capture proves WHICH body it fires by USB serial, never by model + port alone.
 
-USB ports re-enumerate; the serial is the only stable identity (.claude/lessons.md,
-"Identification"; docs/ROUTE_MATRIX_2026-09-15.md). Two same-model bodies that exchange USB
-addresses between selection and capture must be refused before any setting write or shutter.
+USB ports re-enumerate; the serial is the only stable identity (docs/ROUTE_MATRIX_2026-09-15.md).
+Two same-model bodies that exchange USB addresses between selection and capture must be refused before any setting write or shutter.
 
 Camera-free: libgphoto2 (gp.Camera, port and abilities lists), gphoto2 autodetect, the OS USB
 readers (ioreg/sysfs), the read-only probe and every subprocess are replaced by fakes in an autouse

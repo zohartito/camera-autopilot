@@ -12,8 +12,8 @@ CAMERA_SERIAL names the body by its USB serial (ports re-enumerate); without it 
 
 Standalone on purpose: it replicates shoot.py's tiny loop rather than importing it, so the test
 harness can't break the production path and vice-versa. With no camera connected it still runs the
-brain and prints the plan, so you can dry-run the script the night before. Reads the docs/TEST_PROTOCOL.md
-facilitator script before your first session.
+brain and prints the plan, so you can dry-run the script the night before. The original facilitator
+script is private/unpublished; the prompts and session sequence are defined below.
 
 No API billing (local Ollama, with a keyword fallback), no server, no browser — just this file.
 """

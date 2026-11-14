@@ -1,7 +1,7 @@
 """Identity-first USB discovery: establish which bodies are present from the OS, then trust or
 recover each gphoto row instead of believing its label. No hardware; ioreg and gphoto are mocked.
 
-Grounded in the 2026-09-20 live diagnosis (.claude/lessons.md, "Identification"): gphoto2
+Grounded in the 2026-09-20 live diagnosis (private/unpublished field notes): gphoto2
 --auto-detect listed the A7 II as "Apple iPad Air" while a real iPad was also attached, so the
 A7 II never appeared in the picker and could not be selected.
 """

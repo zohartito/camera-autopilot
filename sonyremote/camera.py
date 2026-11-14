@@ -237,7 +237,7 @@ SONY_ACTION_MAX_ENABLED_SHUTTER_S = 1.0
 # shutter (exposure plus a possible equal-length Long Exposure NR dark frame) plus an allowance.
 # At 30 s that is exactly the 2026-09-05 A7 II probe (75 s wait, 90 s timeout), which returned the
 # JPEG+ARW with 30 s EXIF and restored settings (tools/probe_sony_long_capture.py,
-# docs/IMPLEMENTATION_WAVE_2026-09-05.md). What remains UNPROVEN: the A7 III on this route at any
+# private/unpublished implementation receipt). What remains UNPROVEN: the A7 III on this route at any
 # shutter; the A7 II at 1.3-25 s; how long either body takes to re-enumerate afterwards; and
 # attribution beyond an empty pre-drain, the OS USB serial before and after, and the JPEG's own
 # EXIF (a delayed stale object with the same model and exposure time cannot be excluded).
@@ -1032,8 +1032,8 @@ class CameraInfo:
     port: str
 
 
-# Discovery establishes identity instead of trusting the driver's label (.claude/lessons.md,
-# "Identification"): the gphoto2 label and the port both lie — a real 2026-09-20 diagnosis had
+# Discovery establishes identity instead of trusting the driver's label:
+# the gphoto2 label and the port both lie — a real 2026-09-20 diagnosis had
 # gphoto2 --auto-detect listing the A7 II as "Apple iPad Air" while a real iPad was also attached.
 SUPPORTED_USB_MODELS = ("Sony ILCE-7M2 (Control)", "Sony Alpha-A7 III (PC Control)")
 # ioreg "USB Product Name" / "kUSBProductString" -> the exact libgphoto2 driver model string.

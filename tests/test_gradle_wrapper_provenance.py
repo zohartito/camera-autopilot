@@ -1,6 +1,6 @@
 """Pin the committed Android gradle-wrapper.jar to Gradle's published checksum. No Gradle, network or device.
 
-Official values were read from services.gradle.org on 2026-09-27 (see docs/ANDROID_PARITY_SCOPE_2026-09-20.md).
+Official values were read from services.gradle.org on 2026-09-27; the URLs are recorded below.
 A swapped jar, or a version bump without re-pinning both checksums, fails here.
 """
 

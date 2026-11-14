@@ -16,9 +16,10 @@ How to read them:
 - Camera serial numbers, LAN addresses and similar identifiers were replaced with placeholders
   such as `A7III0SERIAL`, `A7II00SERIAL` and `<mac-lan-ip>`. Nothing else in the results was edited:
   failures are recorded as failures.
-- The receipts link to internal planning documents (`SEQUENTIAL_AGENT_STACK_*`, `PROJECT_LEDGER_*`,
-  `STAGE_WAVE_*` and others) and cite pull-request numbers (`#106`, `#118`, ...) from the private
-  development repository. Those documents and that history are not published, so those links and
+- The receipts cite private/unpublished internal planning documents (`SEQUENTIAL_AGENT_STACK_*`,
+  `PROJECT_LEDGER_*`, `STAGE_WAVE_*` and others) and cite pull-request numbers (`#106`, `#118`, ...) from the private
+  development repository. Those documents and that history are not published; document
+  references are marked private/unpublished at their point of use, and private pull-request
   numbers do not resolve here.
 
 ## Technical notes

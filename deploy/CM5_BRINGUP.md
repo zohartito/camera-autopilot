@@ -161,7 +161,7 @@ Then continue with PI_BRINGUP.md sections 3–4: apt, udev, venv, readiness and 
 
 ### The onboard-Wi-Fi access point, and why each setting was chosen
 
-`docs/research/board-2026-09-22/failure_modes.md` records four brcmfmac access-point failures on
+The public sources in the table below record four brcmfmac access-point failures on
 this chip family. The profile avoids each one:
 
 | Setting | Avoids |
@@ -200,7 +200,7 @@ the USB-C power. Note that in the receipt. The soak reads the kernel log with `j
 If it can't (run it as a user in the `systemd-journal` or `adm` group), the receipt is
 **inconclusive**, never a pass.
 
-## 6. Day-one tests (BOARD_DECISION list), in order
+## 6. Day-one tests, in order
 
 Each test is a dry run unless you add `--run`. A dry run prints its plan and the receipt it
 would write, and writes nothing. `--run` writes `<receipt-dir>/day1-<test>-<UTC>.json` (0600), and
@@ -316,4 +316,4 @@ guarantees:
 - Raspberry Pi docs, `config.txt` conditional filters (`[cm5]`, `[all]`): https://www.raspberrypi.com/documentation/computers/config_txt.html#conditional-filters
 - Raspberry Pi docs, `vcgencmd get_throttled` bit meanings: https://www.raspberrypi.com/documentation/computers/os.html
 - Device-tree overlay README (`i2c_arm`, `fan_temp0..3`, `ant1/ant2`): https://github.com/raspberrypi/linux/blob/rpi-6.12.y/arch/arm/boot/dts/overlays/README
-- brcmfmac AP pitfalls: see the table in section 5 and `docs/research/board-2026-09-22/failure_modes.md`.
+- brcmfmac AP pitfalls: see the public sources linked in the table in section 5.

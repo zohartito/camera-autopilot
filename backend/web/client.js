@@ -3,8 +3,8 @@ window.Autopilot = {
   // Display-only names for the camera picker. libgphoto2 reports "Sony Alpha-A7 III (PC Control)"
   // for one body and the bare code "Sony ILCE-7M2 (Control)" for the other, so a beginner cannot
   // tell which row is their A7 II. These names are a reading aid only: the exact driver string
-  // remains the identity used for selection and gating, because a body that is asleep or not in
-  // PC Remote can report the wrong model (.claude/lessons.md, Identification).
+  // is preserved for the driver; USB serial identifies the selected body. An asleep body or one
+  // outside PC Remote can report the wrong model (tests/test_capture_serial.py).
   CAMERA_MODEL_NAMES: {
     "Sony ILCE-7M2 (Control)": "Sony A7 II",
     "Sony Alpha-A7 III (PC Control)": "Sony A7 III",

@@ -630,7 +630,7 @@ class RealEngine:
             hint = None
         # `model`/`port`/`supported` stay intact for the web picker and test_camera_labels;
         # `identification` and `serial` tell which physical body a row is, since the driver
-        # labels lie and the owner has two Sony bodies (.claude/lessons.md, Identification).
+        # labels can be wrong and multiple Sony bodies may be attached (tests/test_capture_serial.py).
         return {"engine": "real", "ready": ready,
                 "camera": model, "serial": serial, "serial_status": serial_status,
                 "cameras": [{"model": r["model"], "port": r["port"],

@@ -3,8 +3,8 @@
 libgphoto2 names the two supported bodies inconsistently: one reports
 "Sony Alpha-A7 III (PC Control)" and the other the bare code "Sony ILCE-7M2 (Control)",
 which a beginner does not recognise as their A7 II. The picker therefore shows a friendly
-name, but the exact driver string must remain the identity that is selected and sent back,
-because a sleeping body can report the wrong model (.claude/lessons.md, Identification).
+name and preserves the exact driver string. USB serial is the identity used for capture,
+because a sleeping body can report the wrong model (see test_capture_serial.py).
 """
 import re
 import sys

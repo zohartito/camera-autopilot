@@ -1,4 +1,4 @@
-"""Day-one board tests for the CM5 on the Waveshare CM5-NANO-A (BOARD_DECISION day-one list, lane 1H).
+"""Day-one board tests for the CM5 on the Waveshare CM5-NANO-A (see CM5_BRINGUP.md).
 
 Each test is a DRY RUN by default: it prints the plan and the receipt it WOULD write, and writes
 and runs nothing. ``--run`` executes it on the board and writes one timestamped JSON receipt,
@@ -57,7 +57,7 @@ from deploy.safe_paths import path_arg, path_text, refusal, resolve_output  # no
 
 SCHEMA = "camera-day-one-v1"
 SONY_VENDOR_ID = "054c"
-# USB serials of the owner's bodies (.claude/lessons.md, "Identification"). The gphoto label
+# Legacy placeholder identities, overridable with --expect-serial. The gphoto label
 # is not an identity: an asleep A7 III can list as the A7 II.
 KNOWN_BODY_SERIALS = {"a7ii": "A7II00SERIAL", "a7iii": "A7III0SERIAL"}
 AUTOMOUNTERS = ("gvfs-gphoto2-volume-monitor", "gvfsd-gphoto2")
