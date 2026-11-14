@@ -100,7 +100,7 @@ that web UI changes.
 
 ## Android
 
-The committed project is `android/`, Capacitor **8.4.2**, minSdk **29**. Custom
+The committed project is `android/`, Capacitor **8.6.2**, minSdk **29**. Custom
 `AutopilotMedia` (`savePhoto` / `sharePhoto` / `safeArea`) matches the iOS
 plugin: MediaStore insert of the **original JPEG bytes**, `ACTION_SEND` +
 FileProvider, `WindowInsetsCompat`. Do not add `@capacitor/share` or

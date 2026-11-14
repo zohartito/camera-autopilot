@@ -114,7 +114,7 @@ def test_android_manifest_has_no_broad_storage_and_debug_user_ca() -> None:
 
 def test_no_third_party_media_plugin_and_no_hosted_gradle() -> None:
     package = PACKAGE_JSON.read_text(encoding="utf-8")
-    assert '"@capacitor/android": "8.4.2"' in package
+    assert '"@capacitor/android": "8.6.2"' in package
     assert "@capacitor/share" not in package
     assert "@capacitor-community/media" not in package
     gitignore = (ROOT / "mobile" / ".gitignore").read_text(encoding="utf-8")
