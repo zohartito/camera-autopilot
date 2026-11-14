@@ -1,7 +1,7 @@
 # Verified hardware-free test lane (Python 3.14, macOS arm64).
 # Keep ML training/retrieval dependencies in backend/requirements-ml.txt.
 -r requirements.txt
-pytest==9.1.1
+pytest==9.2.0
 httpx==0.28.1
 PyYAML==6.0.3
 numpy==2.5.4
