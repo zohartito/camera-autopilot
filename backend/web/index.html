@@ -919,8 +919,8 @@
       // The driver names the two bodies inconsistently: the A7 III reports a readable name
       // while the A7 II reports the bare model code ILCE-7M2, which a beginner will not
       // recognise as their camera. Show a friendly name for display only. The exact driver
-      // string stays the identity that is sent back, because a sleeping body can report the
-      // wrong model and the label must never be trusted for identity (see .claude/lessons.md).
+      // string is preserved for the driver; USB serial identifies the selected body. A sleeping
+      // body can report the wrong model (see tests/test_capture_serial.py).
       const option = new Option(`${Autopilot.friendlyCameraName(camera.model)} · ${camera.port}${camera.serial ? "" : " · no USB serial, capture disabled"}`, String(i));
       option.title = camera.model;
       // The last 4 characters of the USB serial tell two bodies apart (the confirm dialogs show it too).

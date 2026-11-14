@@ -100,7 +100,7 @@ that web UI changes.
 
 ## Android
 
-The committed project is `android/`, Capacitor **8.4.2**, minSdk **29**. Custom
+The committed project is `android/`, Capacitor **8.6.2**, minSdk **29**. Custom
 `AutopilotMedia` (`savePhoto` / `sharePhoto` / `safeArea`) matches the iOS
 plugin: MediaStore insert of the **original JPEG bytes**, `ACTION_SEND` +
 FileProvider, `WindowInsetsCompat`. Do not add `@capacitor/share` or
@@ -131,4 +131,4 @@ token/cache, live capture) is unproven. The owner's daily phone is an iPhone, so
 that receipt cannot be taken here.
 
 A29 (Arsenal Android panorama) is a different row and stays blocked. Scope:
-[docs/ANDROID_PARITY_SCOPE_2026-09-20.md](../docs/ANDROID_PARITY_SCOPE_2026-09-20.md).
+`docs/ANDROID_PARITY_SCOPE_2026-09-20.md` (private/unpublished).

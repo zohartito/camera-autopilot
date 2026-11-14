@@ -1,9 +1,14 @@
-# Standard automation onboarding (PR-Janitor). Keep Python deps + GitHub Actions current.
+# Standard automation onboarding (PR-Janitor). Keep Python, npm and GitHub Actions current.
 # Modeled on arch-line-weights/.github/dependabot.yml.
 version: 2
 updates:
   - package-ecosystem: "pip"
     directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "npm"
+    directory: "/mobile"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5

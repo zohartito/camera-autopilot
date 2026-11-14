@@ -22,8 +22,9 @@ separate physical gates.
   see `deploy/RUNTIME_PACKAGE.md`) and must coexist with the OS, service, a bounded
   merge and page cache. The merge working set itself is no longer the driver — the
   tiled/streaming rewrite cut it to ≈ 0.39 GB and a 4-frame 24 MP merge now completes
-  (measured 2026-09-17; the old "3-frame HDR exceeds 4 GiB" claim is superseded). Full
-  RAM-floor arithmetic and the puck-vs-phone split: `docs/TARGET_PREPARATION_2026-09-17.md`.
+  (measured 2026-09-17; the old "3-frame HDR exceeds 4 GiB" claim is superseded). The
+  original RAM-floor arithmetic and puck-vs-phone study are private/unpublished; current
+  packaging and memory measurements are in `deploy/RUNTIME_PACKAGE.md`.
 - **Power:** official Raspberry Pi 27 W USB-C PSU (under-voltage throttles capture).
 - **Cooling:** the official active cooler (the proof records thermals; sustained
   capture must not throttle).

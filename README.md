@@ -79,13 +79,14 @@ hardware, Ollama or a GPU. Tested on macOS (Apple Silicon) with Python 3.14.
 git clone https://github.com/zohartito/camera-autopilot.git
 cd camera-autopilot
 python3.14 -m venv .venv
-.venv/bin/pip install -r requirements-test.lock   # exact pins for macOS arm64
+.venv/bin/pip install -r requirements-test.lock   # exact pins, also installed by Linux CI
 ln -s ../.venv backend/.venv                       # the launcher looks for backend/.venv
 ./run.sh
 ```
 
-On Linux, install `libgphoto2-dev` first and use `requirements-test.txt` instead of the lock
-(this is what CI does).
+On Linux, install `libgphoto2-dev`, `libgl1` and `libglib2.0-0` first, then use the same lock.
+`requirements-test.txt` lists direct dependencies; `requirements-test.lock` pins the complete
+test environment used by both the quickstart and CI.
 
 `run.sh` serves the app on `http://127.0.0.1:8000`. It creates one API token per user and keeps it
 in a private file (on macOS `~/Library/Application Support/camera-autopilot/api-token`); paste it
@@ -101,6 +102,10 @@ python3 -c 'import server; print("server import: ok")'
 
 ### With a real camera
 
+Install the **gphoto2 CLI**, which the USB capture path requires in addition to the Python
+binding: `brew install gphoto2` on macOS, or `sudo apt-get install gphoto2` on Debian/Ubuntu.
+`gphoto2 --version` should work before continuing.
+
 Set the body to **MENU → Setup → USB Connection → PC Remote**, use a data cable, put the mode dial
 on **M**, choose a quality that includes JPEG, and set the PC Remote save destination to the
 computer. Quit Preview, Photos and Image Capture. Then:
@@ -112,6 +117,56 @@ CAMERA_ENGINE=real ./run.sh
 
 Pick the body by its USB serial in the UI. The camera is identified by serial, never by the
 gphoto2 model label, which can be wrong while the body is asleep.
+
+### On a phone (Mac backend, same Wi-Fi)
+
+The phone connects through an HTTPS proxy; `run.sh` keeps the backend on loopback.
+Start with the mock web app, then select `CAMERA_ENGINE=real` when the camera is ready.
+
+1. Install the proxy tools with `brew install caddy mkcert nss`. From the repository root,
+   preview the configuration with `.venv/bin/python deploy/mac_lan_https.py --tls mkcert`.
+   It prints the detected Mac IPv4 address, Caddyfile and trust steps without starting anything.
+   If detection is ambiguous, pass `--ip <Mac-Wi-Fi-IPv4>`. Its printed launcher command uses
+   `CAMERA_ENGINE=real`; use the mock command in step 3 for this first setup.
+2. In that terminal, substitute the address from the preview below. Create the certificate
+   and Caddyfile in a new local directory, then leave Caddy running:
+
+   ```bash
+   PHONE_IP="<Mac-Wi-Fi-IPv4>"
+   mkdir -p artifacts/phone-https
+   cd artifacts/phone-https
+   mkcert -install
+   mkcert "$PHONE_IP"
+   ../../.venv/bin/python ../../deploy/mac_lan_https.py --ip "$PHONE_IP" --tls mkcert --write .
+   caddy run --config Caddyfile
+   ```
+
+   `mkcert -install` installs the local CA on the Mac. The helper refuses to overwrite an
+   existing Caddyfile; on later starts, just run Caddy from the same directory.
+3. In a second terminal at the repository root, use the same address and start the backend:
+
+   ```bash
+   PHONE_ORIGIN="https://<Mac-Wi-Fi-IPv4>:8443"
+   CAMERA_ENGINE=mock \
+   CAMERA_AUTOPILOT_EXPOSURE=lan-proxy \
+   CAMERA_AUTOPILOT_TLS_PROXY_CONFIRMED=1 \
+   CAMERA_AUTOPILOT_PUBLIC_HTTPS_URL="$PHONE_ORIGIN" \
+   CAMERA_AUTOPILOT_CORS_ORIGINS="$PHONE_ORIGIN" \
+   ./run.sh
+   ```
+
+4. On the Mac, locate `rootCA.pem` in the directory printed by `mkcert -CAROOT`. AirDrop that
+   certificate to the iPhone (never the private key). Install its profile under **Settings →
+   General → VPN & Device Management**, then enable full trust under **General → About →
+   Certificate Trust Settings**.
+5. Open the HTTPS origin from step 3 in the phone's browser. Enter the server's six-digit code
+   at the authentication prompt or **Device status → Pair with code**. It expires after ten
+   minutes and works once; `.venv/bin/python tools/pair_code.py` issues a fresh code locally.
+   The stored token keeps the phone paired across restarts; `./run.sh --rotate-token` resets it.
+
+For the native iOS or Android shell, follow [`mobile/README.md`](mobile/README.md): install its
+npm dependencies, set the same HTTPS origin with `npm run backend:set -- <origin>`, sync, and
+build the existing native project. iOS signing and Android certificate trust are covered there.
 
 ## Tests
 
@@ -133,8 +188,11 @@ the launcher and USB-bridge security scripts and a deterministic intent eval. CI
 `sun_times`, plus one high-level tool, `shoot(intent, auto_correct=False)`, which runs the same
 intent, metering and capture path as the web app and returns the photo, the settings used and a
 one-line reason. With `auto_correct=True` it critiques its own frame with a local vision model and
-re-shoots, and falls back to a single shot when no model is available. It uses the mock engine
-unless `CAMERA_ENGINE=real`. To add it to Claude Code:
+re-shoots, and falls back to a single shot when no model is available.
+
+**MCP mock mode currently applies to `shoot` only.** Until the server-wide MCP guard lands,
+low-level camera tools still construct a real camera connection even with `CAMERA_ENGINE=mock`.
+Use only `shoot` for a camera-free MCP demo. To add it to Claude Code:
 
 ```bash
 claude mcp add sony-camera -e CAMERA_ENGINE=mock -- /ABS/PATH/camera-autopilot/.venv/bin/python /ABS/PATH/camera-autopilot/server.py

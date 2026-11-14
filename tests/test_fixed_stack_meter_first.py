@@ -1,7 +1,7 @@
 """A Fixed stack meters first; it never inherits whatever exposure the last capture left behind.
 
-Field defect (.claude/lessons.md, 2026-09-17): a night ISO 3200 baseline left on the body blew out
-an entire daylight HDR bracket, because a Fixed stack bracketed around the body's current exposure
+Field defect (private/unpublished field notes, 2026-09-17): a night ISO 3200 baseline left on
+the body blew out an entire daylight HDR bracket, because a Fixed stack bracketed around the body's current exposure
 with no meter photograph. Now one meter frame, through the same metering path as /shoot (including
 the bounded re-meter of a saturated or black frame), sets the baseline. The owner may still ask to
 keep the body's exposure (``baseline: "current"``). Fake cameras only; nothing opens USB.

@@ -21,7 +21,7 @@ pillow==13.0.0
 # CLIP taste-retrieval layer (embed_index.py). torch is CPU-or-CUDA; on the PC the
 # CUDA build is installed by setup_venv.sh instead — keep these unpinned-major so
 # the GPU box can resolve its own CUDA wheel.
-torch>=2.14.1
+torch>=2.15.0
 torchvision>=0.29.1
 open_clip_torch
 

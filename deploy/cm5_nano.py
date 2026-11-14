@@ -152,7 +152,7 @@ dtparam=fan_temp3=58000,fan_temp3_hyst=5000,fan_temp3_speed=255
 def render_hotspot_profile(passphrase: str, connection_uuid: str, interface: str = "wlan0",
                            channel: int = 6) -> str:
     """NetworkManager keyfile for an access point on the ONBOARD radio, chosen to avoid the
-    brcmfmac AP-mode failures in docs/research/board-2026-09-22/failure_modes.md."""
+    brcmfmac AP-mode failures in deploy/CM5_BRINGUP.md, section 5."""
     if not re.fullmatch(r"[a-zA-Z0-9_.-]{1,15}", interface):
         raise ValueError("Invalid interface")
     if channel not in (1, 6, 11):
@@ -163,7 +163,7 @@ def render_hotspot_profile(passphrase: str, connection_uuid: str, interface: str
 # GENERATED FOR REVIEW; nothing installs it. NetworkManager keyfile, mode 0600.
 # Install: sudo install -m 600 camera-puck.nmconnection /etc/NetworkManager/system-connections/
 #          sudo nmcli connection reload
-# Each setting below says which brcmfmac AP pitfall it avoids (failure_modes.md, section 2).
+# Each setting below says which brcmfmac AP pitfall it avoids (deploy/CM5_BRINGUP.md, section 5).
 [connection]
 id=camera-puck
 uuid={connection_uuid}

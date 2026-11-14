@@ -19,6 +19,7 @@ jobs:
       CAMERA_ENGINE: mock
       OLLAMA_HOST: http://127.0.0.1:1
       VISION_HOST: http://127.0.0.1:1
+      VISION_BANANA_HOST: http://127.0.0.1:1
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -28,11 +29,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgphoto2-dev libgl1 libglib2.0-0 ffmpeg exiftool
-      - name: Create the test virtualenv (direct list; the lock is pinned for macOS arm64)
+      - name: Create the test virtualenv (same pins as the README)
         run: |
           python -m venv .venv
           .venv/bin/pip install --upgrade pip
-          .venv/bin/pip install -r requirements-test.txt
+          .venv/bin/pip install -r requirements-test.lock
+          .venv/bin/pip check
       - name: Launcher venv (run.sh expects backend/.venv; the root lock already provides it)
         run: |
           if [ ! -e backend/.venv ]; then ln -s ../.venv backend/.venv; fi

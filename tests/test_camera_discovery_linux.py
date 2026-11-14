@@ -2,8 +2,8 @@
 reads from ioreg. No hardware and no real /sys: every test builds a fake sysfs tree in a temporary
 directory, and gphoto2 autodetect and the read-only probe are mocked.
 
-Ports re-enumerate; the serial is the only stable identity (.claude/lessons.md, "Identification";
-docs/ROUTE_MATRIX_2026-09-15.md). gphoto2 once listed the A7 II as "Apple iPad Air".
+Ports re-enumerate; the serial is the only stable identity
+(docs/ROUTE_MATRIX_2026-09-15.md). gphoto2 once listed the A7 II as "Apple iPad Air".
 """
 from __future__ import annotations
 

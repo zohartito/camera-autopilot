@@ -815,7 +815,7 @@ def _capture_host(tmp_path, throttled="0x0", proof=None, serial="A7III0SERIAL"):
 
 
 def _capture_args(**kw):
-    base = dict(body="a7iii", model="Sony Alpha-A7 III (PC Control)", port="usb:001,005",
+    base = dict(body="a7iii", expect_serial=None, model="Sony Alpha-A7 III (PC Control)", port="usb:001,005",
                 token_file="/dev/null", shots=20, host="127.0.0.1", http_port=8000, interval=0.01)
     base.update(kw)
     return _args(**base)
@@ -914,12 +914,35 @@ def test_capture_loop_cli_refuses_fewer_than_twenty_shots_and_the_raw_flag():
     assert parser.parse_args(["capture-loop", "--receipt-dir", "/tmp/x"]).shots == 20
 
 
-def test_capture_loop_refuses_a_body_claim_the_port_serial_contradicts(tmp_path):
-    # Defect 4: --body a7ii on the A7 III's port used to record body="a7ii", passed=True.
-    host, result = _capture(tmp_path, "wrong", args=_capture_args(body="a7ii"))
+def test_capture_loop_refuses_an_explicit_serial_the_port_contradicts(tmp_path):
+    host, result = _capture(tmp_path, "wrong", args=_capture_args(expect_serial="different-fixture-camera"))
     assert result["passed"] is False and "identity mismatch" in result["errors"][0]
     assert result["identity"]["usb_serial"] == "A7III0SERIAL"
     assert not any(c[0] == "bash" for c in host.calls), "the wrong body must never be fired"
+
+
+@pytest.mark.parametrize("expected", [None, "fixture-camera"])
+def test_capture_loop_accepts_an_unlisted_camera_and_optional_serial(tmp_path, expected):
+    argv = ["capture-loop", "--run", "--body", "a7iii", "--model", "M", "--port", "usb:001,005",
+            "--token-file", "/dev/null", "--interval", "0.01", "--receipt-dir", str(tmp_path / "receipts")]
+    if expected is not None:
+        argv += ["--expect-serial", expected]
+    args = day_one.build_parser().parse_args(argv)
+    assert args.expect_serial == expected
+    host = _capture_host(tmp_path, serial="fixture-camera")
+    assert day_one.main(argv, host=host) == 0
+    receipt = json.loads(next((tmp_path / "receipts").glob("day1-capture-loop-*.json")).read_text())
+    assert receipt["expected_serial"] == expected
+    assert receipt["identity"]["usb_serial"] == receipt["identity_after"]["usb_serial"] == "fixture-camera"
+    assert receipt["identity"]["body_from_serial"] is None
+    command = next(c for c in host.calls if c[0] == "bash")
+    assert command[command.index("--serial") + 1] == "fixture-camera"
+
+
+def test_capture_loop_still_refuses_a_camera_without_a_usb_serial(tmp_path):
+    host, result = _capture(tmp_path, "missing-serial", serial="")
+    assert result["passed"] is False and "no USB serial" in result["errors"][0]
+    assert not any(c[0] == "bash" for c in host.calls)
 
 
 @pytest.mark.parametrize("raw,code,passed", [(RAW_PASSED, 0, True), (None, day_one.EXIT_INCONCLUSIVE, None)])

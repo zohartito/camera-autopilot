@@ -4,12 +4,13 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 PYTHON="${CAMERA_TEST_PYTHON:-.venv/bin/python}"
 if [[ ! -x "$PYTHON" ]]; then
-  echo "Missing test interpreter: $PYTHON. Create .venv and install requirements-test.txt." >&2
+  echo "Missing test interpreter: $PYTHON. Create .venv and install requirements-test.lock." >&2
   exit 2
 fi
 export CAMERA_ENGINE=mock
 export OLLAMA_HOST=http://127.0.0.1:1
 export VISION_HOST=http://127.0.0.1:1
+export VISION_BANANA_HOST=http://127.0.0.1:1
 "$PYTHON" -m pytest -q backend tests "$@"
 for module in physics sensor_noise lens_optics camera_caps color_accuracy constraint_cards; do
   "$PYTHON" "backend/$module.py"
