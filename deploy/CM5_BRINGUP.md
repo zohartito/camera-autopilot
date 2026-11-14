@@ -234,8 +234,9 @@ Notes:
   on its own host, but the before/after identity and the throttle log are this machine's, so a
   remote host is refused.
 - `capture-loop` calls `deploy/pi_bringup.sh --apply --phase proof --serial <serial>` with the serial
-  sysfs reported at `--port`. The body at `--port`
-  must report the USB serial of `--body` before anything fires, and the same serial must still be on
+  sysfs reported at `--port`. `--body` labels the receipt; no expected-serial check is made by
+  default. Add `--expect-serial <your-camera-serial>` to require a particular camera before
+  anything fires. A USB serial is always required, passed to the proof, and checked again on
   the bus afterwards. `kill_criterion_passed` is true only when requested == recorded == HTTP 200 ==
   verified ≥ 20 (a 0/0 proof never counts), the serial matches, no throttle or under-voltage flag
   appears, and RAW transfer passes.

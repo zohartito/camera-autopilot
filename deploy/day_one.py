@@ -24,8 +24,9 @@ outside the repository and outside system directories (deploy/safe_paths.py), in
   merge-thermal   5. sustained 24 MP merges through ``tools/puck_workload_bench.py`` with
                      temperature and throttle logging; label the run open-air or closed-box.
 
-Camera receipts carry ``identity``: the USB serial read back from the device. ``--body`` is only
-a claim; a serial that disagrees with it fails the test. Exit codes: 0 pass or dry run, 1 fail,
+Camera receipts carry ``identity``: the USB serial read back from the device. In capture-loop,
+``--body`` is a label; ``--expect-serial`` optionally requires a specific device. The other
+identity subcommands also accept that override for their legacy body mapping. Exit codes: 0 pass or dry run, 1 fail,
 3 inconclusive. Nothing touches a camera, the network, sysfs or a subprocess at import time or in
 dry run. Receipts are hardware receipts only when they come from the board itself.
 """
@@ -458,7 +459,7 @@ def raw_verdict(proof: dict | None, shots: int) -> tuple[bool | None, str | None
 
 def run_capture_loop(host: Host, args, run: bool, receipt: Path) -> dict:
     proof_dir = receipt.with_name(receipt.stem + "-proof")
-    expected = expected_serial(args.body, None)
+    expected = args.expect_serial
 
     def proof_command(serial: str | None) -> list[str]:
         # /shoot refuses a request that names a model and port without a serial, so the proof
@@ -471,7 +472,8 @@ def run_capture_loop(host: Host, args, run: bool, receipt: Path) -> dict:
 
     plan = [f"--host must be this machine ({', '.join(LOOPBACK_HOSTS)}): the serial is read from local "
             "sysfs and the throttle log is this machine's, so a remote service is refused",
-            f"identity: the Sony device at --port must report USB serial {expected or '<serial for --body>'}",
+            (f"identity: the Sony device at --port must report USB serial {expected}" if expected else
+             "identity: read the Sony device's USB serial at --port; no expected-serial check requested"),
             f"sample vcgencmd get_throttled / measure_temp / measure_clock arm every {args.interval}s",
             quote(proof_command(expected)),
             "identity again afterwards: the same serial must still be on the bus (its port may move)",
@@ -504,7 +506,7 @@ def run_capture_loop(host: Host, args, run: bool, receipt: Path) -> dict:
         payload["passed"] = False
         return payload
     device = next((d for d in sony_usb_devices(host) if d["port"] == args.port), None)
-    error = identity_error(device, args.body, None, args.port)
+    error = identity_error(device, None, expected, args.port)
     payload["identity"] = identity_of(device)
     if error:
         payload["criteria"]["identity_usb_serial"] = False
@@ -900,7 +902,8 @@ def build_parser() -> argparse.ArgumentParser:
     identity_args(p)
 
     p = add("capture-loop", "2. the existing 20-shot proof with throttle/temperature sampling")
-    p.add_argument("--body", choices=sorted(KNOWN_BODY_SERIALS))
+    p.add_argument("--body", choices=sorted(KNOWN_BODY_SERIALS), help="body label for the receipt")
+    p.add_argument("--expect-serial", help="USB serial to require (default: no expected-serial check)")
     p.add_argument("--model", help="exact gphoto2 model string (re-detect; ports move)")
     p.add_argument("--port", help="exact usb:BBB,DDD port")
     p.add_argument("--token-file", type=path_text, help="API token file for the running service")
