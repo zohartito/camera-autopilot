@@ -1,14 +1,15 @@
-# Verified root test environment: Python 3.14.7 macOS arm64.
+# Root test environment: Python 3.14; same pins for macOS arm64 and Linux CI.
+# Refreshed from the installed Python 3.14.10 macOS arm64 environment, 2026-11-13.
 # Exact installed versions; excludes live camera/model validation and wheel hashes.
 annotated-doc==0.0.4
 annotated-types==0.7.0
-anyio==4.14.0
+anyio==4.14.2
 astral==3.2
 attrs==26.1.0
-certifi==2026.6.17
+certifi==2026.10.18
 cffi==2.0.0
 click==8.4.1
-cryptography==49.0.0
+cryptography==50.0.0
 defusedxml==0.7.1
 fastapi==0.138.0
 gphoto2==2.6.4
@@ -24,21 +25,21 @@ iniconfig==2.3.0
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 markdown-it-py==4.2.0
-mcp==2.2.0
-mcp-types==2.2.0
+mcp==2.3.0
+mcp-types==2.3.0
 mdurl==0.1.2
-numpy==2.5.3
+numpy==2.5.4
 opencv-python==5.0.0.93
-opentelemetry-api==1.44.0
+opentelemetry-api==1.45.2
 packaging==26.3
-pillow==12.3.0
+pillow==13.0.0
 pluggy==1.6.0
 pycparser==3.0
 pydantic==2.13.4
 pydantic_core==2.46.4
 pydantic-settings==2.14.2
 Pygments==2.20.0
-PyJWT==2.13.0
+PyJWT==2.15.0
 pytest==9.1.1
 python-dotenv==1.2.2
 python-multipart==0.0.32

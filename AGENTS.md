@@ -8,8 +8,8 @@ reviewing every change and testing on real cameras. These are the working rules 
 - Camera-free gate: `bash scripts/test_safe.sh` (pytest over `backend/` and `tests/`, physics
   self-checks, the MCP stdio contract, launcher and USB-bridge security scripts, the deterministic
   intent eval). It sets `CAMERA_ENGINE=mock` and points the Ollama/vision hosts at a dead port.
-- Test environment: install `requirements-test.lock` into `.venv` (macOS arm64, Python 3.14);
-  `requirements-test.txt` is the direct dependency list used by CI on Linux. The launcher tests
+- Test environment: install `requirements-test.lock` into `.venv` (Python 3.14, also used by
+  Linux CI); `requirements-test.txt` is the direct dependency list. The launcher tests
   expect `backend/.venv`; a symlink to `../.venv` is enough.
 - Model skips are not camera or model verification. A passing mock run says nothing about a real
   body; real-camera claims live in `docs/RECEIPTS_*.md`.

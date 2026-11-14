@@ -79,13 +79,14 @@ hardware, Ollama or a GPU. Tested on macOS (Apple Silicon) with Python 3.14.
 git clone https://github.com/zohartito/camera-autopilot.git
 cd camera-autopilot
 python3.14 -m venv .venv
-.venv/bin/pip install -r requirements-test.lock   # exact pins for macOS arm64
+.venv/bin/pip install -r requirements-test.lock   # exact pins, also installed by Linux CI
 ln -s ../.venv backend/.venv                       # the launcher looks for backend/.venv
 ./run.sh
 ```
 
-On Linux, install `libgphoto2-dev` first and use `requirements-test.txt` instead of the lock
-(this is what CI does).
+On Linux, install `libgphoto2-dev`, `libgl1` and `libglib2.0-0` first, then use the same lock.
+`requirements-test.txt` lists direct dependencies; `requirements-test.lock` pins the complete
+test environment used by both the quickstart and CI.
 
 `run.sh` serves the app on `http://127.0.0.1:8000`. It creates one API token per user and keeps it
 in a private file (on macOS `~/Library/Application Support/camera-autopilot/api-token`); paste it
