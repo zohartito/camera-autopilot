@@ -22,7 +22,7 @@ pillow==13.0.0
 # CUDA build is installed by setup_venv.sh instead — keep these unpinned-major so
 # the GPU box can resolve its own CUDA wheel.
 torch>=2.15.0
-torchvision>=0.29.1
+torchvision>=0.29.2
 open_clip_torch
 
 # MCP server API used by server.py; keep the ML lane on the same major as the main lock.
