@@ -19,6 +19,7 @@ jobs:
       CAMERA_ENGINE: mock
       OLLAMA_HOST: http://127.0.0.1:1
       VISION_HOST: http://127.0.0.1:1
+      VISION_BANANA_HOST: http://127.0.0.1:1
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

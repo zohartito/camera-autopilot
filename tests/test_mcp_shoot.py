@@ -87,11 +87,12 @@ async def run_checks() -> list[tuple[str, bool, str]]:
 
     env = dict(os.environ)
     env["CAMERA_ENGINE"] = "mock"               # no hardware
-    # Point BOTH local models at a dead port so the test is deterministic and portable: the intent
+    # Point all local model endpoints at a dead port so the test is deterministic and portable: the intent
     # brain takes its keyword fallback, and the reflexion loop's critique degrades cleanly. (On a box
     # with a live Ollama/vision model the closed loop genuinely engages — also valid, just non-CI.)
     env["OLLAMA_HOST"] = "http://127.0.0.1:1"   # intent brain -> deterministic keyword fallback
     env["VISION_HOST"] = "http://127.0.0.1:1"   # vision critique -> unreachable -> clean degrade
+    env["VISION_BANANA_HOST"] = "http://127.0.0.1:1"  # depth client -> unreachable
 
     server = StdioServerParameters(
         command=sys.executable,

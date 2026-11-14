@@ -46,7 +46,9 @@ VENV_ACTIVATE="$VENV_DIR/bin/activate"
 
 if [[ ! -f "$VENV_ACTIVATE" ]]; then
   echo "No virtualenv found at $VENV_ACTIVATE" >&2
-  echo "Create it first:  cd backend && python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt" >&2
+  echo "Create it first with the complete README environment:" >&2
+  printf '  python3.14 -m venv %q\n' "$VENV_DIR" >&2
+  printf '  %q -m pip install -r %q\n' "$VENV_DIR/bin/python" "$SCRIPT_DIR/requirements-test.lock" >&2
   exit 1
 fi
 
