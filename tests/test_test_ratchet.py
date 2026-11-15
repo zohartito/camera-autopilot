@@ -333,9 +333,10 @@ def assert_workflow_policy(workflow):
     assert workflow["permissions"] == {"contents": "read"}
     assert set(workflow["jobs"]) == {"test-ratchet"}
     job = workflow["jobs"]["test-ratchet"]
-    assert set(job) == {"runs-on", "timeout-minutes", "steps"}
+    assert set(job) == {"runs-on", "timeout-minutes", "env", "steps"}
     assert job["runs-on"] == "ubuntu-latest"
     assert job["timeout-minutes"] == 10
+    assert job["env"] == {"CAMERA_ENGINE": "mock"}
     checkout, fetch, compare = job["steps"]
     assert set(checkout) == {"name", "uses", "with"}
     assert checkout["uses"] == "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"

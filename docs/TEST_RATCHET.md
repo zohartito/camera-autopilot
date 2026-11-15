@@ -34,6 +34,7 @@ execution occurs. The exact head SHA from the event is inspected, not whatever
 `FETCH_HEAD` happens to contain. If a force-push makes that object unavailable,
 inspection fails instead of substituting another revision.
 
+The job declares `CAMERA_ENGINE: mock`, matching the repository's workflow policy.
 The workflow has no path filters, PR-controlled conditions or failure suppression.
 It handles opened, reopened, synchronized and edited PRs (including base retargets).
 Edits to `ci.yml` do not remove this separate check. Static tests parse the YAML
