@@ -297,7 +297,7 @@ def test_unparseable_data_fails_closed(repo, path, text):
     repo.write(path, text)
     repo.commit()
     result = repo.run()
-    assert result.returncode == 1
+    assert result.returncode == 2
     assert "inspection_error |" in result.stdout
 
 
@@ -307,14 +307,34 @@ def test_symlinks_are_not_followed(repo):
     target.symlink_to("../outside.py")
     repo.commit()
     result = repo.run()
-    assert result.returncode == 1
+    assert result.returncode == 2
     assert "inspection_error | tests/test_sample.py" in result.stdout
 
 
 def test_invalid_revision_fails_closed(repo):
     result = repo.run(head="0" * 40)
-    assert result.returncode == 1
+    assert result.returncode == 2
     assert "inspection_error" in result.stdout
+
+
+def test_second_binding_of_an_alias_cannot_hide_a_skip(repo):
+    # `p` is pytest at module level and something else inside a helper.
+    repo.write("tests/test_sample.py",
+               "import pytest as p\n\n@p.mark.skip\ndef test_kept():\n    assert True\n\n"
+               + SECOND_TEST
+               + "def helper():\n    from pytest import fixture as p\n    return p\n")
+    repo.commit()
+    fails_with(repo.run(), "new_skip")
+
+
+def test_deleting_one_of_two_same_named_tests_fails(repo):
+    repo.write("tests/test_other.py", TEST)
+    repo.base = repo.commit("two files define test_kept")
+    repo.write("tests/test_other.py", "def test_different():\n    assert True\n")
+    repo.commit()
+    result = repo.run()
+    fails_with(result, "removed_test")
+    assert "test_kept (1 fewer definitions)" in result.stdout
 
 
 def test_base_only_additions_do_not_look_like_pr_deletions(repo):

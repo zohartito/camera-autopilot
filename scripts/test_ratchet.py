@@ -2,7 +2,8 @@
 """Compare committed test data without checking out, importing or running head code.
 
 The trusted base copy is run by test-ratchet.yml. Exit 0 means no supported
-weakening was found; exit 1 means findings or an inspection error. This is a
+weakening was found; exit 1 means findings; exit 2 means the data could not be
+inspected (bad revision, unreadable or malformed file). This is a
 structural ratchet, not a proof that test assertions remain meaningful.
 """
 
@@ -89,7 +90,7 @@ def dotted(node: ast.AST) -> str:
 
 
 def python_inventory(tree: Tree, findings: list[Finding]):
-    tests = defaultdict(set)
+    tests = defaultdict(list)
     skips = Counter()
     for path in sorted(tree.entries):
         if not path.endswith(".py"):
@@ -99,30 +100,33 @@ def python_inventory(tree: Tree, findings: list[Finding]):
         except (InspectionError, SyntaxError, ValueError, TypeError, RecursionError) as exc:
             findings.append(Finding("inspection_error", path, type(exc).__name__))
             continue
-        aliases = {"pytest": "pytest"}
+        # A name may be bound more than once (module level and inside a function).
+        # Keep every binding: a second import must not hide a skip made through the first.
+        aliases = defaultdict(set)
+        aliases["pytest"].add("pytest")
         for node in ast.walk(module):
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     if alias.name == "pytest":
-                        aliases[alias.asname or "pytest"] = "pytest"
+                        aliases[alias.asname or "pytest"].add("pytest")
             elif isinstance(node, ast.ImportFrom) and node.module in {"pytest", "pytest.mark"}:
                 for alias in node.names:
-                    aliases[alias.asname or alias.name] = f"{node.module}.{alias.name}"
+                    aliases[alias.asname or alias.name].add(f"{node.module}.{alias.name}")
 
         def visit(node, scope=(), parent=None):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if node.name.startswith("test_"):
-                    tests[node.name].add(path)
+                    tests[node.name].append(path)
                 scope = (*scope, node.name)
             elif isinstance(node, ast.ClassDef):
                 scope = (*scope, node.name)
             target = node.func if isinstance(node, ast.Call) else node
             name = dotted(target)
             root, _, tail = name.partition(".")
-            name = aliases.get(root, root) + (f".{tail}" if tail else "")
+            names = {full + (f".{tail}" if tail else "") for full in aliases.get(root, {root})}
             # Count each call/marker once, including bare marks and pytestmark lists.
             in_call = isinstance(parent, ast.Call) and parent.func is node
-            if name in SKIPS and not in_call:
+            if names & SKIPS and not in_call:
                 skips[(path, ".".join(scope), ast.dump(node, include_attributes=False))] += 1
             for child in ast.iter_child_nodes(node):
                 visit(child, scope, node)
@@ -239,8 +243,13 @@ def inspect(base: str, head: str) -> list[Finding]:
             findings.append(Finding("deleted_test_file", path, "file removed or renamed"))
     old_tests, old_skips = python_inventory(old, findings)
     new_tests, new_skips = python_inventory(new, findings)
-    for name in sorted(old_tests.keys() - new_tests.keys()):
-        findings.append(Finding("removed_test", ", ".join(sorted(old_tests[name])), name))
+    # Compare how many definitions each name has, so deleting one of two tests that
+    # share a name is caught while moving a test between files is still allowed.
+    for name in sorted(old_tests):
+        lost = len(old_tests[name]) - len(new_tests.get(name, ()))
+        if lost > 0:
+            findings.append(Finding("removed_test", ", ".join(sorted(set(old_tests[name]))),
+                                    name if lost == len(old_tests[name]) else f"{name} ({lost} fewer definitions)"))
     for (path, scope, marker), count in sorted((new_skips - old_skips).items()):
         findings.append(Finding("new_skip", path, f"{scope or '<module>'}: {count} new/changed skip or xfail: {marker}"))
     for path in sorted(EVALS):
@@ -275,6 +284,8 @@ def main() -> int:
         print(" | ".join(cell(v) for v in (finding.kind, finding.path, finding.detail)))
     if not findings:
         print("no findings")
+    if any(finding.kind == "inspection_error" for finding in findings):
+        return 2
     return int(bool(findings))
 
 

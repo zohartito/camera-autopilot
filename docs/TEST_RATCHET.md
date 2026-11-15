@@ -2,7 +2,8 @@
 
 `scripts/test_ratchet.py` reports supported forms of test weakening between
 committed trees. It uses only the Python standard library and Git. Findings
-return exit 1; no findings return exit 0. There is no approval flag, and commit
+return exit 1; data that cannot be inspected (a bad revision, an unreadable or
+malformed file) returns exit 2; no findings return exit 0. There is no approval flag, and commit
 messages, PR text and labels are not consulted.
 
 ## Trust model
@@ -52,9 +53,9 @@ never imported or executed. Uncommitted working-tree contents are irrelevant.
 
 | Finding | Rule |
 | --- | --- |
-| `removed_test` | A `test_*` function name, including async functions and methods, disappears from all tracked Python files. |
+| `removed_test` | The number of definitions of a `test_*` function name, including async functions and methods, drops across all tracked Python files. Deleting one of two same-named tests is caught; moving a test between files is not a finding. |
 | `deleted_test_file` | A tracked file under `tests/`, or a direct `backend/test_*.py` file, is deleted or renamed. |
-| `new_skip` | New or changed pytest skip/skipif/xfail calls or marks, including bare marks, `pytestmark` and direct import aliases. Comments and strings are data. |
+| `new_skip` | New or changed pytest skip/skipif/xfail calls or marks, including bare marks, `pytestmark` and direct import aliases (every binding of a name in the file is considered). Comments and strings are data. |
 | `eval_cases_dropped` | An existing `(section, id)` disappears from curated or tracked learned eval data, even if another case replaces it. Moving a graded case to `watch` also removes its old identity. |
 | `eval_range_widened` | A lower bound decreases, an upper bound increases, an allowed bucket gains a member, or an existing range/bucket is removed. |
 | `gate_command_removed` | A nonblank, noncomment line disappears from `scripts/test_safe.sh` or `scripts/eval_gate.sh`. Duplicate lines are counted. |
@@ -101,7 +102,12 @@ after activation; local tests establish neither.
 These checks are structural heuristics. Keeping a function name while deleting
 assertions, changing collection configuration, inserting an early exit into a
 gate while retaining its lines, dynamic aliases and other semantic weakening
-can escape them. Function moves are allowed by the "gone everywhere" rule;
+can escape them. The inventory counts names, not what pytest collects: renaming
+a `Test*` class so its methods stop being collected is not detected, and a
+`test_*` function in a non-test file is counted, so renaming such a helper is
+reported. Non-standard JSON constants such as `NaN` outside the checked ranges
+are accepted, and a tracked path that is not valid UTF-8 is an inspection
+error. Function moves are allowed because definitions are counted across files;
 test-file renames still produce a file-deletion finding. Gate formatting changes
 and legitimate skip changes may need owner review. The guard does not replace
 review, the camera-free suite, or real-camera receipts.
