@@ -89,6 +89,36 @@ def dotted(node: ast.AST) -> str:
     return ""
 
 
+SCOPES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)
+
+
+def pytest_bindings(owner: ast.AST) -> dict[str, set[str]]:
+    """Names this scope itself imports from pytest; nested scopes are not entered."""
+    found = defaultdict(set)
+    stack = list(ast.iter_child_nodes(owner))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, SCOPES):
+            continue
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "pytest":
+                    found[alias.asname or "pytest"].add("pytest")
+        elif isinstance(node, ast.ImportFrom) and node.module in {"pytest", "pytest.mark"}:
+            for alias in node.names:
+                found[alias.asname or alias.name].add(f"{node.module}.{alias.name}")
+        stack.extend(ast.iter_child_nodes(node))
+    return dict(found)
+
+
+def resolve(root: str, env) -> set[str]:
+    """Resolve a name as Python does: the innermost scope that imports it wins."""
+    for _, frame in reversed(env):
+        if root in frame:
+            return frame[root]
+    return {root}
+
+
 def python_inventory(tree: Tree, findings: list[Finding]):
     tests = defaultdict(list)
     skips = Counter()
@@ -100,20 +130,7 @@ def python_inventory(tree: Tree, findings: list[Finding]):
         except (InspectionError, SyntaxError, ValueError, TypeError, RecursionError) as exc:
             findings.append(Finding("inspection_error", path, type(exc).__name__))
             continue
-        # A name may be bound more than once (module level and inside a function).
-        # Keep every binding: a second import must not hide a skip made through the first.
-        aliases = defaultdict(set)
-        aliases["pytest"].add("pytest")
-        for node in ast.walk(module):
-            if isinstance(node, ast.Import):
-                for alias in node.names:
-                    if alias.name == "pytest":
-                        aliases[alias.asname or "pytest"].add("pytest")
-            elif isinstance(node, ast.ImportFrom) and node.module in {"pytest", "pytest.mark"}:
-                for alias in node.names:
-                    aliases[alias.asname or alias.name].add(f"{node.module}.{alias.name}")
-
-        def visit(node, scope=(), parent=None):
+        def visit(node, scope=(), parent=None, env=()):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 if node.name.startswith("test_"):
                     tests[node.name].append(path)
@@ -123,15 +140,23 @@ def python_inventory(tree: Tree, findings: list[Finding]):
             target = node.func if isinstance(node, ast.Call) else node
             name = dotted(target)
             root, _, tail = name.partition(".")
-            names = {full + (f".{tail}" if tail else "") for full in aliases.get(root, {root})}
+            names = {full + (f".{tail}" if tail else "") for full in resolve(root, env)}
             # Count each call/marker once, including bare marks and pytestmark lists.
             in_call = isinstance(parent, ast.Call) and parent.func is node
             if names & SKIPS and not in_call:
                 skips[(path, ".".join(scope), ast.dump(node, include_attributes=False))] += 1
+            body, inner = (), env
+            if isinstance(node, SCOPES):
+                # Decorators, defaults and bases are evaluated in the enclosing scope;
+                # only the body sees this scope's own imports. Class-body names are
+                # not visible inside nested functions.
+                body = {id(n) for n in (node.body if isinstance(node.body, list) else [node.body])}
+                inner = (*(frame for frame in env if not frame[0]),
+                         (isinstance(node, ast.ClassDef), pytest_bindings(node)))
             for child in ast.iter_child_nodes(node):
-                visit(child, scope, node)
+                visit(child, scope, node, inner if id(child) in body else env)
 
-        visit(module)
+        visit(module, env=((False, pytest_bindings(module)),))
     return tests, skips
 
 

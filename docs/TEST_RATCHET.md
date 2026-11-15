@@ -55,7 +55,7 @@ never imported or executed. Uncommitted working-tree contents are irrelevant.
 | --- | --- |
 | `removed_test` | The number of definitions of a `test_*` function name, including async functions and methods, drops across all tracked Python files. Deleting one of two same-named tests is caught; moving a test between files is not a finding. |
 | `deleted_test_file` | A tracked file under `tests/`, or a direct `backend/test_*.py` file, is deleted or renamed. |
-| `new_skip` | New or changed pytest skip/skipif/xfail calls or marks, including bare marks, `pytestmark` and direct import aliases (every binding of a name in the file is considered). Comments and strings are data. |
+| `new_skip` | New or changed pytest skip/skipif/xfail calls or marks, including bare marks, `pytestmark` and direct import aliases, resolved in the scope that imports them. Comments and strings are data. |
 | `eval_cases_dropped` | An existing `(section, id)` disappears from curated or tracked learned eval data, even if another case replaces it. Moving a graded case to `watch` also removes its old identity. |
 | `eval_range_widened` | A lower bound decreases, an upper bound increases, an allowed bucket gains a member, or an existing range/bucket is removed. |
 | `gate_command_removed` | A nonblank, noncomment line disappears from `scripts/test_safe.sh` or `scripts/eval_gate.sh`. Duplicate lines are counted. |

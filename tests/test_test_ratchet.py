@@ -327,6 +327,35 @@ def test_second_binding_of_an_alias_cannot_hide_a_skip(repo):
     fails_with(repo.run(), "new_skip")
 
 
+def test_alias_resolves_in_its_own_scope(repo):
+    # One helper binds `p` to skip; other tests bind the same name to fixture and raises.
+    base = ("def unused():\n    from pytest import skip as p\n\n" + TEST + SECOND_TEST)
+    repo.write("tests/test_sample.py", base)
+    repo.base = repo.commit("helper binds p to skip")
+    repo.write("tests/test_sample.py", base
+               + "def test_fixture():\n    from pytest import fixture as p\n    @p\n    def value():\n"
+                 "        return 1\n    assert value.__name__ == 'value'\n\n"
+               + "def test_raises():\n    from pytest import raises as p\n    with p(ValueError):\n"
+                 "        raise ValueError()\n")
+    repo.commit()
+    result = repo.run()
+    assert result.returncode == 0, result.stdout
+
+
+@pytest.mark.parametrize("source", [
+    # Decorators are evaluated outside the function they decorate.
+    "import pytest as p\n\n@p.mark.skip\ndef test_kept():\n    from pytest import fixture as p\n    assert p\n",
+    # A class-body alias decorates a method.
+    "class TestGroup:\n    from pytest import mark as m\n\n    @m.skip\n    def test_kept(self):\n        assert True\n",
+    # A function-local alias is called in that function.
+    "def test_kept():\n    from pytest import skip as omit\n    omit('fixture')\n",
+])
+def test_scoped_alias_skips_fail(repo, source):
+    repo.write("tests/test_sample.py", source + SECOND_TEST)
+    repo.commit()
+    fails_with(repo.run(), "new_skip")
+
+
 def test_deleting_one_of_two_same_named_tests_fails(repo):
     repo.write("tests/test_other.py", TEST)
     repo.base = repo.commit("two files define test_kept")
