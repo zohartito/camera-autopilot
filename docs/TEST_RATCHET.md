@@ -55,7 +55,7 @@ never imported or executed. Uncommitted working-tree contents are irrelevant.
 | --- | --- |
 | `removed_test` | The number of definitions of a `test_*` function name, including async functions and methods, drops across all tracked Python files. Deleting one of two same-named tests is caught; moving a test between files is not a finding. |
 | `deleted_test_file` | A tracked file under `tests/`, or a direct `backend/test_*.py` file, is deleted or renamed. |
-| `new_skip` | New or changed pytest skip/skipif/xfail calls or marks, including bare marks, `pytestmark` and direct import aliases, resolved in the scope that imports them. Comments and strings are data. |
+| `new_skip` | New or changed pytest skip/skipif/xfail calls or marks, including bare marks, `pytestmark` and direct import aliases, resolved to the innermost scope that imports the name from pytest. Comments and strings are data. |
 | `eval_cases_dropped` | An existing `(section, id)` disappears from curated or tracked learned eval data, even if another case replaces it. Moving a graded case to `watch` also removes its old identity. |
 | `eval_range_widened` | A lower bound decreases, an upper bound increases, an allowed bucket gains a member, or an existing range/bucket is removed. |
 | `gate_command_removed` | A nonblank, noncomment line disappears from `scripts/test_safe.sh` or `scripts/eval_gate.sh`. Duplicate lines are counted. |
@@ -102,7 +102,11 @@ after activation; local tests establish neither.
 These checks are structural heuristics. Keeping a function name while deleting
 assertions, changing collection configuration, inserting an early exit into a
 gate while retaining its lines, dynamic aliases and other semantic weakening
-can escape them. The inventory counts names, not what pytest collects: renaming
+can escape them. Alias handling is a heuristic, not Python name resolution: when one file uses the
+same name for a pytest skip helper and for something else (a second import, a
+parameter, an assignment, a comprehension target, `global`/`nonlocal`, an import in
+a branch that never runs), a skip through that name can be missed or reported
+where there is none. The inventory counts names, not what pytest collects: renaming
 a `Test*` class so its methods stop being collected is not detected, and a
 `test_*` function in a non-test file is counted, so renaming such a helper is
 reported. Non-standard JSON constants such as `NaN` outside the checked ranges

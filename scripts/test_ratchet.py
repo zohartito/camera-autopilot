@@ -104,7 +104,7 @@ def pytest_bindings(owner: ast.AST) -> dict[str, set[str]]:
             for alias in node.names:
                 if alias.name == "pytest":
                     found[alias.asname or "pytest"].add("pytest")
-        elif isinstance(node, ast.ImportFrom) and node.module in {"pytest", "pytest.mark"}:
+        elif isinstance(node, ast.ImportFrom) and not node.level and node.module in {"pytest", "pytest.mark"}:
             for alias in node.names:
                 found[alias.asname or alias.name].add(f"{node.module}.{alias.name}")
         stack.extend(ast.iter_child_nodes(node))
@@ -112,7 +112,11 @@ def pytest_bindings(owner: ast.AST) -> dict[str, set[str]]:
 
 
 def resolve(root: str, env) -> set[str]:
-    """Resolve a name as Python does: the innermost scope that imports it wins."""
+    """The innermost scope that imports the name from pytest wins.
+
+    This is not full name resolution: import order within a scope, shadowing by
+    anything other than a pytest import, and global/nonlocal are not modelled.
+    """
     for _, frame in reversed(env):
         if root in frame:
             return frame[root]

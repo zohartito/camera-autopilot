@@ -356,6 +356,13 @@ def test_scoped_alias_skips_fail(repo, source):
     fails_with(repo.run(), "new_skip")
 
 
+def test_relative_import_named_pytest_is_not_pytest(repo):
+    repo.write("tests/test_sample.py", TEST + SECOND_TEST
+               + "from .pytest import skip as p\n\ndef test_uses_local_helper():\n    p()\n")
+    repo.commit()
+    assert repo.run().returncode == 0
+
+
 def test_deleting_one_of_two_same_named_tests_fails(repo):
     repo.write("tests/test_other.py", TEST)
     repo.base = repo.commit("two files define test_kept")
