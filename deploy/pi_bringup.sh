@@ -483,15 +483,19 @@ phase_venv() {
   phase_banner venv
   local py="$RUNTIME_VENV/bin/python"
   local create_cmd="python3 -m venv $RUNTIME_VENV"
-  local pip_cmd="$py -m pip install -r $REPO/requirements.txt"
+  local requirements="$REPO/deploy/locks/requirements-control.linux-aarch64.lock"
+  local pip_cmd="$py -m pip install -r $requirements"
+  local smoke_imports="import live_verify, remeter, brain, handheld_recommend, stacking, focus_bracket"
+  local smoke_cmd="cd $REPO/backend && $py -c '$smoke_imports'"
   local taste_cmd="$py $REPO/tools/prepare_taste_runtime.py --offline"
 
   if [[ "$MODE" == "dry-run" ]]; then
     log "WOULD-RUN: $create_cmd"
     log "WOULD-RUN: $pip_cmd"
+    log "WOULD-RUN: $smoke_cmd"
     log "WOULD-RUN: $taste_cmd   # validates pinned model bytes, never downloads"
     emit_receipt venv executed=false venv="$RUNTIME_VENV" \
-      create_command="$create_cmd" pip_command="$pip_cmd" taste_command="$taste_cmd"
+      create_command="$create_cmd" pip_command="$pip_cmd" smoke_command="$smoke_cmd" taste_command="$taste_cmd"
     return
   fi
   if [[ ! -x "$py" ]]; then
@@ -502,7 +506,9 @@ phase_venv() {
   fi
   log "RUN: $pip_cmd"
   "$py" -m pip install --upgrade pip >/dev/null
-  "$py" -m pip install -r "$REPO/requirements.txt"
+  "$py" -m pip install -r "$requirements"
+  log "RUN: $smoke_cmd"
+  ( cd "$REPO/backend" && "$py" -c "$smoke_imports" )
   # Taste validation is advisory: physics fallback exists when CLIP bytes are absent.
   local taste_ok=false taste_note=""
   if "$py" "$REPO/tools/prepare_taste_runtime.py" --offline >/dev/null 2>&1; then
@@ -512,7 +518,7 @@ phase_venv() {
     log "NOTE: $taste_note"
   fi
   emit_receipt venv executed=true venv="$RUNTIME_VENV" \
-    pip_command="$pip_cmd" taste_offline_ok="$taste_ok" taste_note="$taste_note"
+    pip_command="$pip_cmd" smoke_imports_ok=true taste_offline_ok="$taste_ok" taste_note="$taste_note"
 }
 
 # ---- phase 5: host readiness gate ----------------------------------------------

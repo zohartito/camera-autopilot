@@ -136,3 +136,61 @@ def test_unknown_phase_rejected(tmp_path):
         capture_output=True, text=True,
     )
     assert result.returncode == 2
+
+
+def test_venv_manifest_supports_capture_planning_and_merges(tmp_path):
+    """CAM-05: importing the exact numerical capture path must work after the advertised install."""
+    import shlex
+    import sys
+    result, _, _ = _run_dry(tmp_path, "--phase", "venv")
+    assert result.returncode == 0, result.stderr
+    command = shlex.split(_printed_receipts(result.stdout)["venv"]["pip_command"])
+    requirements = Path(command[command.index("-r") + 1]).read_text()
+    # Simulate only the two missing modules, based on what the selected manifest installs.
+    # Everything else is the pinned camera-free environment; no hardware or model is called.
+    declared = {line.strip().split("==")[0] for line in requirements.splitlines()
+                if line.strip() and not line.lstrip().startswith("#")}
+    missing = (["numpy"] if "numpy" not in declared else []) + (
+        ["cv2"] if not {"opencv-python", "opencv-python-headless"} & declared else [])
+    code = """
+import importlib.abc, sys
+class MissingNumerics(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.split('.')[0] in %r:
+            raise ModuleNotFoundError('bring-up manifest omits ' + fullname)
+sys.meta_path.insert(0, MissingNumerics())
+sys.path.insert(0, %r)
+import live_verify, remeter, brain, handheld_recommend, stacking, focus_bracket
+from capture_policy import exposure_budget, validate_stack_policy
+assert exposure_budget(validate_stack_policy())['max_physical_exposures'] >= 2
+""" % (missing, str(REPO / "backend"))
+    smoke = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert smoke.returncode == 0, smoke.stderr
+
+
+def test_venv_apply_runs_import_gate_after_install(tmp_path):
+    """CAM-05: exercise apply with an inert pip and a real numerical import smoke."""
+    import shutil
+    import sys
+    repo = tmp_path / "repo"
+    (repo / "deploy").mkdir(parents=True)
+    shutil.copyfile(SCRIPT, repo / "deploy/pi_bringup.sh")
+    shutil.copyfile(REPO / "deploy/safe_paths.py", repo / "deploy/safe_paths.py")
+    py = repo / "backend/.venv/bin/python"
+    py.parent.mkdir(parents=True)
+    calls = tmp_path / "calls.jsonl"
+    py.write_text(f"#!{sys.executable}\n" +
+                  "import json, os, sys\n" +
+                  f"with open({str(calls)!r}, 'a') as f: f.write(json.dumps(sys.argv[1:]) + '\\n')\n" +
+                  f"if '-c' in sys.argv:\n    sys.path.insert(0, {str(REPO / 'backend')!r})\n    exec(sys.argv[sys.argv.index('-c') + 1])\n")
+    py.chmod(0o755)
+    result = subprocess.run(["bash", str(repo / "deploy/pi_bringup.sh"), "--apply", "--phase", "venv",
+                             "--receipt-dir", str(tmp_path / "receipts")], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    commands = [json.loads(line) for line in calls.read_text().splitlines()]
+    installs = [args for args in commands if args[:3] == ["-m", "pip", "install"] and "-r" in args]
+    assert len(installs) == 1
+    assert installs[0][-1].endswith("deploy/locks/requirements-control.linux-aarch64.lock")
+    imports = [args for args in commands if args[0] == "-c"]
+    assert len(imports) == 1 and "stacking" in imports[0][1] and "brain" in imports[0][1]
+    assert commands.index(installs[0]) < commands.index(imports[0])
