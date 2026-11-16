@@ -310,10 +310,10 @@ receipt-writing runbook — do not re-invent it here.
 ```bash
 bash deploy/pi_bringup.sh --dry-run
 bash deploy/pi_bringup.sh --apply
-bash deploy/pi_bringup.sh --apply --phase proof \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,014 \
-  --token-file ~/.config/camera-autopilot/api-token
 ```
+
+Then run the [canonical proof command](../deploy/PI_BRINGUP.md#5-the-20-shot-no-drop-proof),
+using the discovered USB serial as well as the exact model and port.
 
 `pi_bringup.sh` is idempotent, runs no `sudo` itself (it prints the exact apt /
 udev commands), and writes a JSON receipt per phase under `--receipt-dir`

@@ -194,3 +194,26 @@ def test_venv_apply_runs_import_gate_after_install(tmp_path):
     imports = [args for args in commands if args[0] == "-c"]
     assert len(imports) == 1 and "stacking" in imports[0][1] and "brain" in imports[0][1]
     assert commands.index(installs[0]) < commands.index(imports[0])
+
+
+def test_receipt_runbook_uses_complete_canonical_proof_command(tmp_path):
+    """CAM-08: validate the exact documented proof arguments without invoking curl or USB."""
+    import re
+    import shlex
+    doc = (REPO / "docs/HUMAN_GATED_RECEIPTS_2026-09-07.md").read_text()
+    canonical = (REPO / "deploy/PI_BRINGUP.md").read_text()
+    pattern = r"bash deploy/pi_bringup.sh --apply --phase proof.*?(?=\n```|\n\n)"
+    commands = re.findall(pattern, doc, re.S)
+    if not commands:
+        # The receipt runbook links to the maintained proof command instead of copying it.
+        assert "[canonical proof command](../deploy/PI_BRINGUP.md#5-the-20-shot-no-drop-proof)" in doc
+        commands = re.findall(pattern, canonical, re.S)
+    assert len(commands) == 1
+    args = shlex.split(commands[0].replace("\\\n", " "))[2:]
+    # Dry-run validates the same command's arguments while leaving the proof unexecuted.
+    result = subprocess.run(["bash", str(SCRIPT), *args, "--dry-run", "--receipt-dir", str(tmp_path / "receipts")],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert "--serial" in args and args[args.index("--serial") + 1]
+    proof = _printed_receipts(result.stdout)["proof"]
+    assert proof["executed"] is False

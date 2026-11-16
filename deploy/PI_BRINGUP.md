@@ -113,7 +113,7 @@ to read it) and the token file:
 
 ```bash
 bash deploy/pi_bringup.sh --apply --phase proof \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,014 --serial A7III0SERIAL \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,014 --serial "<discovered-USB-serial>" \
   --token-file ~/.config/camera-autopilot/api-token
 ```
 
