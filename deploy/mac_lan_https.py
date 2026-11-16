@@ -213,7 +213,8 @@ def _build_report(ip: str, tls_mode: str, backend_port: int, https_port: int,
               "", "run.sh environment line:", render_env_line(ip, https_port=https_port),
               "", "Trust the CA on the phone:", ios_trust_steps(caroot),
               "", "Nothing was written or started. Re-run with --write <dir> to save the "
-              "Caddyfile, then --write <dir> --run to serve it."]
+              "Caddyfile, then caddy run --config <dir>/Caddyfile to serve it. "
+              "The helper refuses to overwrite an existing Caddyfile."]
     return "\n".join(lines)
 
 

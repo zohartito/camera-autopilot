@@ -127,3 +127,34 @@ def test_cli_run_without_write_is_rejected(monkeypatch, capsys):
     monkeypatch.setattr(mac_lan_https.shutil, "which", lambda name: None)
     assert mac_lan_https.main(["--run"]) == 2
     assert "requires --write" in capsys.readouterr().err
+
+
+def test_runbook_starts_the_existing_caddyfile_without_rewriting(tmp_path, monkeypatch):
+    """CAM-07: execute the documented write/start sequence with Caddy replaced."""
+    import shlex
+    doc = (_MODULE_PATH.parents[1] / "docs/HUMAN_GATED_RECEIPTS_2026-09-07.md").read_text()
+    section = doc.split("1. Render (and inspect)", 1)[1].split("2. Start the backend", 1)[0]
+    commands = [shlex.split(line.strip()) for line in section.splitlines()
+                if line.strip().startswith((".venv/bin/python", "caddy run"))]
+    monkeypatch.setattr(mac_lan_https, "detect_lan_candidates", lambda: ["192.0.2.10"])
+    monkeypatch.setattr(mac_lan_https, "check_tools", lambda: {"caddy": "/fake/caddy", "mkcert": None})
+    executions = []
+    monkeypatch.setattr(mac_lan_https.os, "execvp", lambda *args: executions.append(args))
+    target = tmp_path / "proxy"
+    for command in commands:
+        command = [value.replace("/tmp/camera-lan-https", str(target)) for value in command]
+        if command[0] == "caddy":
+            config = Path(command[command.index("--config") + 1])
+            assert config == target / "Caddyfile" and config.is_file()
+            executions.append(("caddy", command))
+        else:
+            assert mac_lan_https.main(command[2:]) == 0
+    assert len(executions) == 1
+    assert executions[0][1] == ["caddy", "run", "--config", str(target / "Caddyfile")]
+
+
+def test_rendered_guidance_starts_saved_config_directly():
+    report = mac_lan_https._build_report("192.0.2.10", "internal", 8000, 8443,
+                                        {"caddy": None, "mkcert": None}, None)
+    assert "caddy run --config <dir>/Caddyfile" in report
+    assert "then --write <dir> --run" not in report

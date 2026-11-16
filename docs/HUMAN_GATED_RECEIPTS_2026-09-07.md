@@ -248,8 +248,11 @@ backend over trusted HTTPS (never expose Uvicorn's plaintext port to the LAN).
    ```bash
    .venv/bin/python deploy/mac_lan_https.py --backend-port 8000
    .venv/bin/python deploy/mac_lan_https.py --backend-port 8000 --write /tmp/camera-lan-https
-   .venv/bin/python deploy/mac_lan_https.py --backend-port 8000 --write /tmp/camera-lan-https --run
+   caddy run --config /tmp/camera-lan-https/Caddyfile
    ```
+
+   The helper refuses to overwrite an existing Caddyfile. On later starts, run
+   only the Caddy command against the saved file.
 
 2. Start the backend in LAN-proxy mode (token file written mode-`0600`, not
    printed):
