@@ -61,7 +61,7 @@ def run(argv: list[str] | None = None) -> int:
     parser.add_argument("--interface", default="web")
     parser.add_argument("--duration-seconds", type=float, default=None)
     parser.add_argument("--study-id", default="magic-v0")
-    common.add_common_args(parser, default_base_url="http://127.0.0.1:8001")
+    common.add_common_args(parser)
     args = parser.parse_args(argv)
 
     print(f"Participant {args.participant} -- in-app steps:")

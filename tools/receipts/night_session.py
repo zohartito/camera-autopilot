@@ -67,7 +67,7 @@ def run(argv: list[str] | None = None) -> int:
     parser.add_argument("--poll-interval", type=float, default=3.0, help="poll interval (s)")
     parser.add_argument("--delay-seconds", type=float, default=0.0,
                         help="optional durable start delay for the job")
-    common.add_common_args(parser, default_base_url="http://127.0.0.1:8001")
+    common.add_common_args(parser)
     args = parser.parse_args(argv)
 
     token = common.read_token(args.token_file)

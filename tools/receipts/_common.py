@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -26,7 +27,8 @@ DEFAULT_OUT_DIR = (
     / "falsification"
     / "human-gated-20260907"
 )
-DEFAULT_TOKEN_FILE = "/tmp/camera-section1/token"
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
+from api_token_store import default_store_path
 
 
 def utc_now() -> str:
@@ -125,11 +127,13 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def add_common_args(parser: argparse.ArgumentParser, default_base_url: str) -> None:
+def add_common_args(parser: argparse.ArgumentParser) -> None:
+    default_base_url = f"http://127.0.0.1:{os.environ.get('CAMERA_AUTOPILOT_PORT', '8000')}"
+    token_file = os.environ.get("CAMERA_AUTOPILOT_TOKEN_FILE") or str(default_store_path())
     parser.add_argument("--base-url", default=default_base_url,
                         help=f"running server base URL (default {default_base_url})")
-    parser.add_argument("--token-file", default=DEFAULT_TOKEN_FILE,
-                        help=f"file holding the API token (default {DEFAULT_TOKEN_FILE})")
+    parser.add_argument("--token-file", default=token_file,
+                        help=f"file holding the API token (default {token_file})")
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR),
                         help="directory for the JSON receipt (default: gitignored falsification dir)")
 

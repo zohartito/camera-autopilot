@@ -69,7 +69,7 @@ def _run(argv: list[str] | None = None) -> int:
                         help="max seconds to wait for all presses (default 600)")
     parser.add_argument("--intent", default=None, help="optional intent phrase for the brain")
     parser.add_argument("--poll-interval", type=float, default=1.0, help="status poll interval (s)")
-    common.add_common_args(parser, default_base_url="http://127.0.0.1:8001")
+    common.add_common_args(parser)
     args = parser.parse_args(argv)
 
     if args.presses < 1:
