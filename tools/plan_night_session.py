@@ -44,12 +44,15 @@ def _default_choices(jpeg: str):
 
 def _submit(body: dict, base_url: str, token: str) -> dict:
     import urllib.request
+    sys.path.insert(0, str(ROOT / "tools" / "receipts"))
+    import _common  # CAM-10: same base-URL rule and no-redirect opener as the receipt tools
+    _common.check_base_url(base_url)
     request = urllib.request.Request(
         base_url.rstrip("/") + "/sessions",
         data=json.dumps(body).encode(),
         headers={"Content-Type": "application/json", "X-Camera-Autopilot-Token": token},
         method="POST")
-    with urllib.request.urlopen(request, timeout=15) as response:  # noqa: S310 - operator-supplied URL
+    with _common.no_redirect_opener().open(request, timeout=15) as response:  # noqa: S310 - operator-supplied URL
         return json.loads(response.read().decode())
 
 

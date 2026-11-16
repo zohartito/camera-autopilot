@@ -5,6 +5,8 @@ that writes a JSON receipt and prints a `PASS`/`FAIL` summary. The tools live in
 `tools/receipts/`. Each one talks ONLY to the running server at `--base-url`
 using the private token read from `--token-file` (sent in the
 `X-Camera-Autopilot-Token` header — never in a URL, a log line, or the receipt).
+Authenticated requests never follow redirects. Use an HTTPS `--base-url` for
+non-loopback servers; plain HTTP is accepted only on loopback.
 
 - **Where receipts land:** `artifacts/falsification/human-gated-20260907/`
   (gitignored via `/artifacts/`). Each file is

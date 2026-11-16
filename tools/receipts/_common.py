@@ -11,12 +11,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import ipaddress
 import json
 import os
 import sys
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -50,13 +52,40 @@ def read_token(token_file: str) -> str:
     return token
 
 
+class _RejectRedirects(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # Even a local endpoint can redirect to another origin. Return the 3xx
+        # to the caller without replaying any request or credential.
+        return None
+
+
+def check_base_url(base_url: str) -> None:
+    """CAM-10: plain HTTP only on loopback, no credentials in the URL."""
+    parts = urlsplit(base_url)
+    host = (parts.hostname or "").lower().rstrip(".")
+    try:
+        loopback = ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        loopback = host == "localhost"
+    if (parts.scheme not in {"http", "https"} or not host or parts.username is not None
+            or parts.password is not None or (parts.scheme == "http" and not loopback)):
+        raise SystemExit("Base URL must use HTTPS outside loopback and must not contain credentials.")
+
+
+def no_redirect_opener() -> urllib.request.OpenerDirector:
+    """CAM-10: an opener for token-bearing requests that never follows a redirect."""
+    return urllib.request.build_opener(_RejectRedirects())
+
+
 class Client:
     """Minimal JSON HTTP client. Sends the token only as a header, never in the URL."""
 
     def __init__(self, base_url: str, token: str, timeout: float = 30.0):
+        check_base_url(base_url)
         self.base_url = base_url.rstrip("/")
         self._token = token
         self.timeout = timeout
+        self._opener = no_redirect_opener()
 
     def _headers(self, extra: dict | None = None) -> dict:
         headers = {TOKEN_HEADER: self._token, "Accept": "application/json"}
@@ -78,7 +107,7 @@ class Client:
             headers["Content-Length"] = str(len(data))
         req = urllib.request.Request(url, data=data, headers=headers, method=method)
         try:
-            with urllib.request.urlopen(req, timeout=timeout or self.timeout) as resp:
+            with self._opener.open(req, timeout=timeout or self.timeout) as resp:
                 raw = resp.read()
                 return resp.status, _parse(raw)
         except urllib.error.HTTPError as exc:
@@ -105,7 +134,7 @@ class Client:
         url = self.base_url + path
         req = urllib.request.Request(url, headers=self._headers(), method="GET")
         try:
-            with urllib.request.urlopen(req, timeout=timeout or self.timeout) as resp:
+            with self._opener.open(req, timeout=timeout or self.timeout) as resp:
                 return resp.status, resp.read()
         except urllib.error.HTTPError as exc:
             return exc.code, exc.read()
