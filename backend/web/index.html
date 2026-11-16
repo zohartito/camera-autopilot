@@ -1982,8 +1982,10 @@
     $('refine').checked=exclusivity.refine;
     $('refine').disabled=busy || exclusivity.refineDisabled;
     $('refine-note').textContent=exclusivity.note;
-    const ordinary=captureBudgets?.ordinary, refined=captureBudgets?.refined;
-    $('refine-budget').textContent=refined ? `Refine (up to ${refined.max_physical_exposures} exposures)` : 'Refine (includes meter frames)';
+    const budgets=typeof captureBudgets==='undefined' ? null : captureBudgets;
+    const ordinary=budgets?.ordinary, refined=budgets?.refined;
+    const refineLabel=$('refine-budget');
+    if(refineLabel) refineLabel.textContent=refined ? `Refine (up to ${refined.max_physical_exposures} exposures)` : 'Refine (includes meter frames)';
     $('capture-count').textContent=captureMode==='video'
       ? 'Records 8 seconds to the camera SD card. No exposure adjustment, clip download or preview.'
       : !ordinary || !refined ? 'Exposure budget unavailable. Capture includes meter frames and the final photo.'
