@@ -24,7 +24,7 @@ The two supported bodies (exact model strings, used verbatim):
 | Sony A7 III | `Sony Alpha-A7 III (PC Control)` | USB, `CAMERA_ENGINE=real`, port like `usb:001,004` |
 | Sony A7 II  | `Sony ILCE-7M2 (Control)`        | USB, `CAMERA_ENGINE=real`, port like `usb:001,005` |
 
-Find the exact port for each attached body first (read-only, no capture):
+Find the exact port and USB serial for each attached body first (read-only, no capture):
 
 ```bash
 .venv/bin/python tools/inspect_usb_camera.py --list
@@ -49,7 +49,7 @@ shutter itself.
 
 ```bash
 .venv/bin/python tools/receipts/body_press.py \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 --serial "<discovered-USB-serial>" \
   --presses 3 --timeout 600
 ```
 
@@ -57,7 +57,7 @@ shutter itself.
 
 ```bash
 .venv/bin/python tools/receipts/body_press.py \
-  --model "Sony ILCE-7M2 (Control)" --port usb:001,005 \
+  --model "Sony ILCE-7M2 (Control)" --port usb:001,005 --serial "<discovered-USB-serial>" \
   --presses 3 --timeout 600
 ```
 
@@ -129,7 +129,7 @@ hash-verified against the session's own output receipt.
 
 ```bash
 .venv/bin/python tools/receipts/night_session.py \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 --serial "<discovered-USB-serial>" \
   --frames 8
 ```
 
@@ -140,7 +140,7 @@ ordinary shot to meter from, then pass its gallery name — the tool calls
 
 ```bash
 .venv/bin/python tools/receipts/night_session.py \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 --serial "<discovered-USB-serial>" \
   --frames 16 --meter-image <shot_name>.jpg
 ```
 

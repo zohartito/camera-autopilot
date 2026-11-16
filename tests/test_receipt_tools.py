@@ -161,7 +161,7 @@ def test_body_press_passes_on_scripted_frames(token_file, tmp_path):
         buf = io.StringIO()
         with redirect_stdout(buf):
             code = body_press.run([
-                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004",
+                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004", "--serial", "fixture-serial",
                 "--presses", "3", "--timeout", "10", "--poll-interval", "0.05",
                 "--base-url", base_url, "--token-file", token_file,
                 "--out-dir", str(tmp_path / "receipts"),
@@ -186,7 +186,7 @@ def test_body_press_fails_when_no_frame_arrives(token_file, tmp_path):
         buf = io.StringIO()
         with redirect_stdout(buf):
             code = body_press.run([
-                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004",
+                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004", "--serial", "fixture-serial",
                 "--presses", "3", "--timeout", "1", "--poll-interval", "0.05",
                 "--base-url", base_url, "--token-file", token_file,
                 "--out-dir", str(tmp_path / "receipts"),
@@ -235,7 +235,7 @@ def test_no_token_in_stdout(token_file, tmp_path):
         buf = io.StringIO()
         with redirect_stdout(buf):
             body_press.run([
-                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004",
+                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004", "--serial", "fixture-serial",
                 "--presses", "2", "--timeout", "10", "--poll-interval", "0.05",
                 "--base-url", base_url, "--token-file", token_file,
                 "--out-dir", str(tmp_path / "receipts"),

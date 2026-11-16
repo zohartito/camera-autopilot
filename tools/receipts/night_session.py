@@ -33,7 +33,7 @@ _TERMINAL = {"completed", "failed", "restore_failed", "cancelled",
 
 
 def _night_plan(client: common.Client, *, image: str, model: str, port: str,
-                max_frames: int) -> tuple[dict | None, dict | None, str | None]:
+                serial: str, max_frames: int) -> tuple[dict | None, dict | None, str | None]:
     """Call /night-assist/plan for a saved meter frame.
 
     Returns (session_request, plan_payload, error). A non-ok plan (too dark,
@@ -41,6 +41,7 @@ def _night_plan(client: common.Client, *, image: str, model: str, port: str,
     """
     status, body = client.post("/night-assist/plan", {
         "image": image, "camera_model": model, "camera_port": port,
+        "camera_serial": serial,
         "max_frames": max(2, min(16, max_frames)), "tripod": True,
     })
     if status != 200 or not isinstance(body, dict):
@@ -56,6 +57,7 @@ def run(argv: list[str] | None = None) -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model", required=True, help='exact camera model')
     parser.add_argument("--port", required=True, help="USB port, e.g. usb:001,004")
+    parser.add_argument("--serial", required=True, help="USB serial from camera discovery")
     parser.add_argument("--frames", type=int, default=8,
                         help="frames to stack, or the plan cap with --meter-image (default 8)")
     parser.add_argument("--meter-image", default=None,
@@ -73,12 +75,12 @@ def run(argv: list[str] | None = None) -> int:
 
     plan = None
     create_body = {"mode": "night", "frames": args.frames,
-                   "camera_model": args.model, "camera_port": args.port}
+                   "camera_model": args.model, "camera_port": args.port, "camera_serial": args.serial}
     frames = args.frames
     if args.meter_image:
         session_request, plan, plan_error = _night_plan(
             client, image=args.meter_image, model=args.model, port=args.port,
-            max_frames=args.frames)
+            serial=args.serial, max_frames=args.frames)
         if session_request is None:
             return common.finish(
                 what="night-session", passed=False, out_dir=args.out_dir,
