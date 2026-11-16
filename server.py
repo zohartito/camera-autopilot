@@ -774,14 +774,29 @@ def _format_autoexpose(report: dict) -> str:
 
 
 # --- planning tool (no camera needed) -----------------------------------------
+def _local_timezone():
+    """Load local transition rules, never today's fixed UTC offset."""
+    name = os.environ.get("TZ")
+    if name is not None:
+        name = name.removeprefix(":")
+        if not name.startswith("/"):
+            return ZoneInfo(name or "UTC")
+    try:
+        with open(name or "/etc/localtime", "rb") as stream:
+            return ZoneInfo.from_file(stream, key=name or "local")
+    except (OSError, ValueError) as exc:
+        raise ValueError("Local timezone rules are unavailable; pass an IANA tz such as America/Los_Angeles.") from exc
+
+
 @_instructive
 def sun_times(latitude: float, longitude: float, date: str = "today", tz: str | None = None) -> dict[str, object]:
     """Use to plan golden/blue hour or sunrise/sunset; use shoot only when ready to take a photo.
 
     No camera or network is needed. Pass latitude/longitude (e.g. Lake Tahoe ~ 39.09, -120.04). date is 'today' or
     ISO 'YYYY-MM-DD'. tz is an optional IANA name (e.g. 'America/Los_Angeles'); defaults to the
-    computer's local timezone."""
-    tzinfo = ZoneInfo(tz) if tz else datetime.now().astimezone().tzinfo
+    computer's date-aware local timezone (TZ or /etc/localtime). Pass tz explicitly if local
+    timezone rules are unavailable."""
+    tzinfo = ZoneInfo(tz) if tz else _local_timezone()
     # "today" is resolved in the TARGET timezone, not the server's, to avoid an off-by-one day.
     day = datetime.now(tzinfo).date() if date in (None, "", "today") else date_cls.fromisoformat(date)
     observer = Observer(latitude=latitude, longitude=longitude)

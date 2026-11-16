@@ -62,13 +62,14 @@ def _run(argv: list[str] | None = None) -> int:
     parser.add_argument("--model", required=True,
                         help='exact camera model, e.g. "Sony Alpha-A7 III (PC Control)"')
     parser.add_argument("--port", required=True, help="USB port, e.g. usb:001,004")
+    parser.add_argument("--serial", required=True, help="USB serial from camera discovery")
     parser.add_argument("--presses", type=int, default=3,
                         help="number of shutter presses to prompt for (default 3)")
     parser.add_argument("--timeout", type=float, default=600.0,
                         help="max seconds to wait for all presses (default 600)")
     parser.add_argument("--intent", default=None, help="optional intent phrase for the brain")
     parser.add_argument("--poll-interval", type=float, default=1.0, help="status poll interval (s)")
-    common.add_common_args(parser, default_base_url="http://127.0.0.1:8001")
+    common.add_common_args(parser)
     args = parser.parse_args(argv)
 
     if args.presses < 1:
@@ -80,6 +81,7 @@ def _run(argv: list[str] | None = None) -> int:
     start_body = {
         "camera_model": args.model,
         "camera_port": args.port,
+        "camera_serial": args.serial,
         "max_frames": args.presses,
         "max_duration_s": max(1.0, min(3600.0, args.timeout)),
     }

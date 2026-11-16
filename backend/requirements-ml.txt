@@ -18,9 +18,9 @@ numpy==2.5.4
 # Pillow — liveview JPEG + thumbnail decode (PIL.Image) across the WiFi modules.
 pillow==13.0.0
 
-# CLIP taste-retrieval layer (embed_index.py). torch is CPU-or-CUDA; on the PC the
-# CUDA build is installed by setup_venv.sh instead — keep these unpinned-major so
-# the GPU box can resolve its own CUDA wheel.
+# Optional CLIP taste-retrieval layer (embed_index.py); these declarations are not a GPU lock.
+# setup_venv.sh is retired. The supported README Quickstart uses requirements-test.lock
+# without GPU/CLIP; a separate GPU environment needs platform-specific dependency review.
 torch>=2.15.0
 torchvision>=0.29.2
 open_clip_torch
