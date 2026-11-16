@@ -76,8 +76,11 @@ def main() -> int:
         print("  The plan is ready; no capture was attempted.\n")
         return 1 if status.get("cameras") else 0
 
-    print("  Taking up to 4 exposures for bounded refinement." if reflexion
-          else "  Taking up to 2 exposures: meter and final photograph.")
+    from capture_policy import exposure_budget, validate_stack_policy
+    budget = exposure_budget(validate_stack_policy(), refine=reflexion)
+    print(f"  Taking up to {budget['max_physical_exposures']} exposures: meter and final photograph"
+          f"{' with bounded refinement' if reflexion else ''}, including up to "
+          f"{budget['extra_meter_exposures']} extra meter frames if the meter reads black or white.")
     try:
         shot = product_capture.shoot(camera, intent, refine=reflexion, applied_plan=plan)
     except CaptureOutcomeUncertain as exc:

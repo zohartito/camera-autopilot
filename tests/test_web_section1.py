@@ -38,7 +38,7 @@ def test_html_declares_the_new_control_ids() -> None:
 
 def test_session_mode_offers_panorama_and_refine_is_relabelled() -> None:
     assert '<option value="panorama">Panorama (guided sweep)</option>' in HTML
-    assert "Refine (up to 4 exposures)" in HTML
+    assert 'id="refine-budget"' in HTML and "refined.max_physical_exposures" in HTML
     assert "Set <strong>Still Img. Save Dest.</strong>" in HTML  # handheld instruction
     assert "exposure locked to current settings" in HTML  # panorama budget line
 

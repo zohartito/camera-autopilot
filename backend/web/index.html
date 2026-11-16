@@ -339,9 +339,9 @@
         <p id="stack-baseline" class="voice-status" role="status"></p>
       </div>
     </details>
-    <label class="help"><input id="refine" type="checkbox" /> Refine (up to 4 exposures)</label>
+    <label class="help"><input id="refine" type="checkbox" /> <span id="refine-budget">Refine (includes meter frames)</span></label>
   <p id="refine-note" class="voice-status"></p>
-    <p id="capture-count" class="voice-status">One capture can take up to 2 photos: a meter frame and the final photo.</p>
+    <p id="capture-count" class="voice-status">Capture includes meter frames and the final photo. Loading exposure budget…</p>
     <p id="hint" class="hint">You don't touch a setting — it takes over the camera and hands you the shot.</p>
     <div class="shutter-bar">
       <button id="shutter" class="shutter" aria-label="Get the shot" disabled></button>
@@ -618,6 +618,7 @@
   let previewTimer;
   let listening = false;
   let availableCameras = [];
+  let captureBudgets = null;
   let serverIdentity = null;
   let cameraSelectionRequired = true;
 
@@ -903,6 +904,8 @@
   await apiFetch("/status").then(async r => {
     if (!r.ok) return;
     const s = await r.json();
+    captureBudgets = s.capture_budgets || null;
+    updateCaptureBudget();
     $("status").textContent = s.ready ? (s.camera || "ready") : (s.selection_required ? "choose camera" : "connect camera");
     $("dot").style.background = s.ready ? "var(--ok)" : "var(--muted)";
     availableCameras = s.cameras || [];serverIdentity=s.server_identity || null;
@@ -1979,12 +1982,15 @@
     $('refine').checked=exclusivity.refine;
     $('refine').disabled=busy || exclusivity.refineDisabled;
     $('refine-note').textContent=exclusivity.note;
+    const ordinary=captureBudgets?.ordinary, refined=captureBudgets?.refined;
+    $('refine-budget').textContent=refined ? `Refine (up to ${refined.max_physical_exposures} exposures)` : 'Refine (includes meter frames)';
     $('capture-count').textContent=captureMode==='video'
       ? 'Records 8 seconds to the camera SD card. No exposure adjustment, clip download or preview.'
-      : policy==='fixed' ? AutopilotWorkflows.fixedStackBudgetText(frames, stackBaselineSource())
-      : policy==='auto' ? `Auto stack: up to ${2+frames} physical photos (up to 2 ordinary, then at most ${frames} stack frames). Unverified motion keeps the ordinary photo.`
-      : $('refine').checked ? 'Up to 4 photos: meter + final, with at most one improvement attempt.'
-      : 'One capture can take up to 2 photos: a meter frame and the final photo.';
+      : !ordinary || !refined ? 'Exposure budget unavailable. Capture includes meter frames and the final photo.'
+      : policy==='fixed' ? AutopilotWorkflows.fixedStackBudgetText(frames, stackBaselineSource(), captureBudgets['fixed_'+stackBaselineSource()])
+      : policy==='auto' ? `Auto stack: up to ${ordinary.max_physical_exposures+frames} physical photos (up to ${ordinary.max_physical_exposures} ordinary, including meter frames, then at most ${frames} stack frames). Unverified motion keeps the ordinary photo.`
+      : $('refine').checked ? `Up to ${refined.max_physical_exposures} photos: meter + final, with at most one improvement attempt, including up to ${refined.extra_meter_exposures} extra meter frames if black or white.`
+      : `One capture can take up to ${ordinary.max_physical_exposures} photos: meter and final, including up to ${ordinary.extra_meter_exposures} extra meter frames if black or white.`;
   }
   ['stack-policy','stack-frames','refine','stack-baseline-source'].forEach(id=>$(id).addEventListener('change',updateCaptureBudget));
   $('stack-baseline-source').addEventListener('change',renderBodyBaseline);
