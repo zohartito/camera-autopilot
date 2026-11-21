@@ -13,7 +13,7 @@
 opencv-contrib-python==5.0.0.93
 
 # Numerics for the bounded JPEG/OpenCV stacking path. RAW remains disabled.
-numpy==2.5.4
+numpy==2.5.5
 
 # Pillow — liveview JPEG + thumbnail decode (PIL.Image) across the WiFi modules.
 pillow==13.0.0
