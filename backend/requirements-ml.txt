@@ -10,7 +10,7 @@
 # module, plus contrib), so list only the contrib build to avoid a clobber.
 
 # OpenCV WITH contrib (CSRT/KCF for wifi_tracking.py; Mertens/MTB/ECC/ORB for stacking.py).
-opencv-contrib-python==5.0.0.93
+opencv-contrib-python==5.1.0.95
 
 # Numerics for the bounded JPEG/OpenCV stacking path. RAW remains disabled.
 numpy==2.5.4
