@@ -38,7 +38,7 @@ def test_page_renders_on_load_and_records_after_an_ordinary_photo() -> None:
     # Sessions meter first unless the owner keeps the body's exposure (Session meter-first).
     assert 'AutopilotWorkflows.sessionBaselineText(bodyBaseline, sessionBaselineSource(), nightPlan)' in HTML
     assert "AutopilotWorkflows.inheritedBaselineText(bodyBaseline, stackBaselineSource())" in HTML
-    assert "AutopilotWorkflows.fixedStackBudgetText(frames, stackBaselineSource())" in HTML
+    assert "AutopilotWorkflows.fixedStackBudgetText(frames, stackBaselineSource(), captureBudgets['fixed_'+stackBaselineSource()])" in HTML
     assert "AutopilotWorkflows.stackBaselineOutcomeText(stack.baseline)" in HTML
 
 
@@ -69,10 +69,10 @@ def test_keep_current_text_says_the_stack_does_not_meter() -> None:
 
 
 def test_budget_text_counts_the_meter_frame_unless_current_is_kept() -> None:
-    metered = run_js("process.stdout.write(window.AutopilotWorkflows.fixedStackBudgetText(3, 'metered'));")
+    metered = run_js("process.stdout.write(window.AutopilotWorkflows.fixedStackBudgetText(3, 'metered', {baseline_meter_exposures:1, extra_meter_exposures:2}));")
     assert metered.startswith("Fixed stack: up to 6 physical photos")
     assert "1 meter photo" in metered and "up to 2 more" in metered
-    current = run_js("process.stdout.write(window.AutopilotWorkflows.fixedStackBudgetText(3, 'current'));")
+    current = run_js("process.stdout.write(window.AutopilotWorkflows.fixedStackBudgetText(3, 'current', {baseline_meter_exposures:0, extra_meter_exposures:0}));")
     assert current.startswith("Fixed stack: 3 physical photos") and "No meter photo" in current
 
 

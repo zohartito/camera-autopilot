@@ -49,8 +49,10 @@ and [`docs/RECEIPTS_2026-10-01.md`](docs/RECEIPTS_2026-10-01.md). Earlier sittin
   test Mac's only internet link was Wi-Fi, so joining the camera's network would cut it off).
 - **Two bodies only.** Other Sony bodies may enumerate over gphoto2, but nothing else is tested.
   Other brands are not supported.
-- **2 to 4 physical shots per request** (a meter frame, then the result; up to four with
-  refinement). There is no live preview stream on the Mac.
+- **Up to 4 physical exposures per ordinary request, or 8 with refinement**, with stacking
+  off. Each attempt takes a meter frame and a final photo, plus up to two extra meter frames
+  if the meter reads black or blown out. Refinement allows two attempts. The UI and CLI use
+  `capture_policy.exposure_budget` for these limits. There is no live preview stream on the Mac.
 - **Recorded failures** (from the receipts):
   - Holy Grail dusk timelapse stopped at frame 14 when macOS Preview grabbed the USB camera
     (R-1001-7). Quit Preview, Photos and Image Capture while the camera is in use.

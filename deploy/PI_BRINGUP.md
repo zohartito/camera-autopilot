@@ -84,7 +84,8 @@ bash deploy/pi_bringup.sh --apply
 ```
 
 This runs, in order: **apt** (installs the libs behind the pinned wheels), **venv**
-(creates `backend/.venv`, installs `requirements.txt`, validates pinned model bytes
+(creates `backend/.venv`, installs `deploy/locks/requirements-control.linux-aarch64.lock`
+including NumPy and headless OpenCV, smoke-imports capture planning and merge modules, validates pinned model bytes
 offline via `tools/prepare_taste_runtime.py --offline`), **readiness**
 (`tools/deployment_preflight.py`, and `deploy/host_readiness.py` when you pass
 `--manifest`/`--artifact-root`/`--token-file`), and **service** (renders and installs
@@ -112,7 +113,7 @@ to read it) and the token file:
 
 ```bash
 bash deploy/pi_bringup.sh --apply --phase proof \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,014 --serial A7III0SERIAL \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,014 --serial "<discovered-USB-serial>" \
   --token-file ~/.config/camera-autopilot/api-token
 ```
 

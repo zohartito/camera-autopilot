@@ -871,3 +871,26 @@ def test_sweep_centre_puts_the_seam_in_the_widest_gap_and_is_stable():
     # A full circle nudged either way keeps the same side of frame 0.
     circle = lambda last: [yawed(deg) for deg in (0, 45, 90, 135, last, 225, 270, 315)]
     assert panorama._sweep_centre_yaw(circle(179.999)) == pytest.approx(panorama._sweep_centre_yaw(circle(180.001)), abs=1e-4)
+
+
+def test_documented_build_command_with_generated_inputs(views, tmp_path):
+    """CAM-09: the exact documented layout must match its generated source count."""
+    import re
+    import shlex
+    import subprocess
+    root = Path(__file__).resolve().parents[1]
+    doc = (root / "docs/PANORAMA_IMPLEMENTATION_2026-09-05.md").read_text()
+    line = next(line for line in doc.splitlines()
+                if "tools/build_panorama.py /absolute/frame1.jpg" in line and "--layout" in line)
+    command = shlex.split(line)
+    paths, _, _ = views
+    command[0] = sys.executable
+    command[1] = str(root / "tools/build_panorama.py")
+    command = [str(paths[int(match[1]) - 1]) if (match := re.fullmatch(r"/absolute/frame([1-4])\.jpg", value))
+               else value for value in command]
+    command[command.index("--output-root") + 1] = str(tmp_path / "example-output")
+    result = subprocess.run(command, cwd=root, capture_output=True, text=True, timeout=90)
+    assert result.returncode == 0, result.stdout + result.stderr
+    receipt = json.loads(result.stdout)
+    assert receipt["status"] == "completed"
+    assert len(receipt["inputs"]) == receipt["layout"]["rows"] * receipt["layout"]["columns"]

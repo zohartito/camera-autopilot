@@ -7,7 +7,7 @@ Preconditions the owner must have met before running this:
      The exposure setters only appear with the full app and the mode dial on M.
   2. On the Mac: join the camera's "DIRECT-xxxx:ILCE-7M2" Wi-Fi network.
   3. Start the server with the Wi-Fi engine on this base URL:
-        CAMERA_ENGINE=wifi ./run.sh      (default base URL http://127.0.0.1:8002)
+        CAMERA_ENGINE=wifi ./run.sh      (default base URL http://127.0.0.1:8000)
 
 The tool: checks TCP reachability of the camera's Smart Remote ScalarWebAPI
 endpoint, then POSTs one /shoot with intent "warm" and refine=false. It writes a
@@ -81,7 +81,7 @@ def run(argv: list[str] | None = None) -> int:
                         help="seconds to wait for the endpoint TCP connect (default 3)")
     parser.add_argument("--skip-reachability", action="store_true",
                         help="skip the camera endpoint reachability precheck")
-    common.add_common_args(parser, default_base_url="http://127.0.0.1:8002")
+    common.add_common_args(parser)
     args = parser.parse_args(argv)
 
     token = common.read_token(args.token_file)

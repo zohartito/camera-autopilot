@@ -405,6 +405,14 @@ def index() -> FileResponse:
 def status() -> dict:
     """Is the autopilot ready (camera attached, or mock)?"""
     result = engine.status()
+    from capture_policy import exposure_budget, validate_stack_policy
+    result["capture_budgets"] = {
+        "ordinary": exposure_budget(validate_stack_policy()),
+        "refined": exposure_budget(validate_stack_policy(), refine=True),
+        **{f"fixed_{baseline}": exposure_budget(validate_stack_policy(
+            {"mode": "fixed", "frames": 2, "baseline": baseline}))
+           for baseline in ("metered", "current")},
+    }
     import runtime_resources
     result["resources"] = runtime_resources.report()
     from device_health import known_server_identity

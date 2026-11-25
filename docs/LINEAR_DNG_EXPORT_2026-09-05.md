@@ -1,6 +1,6 @@
 # Output-referred linear DNG export — 2026-09-05
 
-A completed JPEG development can now produce a **DNG containing the same rendered 16-bit linear RGB samples as its TIFF**. It is explicitly JPEG-derived, output-referred and non-neural. It is not sensor RAW, a Bayer mosaic, reconstructed highlight detail or restored JPEG precision.
+A completed JPEG or RAW development can produce a **DNG containing the same rendered 16-bit linear RGB samples as its TIFF**. It is explicitly labeled JPEG-derived or RAW-derived according to the development receipt, output-referred and non-neural. It is not sensor RAW, a Bayer mosaic, reconstructed highlight detail or restored source precision. Accepting a RAW-derived development receipt does not enable general RAW decoding on a platform where that decoder remains gated.
 
 This product includes DNG technology under license by Adobe.
 
@@ -31,11 +31,11 @@ Returns `job_id`, `status`, `output` (`filename`, `sha256`, `bytes`), `verificat
 
 ## Accepted input and bounds
 
-Only this project's exact single-strip, uncompressed, little-endian RGB uint16 TIFF layout is accepted. The associated receipt must be a completed `linear-development-v1` JPEG result with the matching TIFF SHA-256, byte count and dimensions. The source JPEG provenance hash is required. RAW receipts and arbitrary TIFF layouts are rejected. No input image decoder is called by the writer; it checks bounded header fields and streams the existing samples.
+Only this project's exact single-strip, uncompressed, little-endian RGB uint16 TIFF layout is accepted. The associated receipt must be a completed, non-neural `linear-development-v1` result with `source_kind` equal to `jpeg` or `raw`, and matching TIFF SHA-256, byte count and dimensions. The source provenance SHA-256 is required for either kind. Arbitrary TIFF layouts and other receipt kinds are rejected. No input image decoder is called by the writer; it checks bounded header fields and streams the existing samples.
 
 Input limit: 40 MP and 240,065,536 bytes. Receipts and TIFF headers are bounded to 64 KiB. One export runs per process at a time. The independent decoder executes in a child with a 30-second deadline, CPU/file limits, a sampled 1 GiB RSS watchdog, and a Linux address-space ceiling. Only the newly generated, bounded DNG reaches that decoder. General user-supplied RAW/DNG decoding on macOS remains gated.
 
-The writer sets DNG version/backward version 1.2, LinearRaw, output-referred colorimetry, three unsigned 16-bit channels, black 0, white 65535, D65, neutral RGB multipliers and a straight profile tone curve. It carries source JPEG/TIFF hashes and a JPEG-origin explanation in its image description. No CFA pattern, camera calibration measurements or private camera EXIF/GPS are fabricated or copied.
+The writer sets DNG version/backward version 1.2, LinearRaw, output-referred colorimetry, three unsigned 16-bit channels, black 0, white 65535, D65, neutral RGB multipliers and a straight profile tone curve. It carries source/TIFF hashes and a JPEG-derived or RAW-derived explanation in its image description. RAW-derived descriptions can include the receipt's source make/model; they do not claim a measured camera colour calibration. No CFA pattern, camera calibration measurements or private camera EXIF/GPS are fabricated or copied.
 
 ## Verification and limits
 

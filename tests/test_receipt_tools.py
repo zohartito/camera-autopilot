@@ -161,7 +161,7 @@ def test_body_press_passes_on_scripted_frames(token_file, tmp_path):
         buf = io.StringIO()
         with redirect_stdout(buf):
             code = body_press.run([
-                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004",
+                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004", "--serial", "fixture-serial",
                 "--presses", "3", "--timeout", "10", "--poll-interval", "0.05",
                 "--base-url", base_url, "--token-file", token_file,
                 "--out-dir", str(tmp_path / "receipts"),
@@ -186,7 +186,7 @@ def test_body_press_fails_when_no_frame_arrives(token_file, tmp_path):
         buf = io.StringIO()
         with redirect_stdout(buf):
             code = body_press.run([
-                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004",
+                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004", "--serial", "fixture-serial",
                 "--presses", "3", "--timeout", "1", "--poll-interval", "0.05",
                 "--base-url", base_url, "--token-file", token_file,
                 "--out-dir", str(tmp_path / "receipts"),
@@ -235,7 +235,7 @@ def test_no_token_in_stdout(token_file, tmp_path):
         buf = io.StringIO()
         with redirect_stdout(buf):
             body_press.run([
-                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004",
+                "--model", "Sony Alpha-A7 III (PC Control)", "--port", "usb:001,004", "--serial", "fixture-serial",
                 "--presses", "2", "--timeout", "10", "--poll-interval", "0.05",
                 "--base-url", base_url, "--token-file", token_file,
                 "--out-dir", str(tmp_path / "receipts"),
@@ -251,3 +251,28 @@ def test_no_token_in_stdout(token_file, tmp_path):
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-q"]))
+
+
+@pytest.mark.parametrize("module", [body_press, wifi_session, night_session, beginner_session])
+@pytest.mark.parametrize("overrides", [False, True])
+def test_receipt_help_defaults_match_launcher(module, overrides, tmp_path, monkeypatch, capsys):
+    """CAM-06: resolving defaults never reads the owner's token store."""
+    from backend import api_token_store
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+    monkeypatch.delenv("CAMERA_AUTOPILOT_TOKEN_FILE", raising=False)
+    monkeypatch.delenv("CAMERA_AUTOPILOT_PORT", raising=False)
+    token_path = str(api_token_store.default_store_path())
+    port = "8000"
+    if overrides:
+        token_path = str(tmp_path / "explicit-token")
+        port = "8765"
+        monkeypatch.setenv("CAMERA_AUTOPILOT_TOKEN_FILE", token_path)
+        monkeypatch.setenv("CAMERA_AUTOPILOT_PORT", port)
+    with pytest.raises(SystemExit) as result:
+        module.run(["--help"])
+    assert result.value.code == 0
+    # argparse wraps long paths: compare after collapsing whitespace only.
+    out = "".join(capsys.readouterr().out.split())
+    assert "".join(token_path.split()) in out
+    assert f"http://127.0.0.1:{port}" in out

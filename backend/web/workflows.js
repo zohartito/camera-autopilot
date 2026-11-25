@@ -284,10 +284,11 @@ window.AutopilotWorkflows = {
     return {settings: policy === 'auto' || policy === 'fixed', fixedBaseline: policy === 'fixed'};
   },
   // The Fixed stack exposure budget shown before capture; the meter frame counts.
-  fixedStackBudgetText(frames, stackBaseline) {
+  fixedStackBudgetText(frames, stackBaseline, budget) {
+    if (!budget) return 'Fixed stack: exposure budget unavailable.';
     return stackBaseline === 'current'
       ? `Fixed stack: ${frames} physical photos from the camera's current exposure. No meter photo.`
-      : `Fixed stack: up to ${frames + 3} physical photos — 1 meter photo (up to 2 more if it reads black or white), then ${frames} stack frames around the metered exposure.`;
+      : `Fixed stack: up to ${frames + budget.baseline_meter_exposures + budget.extra_meter_exposures} physical photos — ${budget.baseline_meter_exposures} meter photo (up to ${budget.extra_meter_exposures} more if it reads black or white), then ${frames} stack frames around the metered exposure.`;
   },
   // After a Fixed stack: which exposure it bracketed around, and what the body held before.
   stackBaselineOutcomeText(baseline) {

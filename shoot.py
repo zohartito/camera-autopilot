@@ -6,8 +6,8 @@
     python shoot.py                      # no vibe = just read the scene and balance it
 
 The loop: your words -> a LOCAL model picks an exposure target -> the camera sets itself and shoots
--> the photo opens. With no camera connected (battery asleep) it still runs the brain and prints the
-plan, so you can feel the "vibe -> decision" magic today and it shoots the moment the camera wakes.
+-> the photo opens. The default/mock engine saves a demo photo without USB access.
+With CAMERA_ENGINE=real and no ready camera, it prints the plan without attempting capture.
 
 No API billing (local Ollama, with a keyword fallback), no server, no browser — just this file.
 """
@@ -60,12 +60,12 @@ def main() -> int:
     print(f"  aiming   : brightness {int(plan['target_brightness'])} · white balance {wb}\n")
 
     # Use the same bounded capture, immutable plan and persistence path as the app.
-    # RealEngine reads CAMERA_MODEL/CAMERA_PORT so two attached cameras require a choice.
+    # The selected engine honors CAMERA_ENGINE (default mock, no USB discovery).
     import engine
     import product_capture
     from sonyremote import CameraError, CaptureOutcomeUncertain
 
-    camera = engine.RealEngine()
+    camera = engine.get_engine()
     status = camera.status()
     if not status.get("ready"):
         print(f"  {status.get('hint') or 'No supported camera is ready.'}")
@@ -76,8 +76,11 @@ def main() -> int:
         print("  The plan is ready; no capture was attempted.\n")
         return 1 if status.get("cameras") else 0
 
-    print("  Taking up to 4 exposures for bounded refinement." if reflexion
-          else "  Taking up to 2 exposures: meter and final photograph.")
+    from capture_policy import exposure_budget, validate_stack_policy
+    budget = exposure_budget(validate_stack_policy(), refine=reflexion)
+    print(f"  Taking up to {budget['max_physical_exposures']} exposures: meter and final photograph"
+          f"{' with bounded refinement' if reflexion else ''}, including up to "
+          f"{budget['extra_meter_exposures']} extra meter frames if the meter reads black or white.")
     try:
         shot = product_capture.shoot(camera, intent, refine=reflexion, applied_plan=plan)
     except CaptureOutcomeUncertain as exc:

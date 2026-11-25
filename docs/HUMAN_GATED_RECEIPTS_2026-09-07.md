@@ -5,12 +5,17 @@ that writes a JSON receipt and prints a `PASS`/`FAIL` summary. The tools live in
 `tools/receipts/`. Each one talks ONLY to the running server at `--base-url`
 using the private token read from `--token-file` (sent in the
 `X-Camera-Autopilot-Token` header — never in a URL, a log line, or the receipt).
+Authenticated requests never follow redirects. Use an HTTPS `--base-url` for
+non-loopback servers; plain HTTP is accepted only on loopback.
 
 - **Where receipts land:** `artifacts/falsification/human-gated-20260907/`
   (gitignored via `/artifacts/`). Each file is
   `<what>-<UTC timestamp>.json`.
-- **Token file:** the launcher writes it to `/tmp/camera-section1/token`
-  (the default). Copy it locally; never paste it into a URL or a message.
+- **Token file:** helpers use the launcher's private per-user store (on macOS,
+  `~/Library/Application Support/camera-autopilot/api-token`). They honor
+  `CAMERA_AUTOPILOT_TOKEN_FILE` and `CAMERA_AUTOPILOT_PORT` (default `8000`).
+  For a different launcher terminal or host, pass matching `--token-file` and
+  `--base-url` explicitly. Never paste the token into a URL or a message.
 - **Exit code:** every tool exits `0` only on an observed pass, `1` otherwise.
 - **Roll-up:** after any run, `tools/receipts/summary.py` prints one markdown
   table of every receipt in the directory.
@@ -24,7 +29,7 @@ The two supported bodies (exact model strings, used verbatim):
 | Sony A7 III | `Sony Alpha-A7 III (PC Control)` | USB, `CAMERA_ENGINE=real`, port like `usb:001,004` |
 | Sony A7 II  | `Sony ILCE-7M2 (Control)`        | USB, `CAMERA_ENGINE=real`, port like `usb:001,005` |
 
-Find the exact port for each attached body first (read-only, no capture):
+Find the exact port and USB serial for each attached body first (read-only, no capture):
 
 ```bash
 .venv/bin/python tools/inspect_usb_camera.py --list
@@ -39,7 +44,7 @@ next exposure, and restores the camera afterward — without ever firing the
 shutter itself.
 
 **Preconditions**
-- Server running with the real USB engine on `http://127.0.0.1:8001`
+- Server running with the real USB engine on `http://127.0.0.1:8000`
   (`CAMERA_INTENT_PROFILE=compact CAMERA_ENGINE=real ./run.sh`).
 - The body's mode dial is physically on **M**; the body is awake.
 - Only this one body is being driven (handheld sessions take exclusive
@@ -49,7 +54,7 @@ shutter itself.
 
 ```bash
 .venv/bin/python tools/receipts/body_press.py \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 --serial "<discovered-USB-serial>" \
   --presses 3 --timeout 600
 ```
 
@@ -57,7 +62,7 @@ shutter itself.
 
 ```bash
 .venv/bin/python tools/receipts/body_press.py \
-  --model "Sony ILCE-7M2 (Control)" --port usb:001,005 \
+  --model "Sony ILCE-7M2 (Control)" --port usb:001,005 --serial "<discovered-USB-serial>" \
   --presses 3 --timeout 600
 ```
 
@@ -89,14 +94,14 @@ Wi-Fi (or fails closed honestly when it doesn't).
   mode dial must be on **M** for ISO/aperture/shutter to be settable.
 - **On the Mac:** open Wi-Fi and join the camera's network, named
   `DIRECT-xxxx:ILCE-7M2` (password shown on the camera screen the first time).
-- Start the server with the Wi-Fi engine on `http://127.0.0.1:8002`:
+- Start the server with the Wi-Fi engine on `http://127.0.0.1:8000`:
   `CAMERA_ENGINE=wifi ./run.sh`. (If the camera's endpoint is not the default
   `http://192.168.122.1:8080/sony/camera`, pass `--camera-endpoint`, or set
   `SONY_CAMERA_REMOTE_DD_URL` before starting the server so it SSDP-discovers.)
 
 ```bash
 .venv/bin/python tools/receipts/wifi_session.py \
-  --base-url http://127.0.0.1:8002
+  --base-url http://127.0.0.1:8000
 ```
 
 The tool first TCP-checks the camera's Smart Remote endpoint, then POSTs one
@@ -124,12 +129,12 @@ hash-verified against the session's own output receipt.
 - Point at a **static, textured scene** with a few bright points — a lit
   building facade, a street with parked cars and a couple of streetlights, or a
   night skyline. Avoid moving cars/people in frame.
-- Mode dial on **M**; body awake. Server on `http://127.0.0.1:8001`
+- Mode dial on **M**; body awake. Server on `http://127.0.0.1:8000`
   (real engine). The server must stay on for the whole job.
 
 ```bash
 .venv/bin/python tools/receipts/night_session.py \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 --serial "<discovered-USB-serial>" \
   --frames 8
 ```
 
@@ -140,7 +145,7 @@ ordinary shot to meter from, then pass its gallery name — the tool calls
 
 ```bash
 .venv/bin/python tools/receipts/night_session.py \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 \
+  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,004 --serial "<discovered-USB-serial>" \
   --frames 16 --meter-image <shot_name>.jpg
 ```
 
@@ -195,7 +200,7 @@ consented, completed session per participant, and the earliest-10 cohort gate
 report is reachable.
 
 **Preconditions**
-- Server on `http://127.0.0.1:8001`.
+- Server on `http://127.0.0.1:8000`.
 - The participant used the app and answered on the `/validation` screen. The
   consent line they must tick reads, verbatim (from `backend/web/validation.html`):
   *"Save my anonymous answers and the photo filename for this study."* Nothing is
@@ -243,10 +248,13 @@ backend over trusted HTTPS (never expose Uvicorn's plaintext port to the LAN).
    or started without `--write`/`--run`:
 
    ```bash
-   .venv/bin/python deploy/mac_lan_https.py --backend-port 8001
-   .venv/bin/python deploy/mac_lan_https.py --backend-port 8001 --write /tmp/camera-lan-https
-   .venv/bin/python deploy/mac_lan_https.py --backend-port 8001 --write /tmp/camera-lan-https --run
+   .venv/bin/python deploy/mac_lan_https.py --backend-port 8000
+   .venv/bin/python deploy/mac_lan_https.py --backend-port 8000 --write /tmp/camera-lan-https
+   caddy run --config /tmp/camera-lan-https/Caddyfile
    ```
+
+   The helper refuses to overwrite an existing Caddyfile. On later starts, run
+   only the Caddy command against the saved file.
 
 2. Start the backend in LAN-proxy mode (token file written mode-`0600`, not
    printed):
@@ -277,7 +285,7 @@ backend over trusted HTTPS (never expose Uvicorn's plaintext port to the LAN).
    **Settings → General → VPN & Device Management** → trust the developer app.
 6. Trust the proxy's local CA on the phone (the `mkcert`/`tls internal` root)
    before entering the token, then paste the token from
-   `/tmp/camera-section1/token` into the app when prompted.
+   the private token file printed by `run.sh` into the app when prompted.
 
 **What "pass" looks like:** the app loads over `https://…`, backend status is
 green, and a capture/review round-trip works from the phone. There is no JSON
@@ -304,10 +312,10 @@ receipt-writing runbook — do not re-invent it here.
 ```bash
 bash deploy/pi_bringup.sh --dry-run
 bash deploy/pi_bringup.sh --apply
-bash deploy/pi_bringup.sh --apply --phase proof \
-  --model "Sony Alpha-A7 III (PC Control)" --port usb:001,014 \
-  --token-file ~/.config/camera-autopilot/api-token
 ```
+
+Then run the [canonical proof command](../deploy/PI_BRINGUP.md#5-the-20-shot-no-drop-proof),
+using the discovered USB serial as well as the exact model and port.
 
 `pi_bringup.sh` is idempotent, runs no `sudo` itself (it prints the exact apt /
 udev commands), and writes a JSON receipt per phase under `--receipt-dir`

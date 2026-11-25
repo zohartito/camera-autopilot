@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-Regenerated **2026-11-13** from the installed README environment
+Regenerated **2026-11-15** from the installed README environment
 (`requirements-test.lock`, Python 3.14.10, macOS arm64) and `npm ci` in `mobile/`.
 The tables report installed package metadata, including test and development
 packages; pip and the separate audit-tool environment are excluded. Versions
@@ -64,7 +64,7 @@ when distributing it. The project itself is **AGPL-3.0-or-later**; see
 | pydantic-settings | 2.14.2 | MIT |
 | Pygments | 2.20.0 | BSD-2-Clause |
 | PyJWT | 2.15.0 | MIT |
-| pytest | 9.1.1 | MIT |
+| pytest | 9.2.0 | MIT |
 | python-dotenv | 1.2.2 | BSD-3-Clause |
 | python-multipart | 0.0.32 | Apache-2.0 |
 | PyYAML | 6.0.3 | MIT License |
@@ -198,8 +198,8 @@ observations from an installed ML build. Re-inventory any actual ML distribution
 | Component | Declared requirement | Declared license |
 |---|---|---|
 | opencv-contrib-python | ==5.0.0.93 | Apache-2.0 |
-| torch | >=2.14.1 | BSD-3-Clause |
-| torchvision | >=0.29.1 | BSD-3-Clause |
+| torch | >=2.15.0 | BSD-3-Clause |
+| torchvision | >=0.29.2 | BSD-3-Clause |
 | open_clip_torch | unpinned | MIT |
 
 CUDA builds can include additional NVIDIA components; these are outside this

@@ -19,6 +19,7 @@ from sonyremote import CameraError, CaptureOutcomeUncertain
 @pytest.fixture
 def cli(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["shoot.py", "cool blue"])
+    monkeypatch.setenv("CAMERA_ENGINE", "real")
     monkeypatch.setenv("CAMERA_MODEL", "Sony ILCE-7M2 (Control)")
     monkeypatch.setenv("CAMERA_PORT", "usb:fixture")
     monkeypatch.delenv("AUTOPILOT_REFLEXION", raising=False)
